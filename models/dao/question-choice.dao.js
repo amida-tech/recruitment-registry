@@ -1,55 +1,130 @@
 'use strict';
 
-const db = require('../db');
-const sequelize = db.sequelize;
+const _ = require('lodash');
 
-const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
-const QuestionChoice = db.QuestionChoice;
-
 const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sql');
 
 module.exports = class QuestionChoiceDAO extends Translatable {
-    constructor() {
-        super('question_choice_text', 'questionChoiceId');
-    }
-
-    deleteNullData(choices) {
-        choices.forEach(choice => {
-            if (!choice.meta) {
-                delete choice.meta;
-            }
-            if (!choice.code) {
-                delete choice.code;
-            }
-        });
-        return choices;
+    constructor(db) {
+        super(db, 'QuestionChoiceText', 'questionChoiceId');
     }
 
     createQuestionChoiceTx(choice, transaction) {
-        return QuestionChoice.create(choice, { transaction })
+        const record = _.omit(choice, 'text');
+        return this.db.QuestionChoice.create(record, { transaction })
             .then(({ id }) => {
-                const input = { id, text: choice.text };
-                if (choice.code) {
-                    input.code = choice.code;
-                }
-                return this.createTextTx(input, transaction)
+                const textRecord = { id, text: choice.text };
+                return this.createTextTx(textRecord, transaction)
                     .then(() => ({ id }));
             });
     }
 
+    patchQuestionChoiceTx(id, choicePatch, transaction) {
+        const record = _.omit(choicePatch, 'text');
+        return this.db.QuestionChoice.update(record, { where: { id }, transaction })
+            .then(() => {
+                if (choicePatch.text) {
+                    const textRecord = { id, text: choicePatch.text };
+                    return this.createTextTx(textRecord, transaction);
+                }
+                return null;
+            });
+    }
+
+    createQuestionChoicesTx(choices, transaction) {
+        const records = choices.map((choice, line) => {
+            const record = { line };
+            Object.assign(record, _.omit(choice, 'text'));
+            record.type = choice.type || 'bool';
+            return record;
+        });
+        return this.db.QuestionChoice.bulkCreate(records, { transaction, returning: true })
+            .then(result => result.map(({ id }) => id))
+            .then((ids) => {
+                const texts = choices.map(({ text }, index) => ({ text, id: ids[index] }));
+                return this.createMultipleTextsTx(texts, 'en', transaction)
+                    .then(() => ids);
+            });
+    }
+
+    findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction) {
+        if (choice.before) {
+            const findOptions = { attributes: ['line'], raw: true, transaction };
+            return this.db.QuestionChoice.findById(choice.before, findOptions)
+                .then((record) => {
+                    if (record) {
+                        const line = record.line;
+                        return this.shiftLines(line, questionId, choiceSetId, transaction)
+                            .then(() => line);
+                    }
+                    return RRError.reject('qxChoiceInvalidBeforeId');
+                });
+        }
+        const attributes = this.fnCol('max', 'question_choice', 'line');
+        const where = questionId ? { questionId } : { choiceSetId };
+        return this.db.QuestionChoice.findOne({ raw: true, attributes, where, transaction })
+                .then(record => (record ? record.max + 1 : 0));
+    }
+
+    shiftLines(line, questionId, choiceSetId, transaction) {
+        let where = questionId ? 'question_id = :questionId' : 'choice_set_id = :choiceSetId';
+        where = `line >= :line AND ${where} AND deleted_at IS NULL`;
+        const sql = `UPDATE ONLY question_choice SET line = line + 1 WHERE ${where}`;
+        return this.query(sql, { line, questionId, choiceSetId }, transaction);
+    }
+
+    createQuestionChoice(choice) {
+        const { questionId, choiceSetId } = choice;
+        if (!(questionId || choiceSetId)) {
+            return RRError.reject('qxChoiceNoParent');
+        }
+        if (questionId && choiceSetId) {
+            return RRError.reject('qxChoiceMultipleParent');
+        }
+        return this.transaction(transaction => this.findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction)   // eslint-disable-line max-len
+            .then((line) => {
+                const ch = _.omit(choice, 'before');
+                ch.line = line;
+                ch.type = choice.type || (choiceSetId ? 'choice' : 'bool');
+                return this.createQuestionChoiceTx(ch, transaction);
+            }));
+    }
+
+    patchQuestionChoice(id, choicePatch) {
+        const { questionId, choiceSetId } = choicePatch;
+        if (!(questionId || choiceSetId)) {
+            return RRError.reject('qxChoiceNoParent');
+        }
+        if (questionId && choiceSetId) {
+            return RRError.reject('qxChoiceMultipleParent');
+        }
+        return this.transaction((transaction) => {
+            if (choicePatch.before) {
+                return this.findNewQuestionChoiceLine(choicePatch, questionId, choiceSetId, transaction)   // eslint-disable-line max-len
+                    .then((line) => {
+                        const ch = _.omit(choicePatch, 'before');
+                        ch.line = line;
+                        return this.patchQuestionChoiceTx(id, ch, transaction);
+                    });
+            }
+            return this.patchQuestionChoiceTx(id, choicePatch, transaction);
+        });
+    }
+
     findChoicesPerQuestion(questionId, language) {
+        const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll({
-                raw: true,
-                where: { questionId },
-                attributes: ['id', 'type', 'meta', 'code'],
-                order: 'line'
-            })
-            .then(choices => this.deleteNullData(choices))
+            raw: true,
+            where: { questionId },
+            attributes: ['id', 'type', 'meta', 'code'],
+            order: 'line',
+        })
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
     }
 
@@ -57,55 +132,69 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         const options = {
             raw: true,
             attributes: ['id', 'type', 'questionId', 'meta', 'code'],
-            order: 'line'
+            order: 'line',
         };
         if (questionIds) {
             options.where = { questionId: { $in: questionIds } };
         }
+        const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll(options)
-            .then(choices => this.deleteNullData(choices))
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
     }
 
-    updateMultipleChoiceTextsTx(choices, language, transaction) {
-        const inputs = choices.map(({ id, text }) => ({ id, text, language }));
-        return this.createMultipleTextsTx(inputs, transaction);
-    }
-
-    createQuestionChoices(choiceSetId, choices, transaction) {
-        const type = 'choice';
-        const promises = choices.map(({ code, text }, line) => {
-            return this.createQuestionChoiceTx({ choiceSetId, text, code, line, type }, transaction);
-        });
-        return SPromise.all(promises);
+    getAllChoiceSetChoices(choiceSetIds, language) {
+        const options = {
+            raw: true,
+            attributes: ['id', 'type', 'choiceSetId', 'meta', 'code'],
+            order: ['choiceSetId', 'line'],
+        };
+        if (choiceSetIds) {
+            options.where = { questionId: { $in: choiceSetIds } };
+        }
+        const QuestionChoice = this.db.QuestionChoice;
+        return QuestionChoice.findAll(options)
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
+            .then(choices => this.updateAllTexts(choices, language));
     }
 
     updateMultipleChoiceTexts(choices, language) {
-        return sequelize.transaction(transaction => {
-            return this.updateMultipleChoiceTextsTx(choices, language, transaction);
-        });
+        return this.transaction(transaction => this.createMultipleTextsTx(choices, language, transaction)); // eslint-disable-line max-len
     }
 
     listQuestionChoices(choiceSetId, language) {
+        const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll({ where: { choiceSetId }, raw: true, attributes: ['id', 'code'], order: 'line' })
             .then(choices => this.updateAllTexts(choices, language));
     }
 
     deleteAllQuestionChoices(choiceSetId, transaction) {
+        const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.destroy({ where: { choiceSetId }, transaction });
     }
 
     deleteQuestionChoice(id) {
-        return QuestionChoice.destroy({ where: { id } });
+        return this.db.Answer.count({ where: { questionChoiceId: id } })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('qxChoiceNoDeleteAnswered');
+                }
+                return null;
+            })
+            .then(() => this.db.FilterAnswer.count({ where: { questionChoiceId: id } }))
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('qxChoiceNoDeleteInFilter');
+                }
+                return null;
+            })
+            .then(() => this.db.QuestionChoice.destroy({ where: { id } }));
     }
 
     findQuestionChoiceIdForCode(questionId, code, transaction) {
-        return sequelize.query(idFromCodeQuery, {
-                type: sequelize.QueryTypes.SELECT,
-                replacements: { question_id: questionId, code },
-                transaction
-            })
-            .then(result => {
+        const replacements = { question_id: questionId, code };
+        return this.selectQuery(idFromCodeQuery, replacements, transaction)
+            .then((result) => {
                 if (result && result.length) {
                     return result[0].id;
                 }

@@ -15,8 +15,8 @@ module.exports = class XLSXConverter {
 
     static convertDateTime(rawValue) {
         const pieces = rawValue.toString().split('.');
-        const rawDate = parseInt(pieces[0]);
-        const rawTime = parseFloat('0.' + pieces[1]) * milliSecondsInADay;
+        const rawDate = parseInt(pieces[0], 10);
+        const rawTime = parseFloat(`0.${pieces[1]}`) * milliSecondsInADay;
 
         const m = moment(origin);
         m.add(rawDate - 2, 'days');
@@ -26,9 +26,9 @@ module.exports = class XLSXConverter {
     }
 
     static convertDateTimes(content, properties) {
-        content.forEach(row => {
-            properties.forEach(property => {
-                row[property] = XLSXConverter.convertDateTime(row[property]);
+        content.forEach((r) => {
+            properties.forEach((p) => {
+                r[p] = XLSXConverter.convertDateTime(r[p]);
             });
         });
     }
@@ -40,7 +40,7 @@ module.exports = class XLSXConverter {
                 if (this.options.sheets) {
                     const result = this.options.sheets.reduce((r, { name }) => {
                         const worksheet = workbook.Sheets[name];
-                        let rows = xlsx.utils.sheet_to_json(worksheet, { raw: true });
+                        const rows = xlsx.utils.sheet_to_json(worksheet, { raw: true });
                         r[name] = rows;
                         return r;
                     }, {});

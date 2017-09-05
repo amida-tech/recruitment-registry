@@ -1,41 +1,56 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('smtp_text', {
+module.exports = function smtpText(sequelize, Sequelize, schema) {
+    const tableName = 'smtp_text';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         subject: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         content: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
-        }
+        },
+        type: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+            references: {
+                model: {
+                    schema,
+                    tableName: 'smtp_type',
+                },
+                key: 'name',
+            },
+            defaultValue: 'reset-password',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

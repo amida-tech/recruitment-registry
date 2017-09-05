@@ -4,7 +4,7 @@ module.exports = {
     name: 'FamilyTree',
     identifier: {
         type: 'bhr-gap',
-        value: 'family-tree'
+        value: 'family-tree',
     },
     sections: [{
         name: 'Please indicate which family member(s) have or had memory problems (including Alzheimer\'s and any other form of dementia) by clicking on the person/people below.',
@@ -122,44 +122,44 @@ module.exports = {
             text: 'F-Uncle2',
             type: 'choice-ref',
             choiceSetReference: 'no-yes-1-2',
-        }]
+        }],
     }, {
         questions: [{
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID197' },
             text: 'Are you known to carry a genetic mutation (PS1/PS2 or APP) that causes early onset Alzheimer\'s disease?',
             required: false,
             type: 'choice-ref',
-            choiceSetReference: 'extended-yes-no'
+            choiceSetReference: 'extended-yes-no',
         }, {
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID198' },
             text: 'Do you have a family member (parent, grandparent, sibling, or child) who is known to carry a genetic mutation (PS1/PS2 or APP) that causes early onset Alzheimer\'s disease?',
             required: false,
             type: 'choice-ref',
-            choiceSetReference: 'extended-yes-no'
+            choiceSetReference: 'extended-yes-no',
         }, {
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID199' },
             text: 'Did you begin to experience symptoms of Alzheimer\'s disease before age 60?',
             required: false,
             type: 'choice-ref',
-            choiceSetReference: 'extended-yes-no'
+            choiceSetReference: 'extended-yes-no',
         }, {
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID200' },
             text: 'Do you have a family member (parent, grandparent, sibling, or child) who began to experience symptoms of Alzheimer\'s disease before age 60?',
             required: false,
             type: 'choice-ref',
-            choiceSetReference: 'extended-yes-no'
+            choiceSetReference: 'extended-yes-no',
         }, {
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID201' },
             text: 'Are you known to be a carrier of an e4 allele of the apolipoprotein E (APOE) gene, which increases an individual\'s risk for developing late-onset Alzheimer disease?',
             required: false,
             type: 'choice-ref',
-            choiceSetReference: 'extended-yes-no'
+            choiceSetReference: 'extended-yes-no',
         }, {
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID202' },
             text: 'Do you have a family member (parent, grandparent, sibling, or child) who is known to be a carrier of an e4 allele of the apolipoprotein E (APOE) gene, which increases an individual\'s risk for developing late-onset Alzheimer disease?',
             required: false,
             type: 'choice-ref',
-            choiceSetReference: 'extended-yes-no'
-        }]
-    }]
+            choiceSetReference: 'extended-yes-no',
+        }],
+    }],
 };

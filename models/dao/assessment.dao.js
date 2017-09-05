@@ -1,51 +1,41 @@
 'use strict';
 
-const db = require('../db');
+const Base = require('./base');
 
-const SPromise = require('../../lib/promise');
-
-const sequelize = db.sequelize;
-const Assessment = db.Assessment;
-const AssessmentSurvey = db.AssessmentSurvey;
-
-const createAssessmentSurveys = function (assessmentId, surveys, transaction) {
-    const promises = surveys.map(({ id, lookback = false }) => {
-        return AssessmentSurvey.create({ assessmentId, surveyId: id, lookback }, { transaction });
-    });
-    return SPromise.all(promises); // TODO: BulkCreate when Sequelize 4.
-};
-
-module.exports = class AssessmentDAO {
-    constructor() {}
+module.exports = class AssessmentDAO extends Base {
+    createAssessmentSurveys(assessmentId, surveys, transaction) {
+        const fn = ({ id, lookback = false }) => ({ assessmentId, surveyId: id, lookback });
+        const records = surveys.map(fn);
+        return this.db.AssessmentSurvey.bulkCreate(records, { transaction });
+    }
 
     createAssessment({ name, sequenceType = 'ondemand', surveys }) {
-        return sequelize.transaction(transaction => {
-            return Assessment.create({ name, sequenceType }, { transaction })
-                .then(({ id }) => {
-                    return createAssessmentSurveys(id, surveys, transaction)
-                        .then(() => ({ id }));
-                });
-        });
+        const Assessment = this.db.Assessment;
+        const record = { name, sequenceType };
+        return this.transaction(transaction => Assessment.create(record, { transaction })
+                .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
+                        .then(() => ({ id }))));
     }
 
     getAssessment(id) {
+        const AssessmentSurvey = this.db.AssessmentSurvey;
+        const Assessment = this.db.Assessment;
         return Assessment.findById(id, { attributes: ['id', 'name', 'sequenceType'], raw: true })
-            .then(assessment => {
-                return AssessmentSurvey.findAll({
-                        where: { assessmentId: id },
-                        attributes: [
-                            ['survey_id', 'id'], 'lookback'
-                        ],
-                        raw: true,
-                    })
-                    .then(surveys => {
-                        assessment.surveys = surveys;
-                        return assessment;
-                    });
-            });
+            .then(assessment => AssessmentSurvey.findAll({
+                where: { assessmentId: id },
+                attributes: [
+                            ['survey_id', 'id'], 'lookback',
+                ],
+                raw: true,
+            })
+                .then((surveys) => {
+                    assessment.surveys = surveys; // eslint-disable-line no-param-reassign
+                    return assessment;
+                }));
     }
 
     listAssessments() {
+        const Assessment = this.db.Assessment;
         return Assessment.findAll({ raw: true, attributes: ['id', 'name'] });
     }
 };

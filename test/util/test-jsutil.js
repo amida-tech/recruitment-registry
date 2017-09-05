@@ -1,10 +1,12 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
-exports.oppositeCase = function (input) {
+exports.oppositeCase = function oppositeCase(input) {
     let result = '';
-    _.range(input.length).forEach(index => {
+    _.range(input.length).forEach((index) => {
         const ch = input.charAt(index);
         if (ch === ch.toLowerCase()) {
             result += ch.toUpperCase();
@@ -15,10 +17,10 @@ exports.oppositeCase = function (input) {
     return result;
 };
 
-exports.findStanding = function (selections) {
+exports.findStanding = function findStanding(selections) {
     const result = [];
-    selections.forEach(selection => {
-        const toBeRemoved = selection.map(r => r < 0 ? -r : r);
+    selections.forEach((selection) => {
+        const toBeRemoved = selection.map(r => (r < 0 ? -r : r));
         const toBeInserted = selection.filter(r => r >= 0);
         result.forEach(r => _.pullAll(r, toBeRemoved));
         result.push(_.sortBy(toBeInserted));
@@ -26,11 +28,11 @@ exports.findStanding = function (selections) {
     return result;
 };
 
-exports.findRemoved = function (selections) {
+exports.findRemoved = function findRemoved(selections) {
     const result = [];
     const actualResult = [];
     selections.forEach((selection, timeIndex) => {
-        const toBeRemoved = selection.map(r => r < 0 ? -r : r);
+        const toBeRemoved = selection.map(r => (r < 0 ? -r : r));
         const toBeInserted = selection.filter(r => r >= 0);
         result.forEach((r, index) => {
             const levelRemoved = _.intersection(r, toBeRemoved);

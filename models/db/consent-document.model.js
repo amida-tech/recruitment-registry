@@ -1,33 +1,36 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('consent_document', {
+module.exports = function consentDocument(sequelize, Sequelize, schema) {
+    const tableName = 'consent_document';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         typeId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'type_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    schema,
+                    tableName: 'consent_type',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

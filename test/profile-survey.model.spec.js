@@ -1,5 +1,9 @@
 /* global describe,before,it*/
+
 'use strict';
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -14,14 +18,14 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('profile survey unit', function () {
+describe('profile survey unit', () => {
     before(shared.setUpFn());
 
     const hxSurvey = new SurveyHistory();
 
     const emptyProfileSurvey = function () {
         return models.profileSurvey.getProfileSurvey()
-            .then(result => {
+            .then((result) => {
                 expect(result.exists).to.equal(false);
             });
     };
@@ -37,9 +41,9 @@ describe('profile survey unit', function () {
 
     const createProfileSurveyIdFn = function () {
         const survey = generator.newSurvey();
-        return function () {
+        return function createProfileSurveyId() {
             return models.survey.createSurvey(survey)
-                .then(id => {
+                .then((id) => {
                     hxSurvey.push(survey, { id });
                     return models.profileSurvey.createProfileSurveyId(id);
                 });
@@ -47,9 +51,9 @@ describe('profile survey unit', function () {
     };
 
     const verifyProfileSurveyIdFn = function (index) {
-        return function () {
+        return function verifyProfileSurveyId() {
             return models.profileSurvey.getProfileSurveyId()
-                .then(profileSurveyId => {
+                .then((profileSurveyId) => {
                     const id = hxSurvey.id(index);
                     expect(profileSurveyId).to.equal(id);
                 });
@@ -57,7 +61,7 @@ describe('profile survey unit', function () {
     };
 
     const translateProfileSurveyFn = function (index, language) {
-        return function () {
+        return function translateProfileSurvey() {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             return models.survey.patchSurveyText(translation, language)
@@ -66,9 +70,9 @@ describe('profile survey unit', function () {
     };
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
-        return function () {
+        return function verifyNotTranslatedProfileSurvey() {
             return models.profileSurvey.getProfileSurvey({ language })
-                .then(profileSurvey => {
+                .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
                     const expected = hxSurvey.server(index);
                     expect(profileSurvey.survey).to.deep.equal(expected);
@@ -77,9 +81,9 @@ describe('profile survey unit', function () {
     };
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
-        return function () {
+        return function verifyTranslatedProfileSurvey() {
             return models.profileSurvey.getProfileSurvey({ language })
-                .then(profileSurvey => {
+                .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
                     translator.isSurveyTranslated(profileSurvey.survey, language);
                     const expected = hxSurvey.translatedServer(index, language);
@@ -134,7 +138,7 @@ describe('profile survey unit', function () {
 
     it('get/verify profile survey 3 id', verifyProfileSurveyIdFn(3));
 
-    it('delete survey 3', function () {
+    it('delete survey 3', () => {
         const id = hxSurvey.id(3);
         return models.survey.deleteSurvey(id);
     });
@@ -149,10 +153,10 @@ describe('profile survey unit', function () {
 
     it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
 
-    it('replace survey 4', function () {
-        const id = hxSurvey.id(4);
+    it('replace survey 4', () => {
+        const sid = hxSurvey.id(4);
         const replacementSurvey = generator.newSurvey();
-        return models.survey.replaceSurvey(id, replacementSurvey)
+        return models.survey.replaceSurvey(sid, replacementSurvey)
             .then((id) => {
                 hxSurvey.push(replacementSurvey, { id });
             });

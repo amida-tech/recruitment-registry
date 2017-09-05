@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 const models = require('../../../../models');
 
@@ -38,22 +40,25 @@ const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => 
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
-        return surveyGenerator.questionGenerator.newMultiQuestion('text', questionInfo.selectionCount);
+        const options = { type: 'text', max: questionInfo.selectionCount };
+        return surveyGenerator.questionGenerator.newMultiQuestion(options);
     },
     type(surveyGenerator, questionInfo) {
-        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
+        const type = questionInfo.type;
+        return surveyGenerator.questionGenerator.newQuestion({ type });
     },
     enableWhen(surveyGenerator, questionInfo, index) {
         const { type, relativeIndex, logic } = questionInfo;
-        const question = surveyGenerator.questionGenerator.newQuestion(type);
+        const question = surveyGenerator.questionGenerator.newQuestion({ type });
         const questionIndex = index - relativeIndex;
         const enableWhen = [{ questionIndex, logic }];
         question.enableWhen = enableWhen;
         return question;
     },
     questionSection(surveyGenerator, questionInfo) {
-        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
-    }
+        const type = questionInfo.type;
+        return surveyGenerator.questionGenerator.newQuestion({ type });
+    },
 };
 
 const specialAnswerer = {
@@ -101,7 +106,7 @@ const specialAnswerer = {
     },
     selectchoice(generator, questions, question, answerInfo) {
         return generator.answerer.answerChoiceQuestion(question, answerInfo.selectionChoice);
-    }
+    },
 };
 
 const surveyManipulator = {
@@ -119,9 +124,9 @@ const surveyManipulator = {
         generator.addAnswer(rule, questionInfo, question);
         question.sections = [{
             questions: deletedQuestions,
-            enableWhen: [rule]
+            enableWhen: [rule],
         }];
-    }
+    },
 };
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
@@ -135,7 +140,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return counts[surveyIndex];
     }
 
-    numOfCases() {
+    numOfCases() { // eslint-disable-line class-methods-use-this
         return counts.length;
     }
 
@@ -146,7 +151,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         }
     }
 
-    getRequiredOverride(key) {
+    getRequiredOverride(key) { // eslint-disable-line class-methods-use-this
         return requiredOverrides[key];
     }
 
@@ -180,7 +185,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return choiceSets;
     }
 
-    answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, selectionChoice, multipleIndices, noAnswers = [], specialAnswers = [] }) {
+    answersWithConditions(survey, { questionIndex, multipleIndices, noAnswers = [], specialAnswers = [] }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
         const doAnswer = new Map(specialAnswers.map(r => [r.questionIndex, r]));
@@ -217,7 +222,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             return surveyQuestionInfos.survey;
         }
         const survey = super.newSurvey({ noSection: true });
-        _.forOwn(surveyQuestionInfos, questionInfo => {
+        _.forOwn(surveyQuestionInfos, (questionInfo) => {
             const purpose = questionInfo.purpose;
             const manipulator = surveyManipulator[purpose];
             if (manipulator) {

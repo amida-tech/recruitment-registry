@@ -1,60 +1,63 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('consent_signature', {
+module.exports = function consentSignature(sequelize, Sequelize, schema) {
+    const tableName = 'consent_signature';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         consentDocumentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             unique: 'signature',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent_document'
+                    schema,
+                    tableName: 'consent_document',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         userId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
             unique: 'signature',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    schema,
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         ip: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         userAgent: {
-            type: DataTypes.TEXT,
-            field: 'user_agent'
+            type: Sequelize.TEXT,
+            field: 'user_agent',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         updatedAt: false,
         freezeTableName: true,
-        schema: sequelize.options.schema,
-        createdAt: 'createdAt'
+        tableName,
+        schema,
+        createdAt: 'createdAt',
     });
 };

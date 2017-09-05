@@ -1,18 +1,20 @@
 'use strict';
 
+/* eslint func-names: 0, no-console: 0, no-param-reassign: 0, max-len: 0 */
+
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
 
     const consentDocUpdate = {
         typeId: 1,
         content: 'This is an updated Terms of Use.',
-        updateComment: 'Updated TOU notice added'
+        updateComment: 'Updated TOU notice added',
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/consent-documents')
         .send(consentDocUpdate)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the updated consent document
         })

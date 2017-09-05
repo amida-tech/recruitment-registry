@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const path = require('path');
 const fs = require('fs');
 const csvToJson = require('csvtojson');
@@ -17,21 +19,16 @@ const sequelize = models.sequelize;
 const importSurveyScript = queryrize.readFileSync('bhr-gap-import.sql');
 
 const valueConverterByChoiceType = {
-    bool: function (value) {
+    bool(value) {
         if (value === 1 || value === '1') {
             return 'true';
         }
+        return undefined;
     },
-    integer: function (value) {
-        return parseInt(value);
-    },
-    float: function (value) {
-        return parseFloat(value);
-    }
 };
 
 const valueConverterByType = {
-    choices: function (value, choiceType) {
+    choices(value, choiceType) {
         const converter = valueConverterByChoiceType[choiceType];
         if (!converter) {
             throw new Error(`Choice type ${choiceType} has not been implemented.`);
@@ -39,31 +36,31 @@ const valueConverterByType = {
         return converter(value);
     },
     'choice-ref': function (value) {
-        return parseInt(value);
+        return parseInt(value, 10);
     },
-    text: function (value) {
+    text(value) {
         if (value.indexOf('\\') > -1) {
             value = value.replace(/\\/g, '\\\\');
         }
         return value;
     },
-    integer: function (value) {
-        return parseInt(value);
+    integer(value) {
+        return parseInt(value, 10);
     },
-    float: function (value) {
+    float(value) {
         return parseFloat(value);
-    }
+    },
 };
 
 const assessmentStatusMap = {
-    'Scheduled': 'scheduled',
-    'Collected': 'collected',
+    Scheduled: 'scheduled',
+    Collected: 'collected',
     'Failed To Collect': 'failed-to-collect',
     'Not In Protocol': 'not-in-protocol',
-    'Started': 'started',
-    'Refused': 'refused',
+    Started: 'started',
+    Refused: 'refused',
     'Technical Difficulties': 'technical-difficulties',
-    'Unable To Perform': 'unable-to-perform'
+    'Unable To Perform': 'unable-to-perform',
 };
 
 const SurveyCSVConverter = class SurveyCSVConverter {
@@ -72,7 +69,6 @@ const SurveyCSVConverter = class SurveyCSVConverter {
         this.identifierMap = identifierMap;
         this.answerIdentifierType = answerIdentifierType;
         this.fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
-
     }
 
     handleLine(fileStream, line) {
@@ -82,7 +78,7 @@ const SurveyCSVConverter = class SurveyCSVConverter {
             if (value !== undefined && value !== null) {
                 value = value.toString();
                 if (field === 'value') {
-                    value = value.replace(/\"/g, '""');
+                    value = value.replace(/\"/g, '""');  // eslint-disable-line no-useless-escape
                     fileStream.write(`"${value}"`);
                 } else {
                     fileStream.write(value);
@@ -95,21 +91,21 @@ const SurveyCSVConverter = class SurveyCSVConverter {
         fileStream.write('\n');
     }
 
-    jsonHandler(outputStream, record, line_index) {
+    jsonHandler(outputStream, record, lineIndex) {
         const username = record.SubjectCode;
         if (!username) {
-            throw new Error(`Subject code is missing on line ${line_index + 1}.`);
+            throw new Error(`Subject code is missing on line ${lineIndex + 1}.`);
         }
-        const assessment_name = record.Timepoint;
-        if (!assessment_name) {
-            throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
+        const assessmentName = record.Timepoint;
+        if (!assessmentName) {
+            throw new Error(`Assessment name is missing on line ${lineIndex + 1}.`);
         }
         const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
         if (!status) {
             throw new Error(`Status ${record.Status} is not recognized.`);
         }
-        const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
-        const baseObject = { username, assessment_name, status, line_index, last_answer };
+        const lastAnswer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
+        const baseObject = { username, assessment_name: assessmentName, status, line_index: lineIndex, last_answer: lastAnswer };
         if (record.DaysAfterBaseline) {
             baseObject.days_after_baseline = record.DaysAfterBaseline;
         }
@@ -120,19 +116,19 @@ const SurveyCSVConverter = class SurveyCSVConverter {
                 if (!answerInformation) {
                     throw new Error(`Unexpected column name ${key} for ${this.answerIdentifierType}.`);
                 }
-                const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
+                const { questionId, questionChoiceId, multipleIndex, questionType, questionChoiceType } = answerInformation;
                 if (value !== '' && value !== undefined) {
                     const valueConverter = valueConverterByType[questionType];
                     if (!valueConverter) {
                         throw new Error(`Question type ${questionType} has not been implemented.`);
                     }
                     const answerValue = valueConverter(value, questionChoiceType);
-                    const answer = Object.assign({ question_id }, baseObject);
-                    if (question_choice_id) {
-                        answer.question_choice_id = question_choice_id;
+                    const answer = Object.assign({ question_id: questionId }, baseObject);
+                    if (questionChoiceId) {
+                        answer.question_choice_id = questionChoiceId;
                     }
-                    if (multiple_index || multiple_index === 0) {
-                        answer.multiple_index = multiple_index;
+                    if (multipleIndex || multipleIndex === 0) {
+                        answer.multiple_index = multipleIndex;
                     }
                     if (answerValue !== null) {
                         answer.value = answerValue;
@@ -176,40 +172,43 @@ const SurveyCSVConverter = class SurveyCSVConverter {
     }
 };
 
-const generateChoiceAnswerer = function (question_id, columnName, choiceMap) {
-    const choiceIdMap = choiceMap.get(question_id);
-    return function (value, survey_id, username) {
+const generateChoiceAnswerer = function (questionId, columnName, choiceMap) {
+    const choiceIdMap = choiceMap.get(questionId);
+    return function fnGenerateChoiceAnswerer(value, surveyId, username) {
         if (value) {
-            const question_choice_id = choiceIdMap.get(value);
-            if (!question_choice_id) {
-                throw new Error('Unexpected value ${questionChoiceId} for ${columnName}.');
+            const questionChoiceId = choiceIdMap.get(value);
+            if (!questionChoiceId) {
+                throw new Error(`Unexpected value ${value} for ${columnName}.`);
             }
-            return [{ survey_id, question_id, question_choice_id, username }];
+            return [{ survey_id: surveyId, question_id: questionId, question_choice_id: questionChoiceId, username }];
         }
+        return undefined;
     };
 };
 
-const generateChoicesAnswerer = function (question_id, columnName, choiceMap) {
-    const choiceIdMap = choiceMap.get(question_id);
-    return function (semicolonValues, survey_id, username) {
+const generateChoicesAnswerer = function (questionId, columnName, choiceMap) {
+    const choiceIdMap = choiceMap.get(questionId);
+    return function fnGenerateChoicesAnswerer(semicolonValues, surveyId, username) {
         if (semicolonValues) {
             const values = semicolonValues.split(';');
-            return values.map(value => {
-                const question_choice_id = choiceIdMap.get(value);
-                if (!question_choice_id) {
-                    throw new Error('Unexpected value ${value} for ${columnName}.');
+            return values.map((value) => {
+                const questionChoiceId = choiceIdMap.get(value);
+                if (!questionChoiceId) {
+                    throw new Error(`Unexpected value ${value} for ${columnName}.`);
                 }
-                return { survey_id, question_id, question_choice_id, value: 'true', username };
+                return { survey_id: surveyId, question_id: questionId, question_choice_id: questionChoiceId, value: 'true', username };
             });
         }
+        return undefined;
     };
 };
 
-const generateIntegerAnswerer = function (question_id) {
-    return function (value, survey_id, username) {
+const generateIntegerAnswerer = function (questionId) {
+    return function fnGenerateIntegerAnswerer(value, surveyId, username) {
         if (value !== undefined) {
-            return [{ survey_id, question_id, value, username }];
+            return [{ survey_id: surveyId, question_id: questionId, value, username }];
         }
+        return undefined;
     };
 };
 
@@ -228,7 +227,6 @@ const generateAnswerConverter = function (identifierMap, choiceMap) {
         }
         if (type === 'choices') {
             result[identifier] = generateChoicesAnswerer(questionId, identifier, choiceMap);
-            return;
         }
     });
     return result;
@@ -236,13 +234,13 @@ const generateAnswerConverter = function (identifierMap, choiceMap) {
 
 const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifierType, subjectCode }) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
-        .then(surveyIdentificaterMap => {
+        .then((surveyIdentificaterMap) => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
             return models.questionIdentifier.getInformationByQuestionIdentifier(questionIdentifierType)
-                .then(identifierMap => {
+                .then((identifierMap) => {
                     const ids = [...identifierMap.values()].map(info => info.id);
                     return models.questionChoice.getAllQuestionChoices(ids)
-                        .then(allChoices => {
+                        .then((allChoices) => {
                             const choiceMap = allChoices.reduce((r, choice) => {
                                 const questionId = choice.questionId;
                                 let perQuestion = r.get(questionId);
@@ -256,17 +254,17 @@ const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifi
                             return generateAnswerConverter(identifierMap, choiceMap);
                         });
                 })
-                .then(answerConverter => {
+                .then((answerConverter) => {
                     const converter = new Converter();
                     return converter.fileToRecords(filepath)
-                        .then(records => {
-                            const userRecords = records.map(record => {
+                        .then((records) => {
+                            const userRecords = records.map((record) => {
                                 const identifier = record[subjectCode];
                                 return {
                                     username: identifier,
                                     email: `${identifier}@example.com`,
                                     password: 'pwd',
-                                    role: 'import'
+                                    role: 'import',
                                 };
                             });
                             const answerRecords = records.reduce((r, record) => {
@@ -292,22 +290,22 @@ const importSubjects = function (filepath, options) {
     const userFilepath = path.join(config.tmpDirectory, `${basename}-trans-user.csv`);
     const answerFilepath = path.join(config.tmpDirectory, `${basename}-trans-answer.csv`);
     return convertSubjects(filepath, options)
-        .then(result => {
+        .then((result) => {
             const userConverter = new CSVConverterExport({ fields: ['username', 'email', 'password', 'role'] });
             fs.writeFileSync(userFilepath, userConverter.dataToCSV(result.userRecords));
             return result;
         })
-        .then(subjectsData => {
+        .then((subjectsData) => {
             const query = 'copy registry_user (username, email, password, role) from :filepath csv header';
             return sequelize.query(query, { replacements: { filepath: userFilepath } })
                 .then(() => sequelize.query('select id, username from registry_user', { type: sequelize.QueryTypes.SELECT }))
-                .then(users => {
+                .then((users) => {
                     const subjectMap = new Map();
                     users.forEach(({ id, username }) => subjectMap.set(username, id));
                     return subjectMap;
                 })
-                .then(subjectMap => {
-                    const subjectAnswers = subjectsData.answerRecords.map(r => {
+                .then((subjectMap) => {
+                    const subjectAnswers = subjectsData.answerRecords.map((r) => {
                         r.user_id = subjectMap.get(r.username);
                         delete r.username;
                         r.language_code = 'en';
@@ -317,16 +315,15 @@ const importSubjects = function (filepath, options) {
                     fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
                 })
                 .then(() => {
-                    const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from :filepath csv header';
-                    return sequelize.query(query, { replacements: { filepath: answerFilepath } });
+                    const query2 = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from :filepath csv header';
+                    return sequelize.query(query2, { replacements: { filepath: answerFilepath } });
                 });
         });
-
 };
 
 const transformSurveyFile = function (filepath, answerIdentifierType, outputFilepath) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
-        .then(identifierMap => {
+        .then((identifierMap) => {
             const converter = new SurveyCSVConverter(identifierMap, answerIdentifierType);
             return converter.convert(filepath, outputFilepath);
         });
@@ -334,14 +331,14 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
 
 const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
-        .then(surveyIdentificaterMap => {
+        .then((surveyIdentificaterMap) => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
             const replacements = {
                 survey_id: surveyId,
-                filepath: filepath,
-                identifier: `${surveyIdentifier.value}`
+                filepath,
+                identifier: `${surveyIdentifier.value}`,
             };
-            let promise = importSurveyScript.reduce((r, query) => {
+            const promise = importSurveyScript.reduce((r, query) => {
                 if (r === null) {
                     r = sequelize.query(query, { replacements });
                 } else {
@@ -356,5 +353,5 @@ const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
 module.exports = {
     importSubjects,
     transformSurveyFile,
-    importTransformedSurveyFile
+    importTransformedSurveyFile,
 };

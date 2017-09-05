@@ -4,57 +4,57 @@ module.exports = {
     name: 'NCPT_GoNoGo',
     identifier: {
         type: 'bhr-gap',
-        value: 'ncpt-gonogo'
+        value: 'ncpt-gonogo',
     },
     questions: [{
         text: 'Result',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Result' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Result' },
     }, {
         text: 'Seconds',
         required: false,
-        type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Seconds' }
+        type: 'integer',
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Seconds' },
     }, {
         text: 'Errors',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Errors' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Errors' },
     }, {
         text: 'WasInterrupted',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'WasInterrupted' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'WasInterrupted' },
     }, {
         text: 'TestingEnvironment',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'TestingEnvironment' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'TestingEnvironment' },
     }, {
         text: 'SelfAssessment',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'SelfAssessment' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'SelfAssessment' },
     }, {
         text: 'GoodMeasure',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'GoodMeasure' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'GoodMeasure' },
     }, {
         text: 'Experience',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Experience' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'Experience' },
     }, {
         text: 'InstructionsClear',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'InstructionsClear' }
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'InstructionsClear' },
     }, {
         text: 'ExplanationHelpful',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'ExplanationHelpful' }
-    }]
+        answerIdentifier: { type: 'bhr-gap-ncpt-gonogo-column', value: 'ExplanationHelpful' },
+    }],
 };

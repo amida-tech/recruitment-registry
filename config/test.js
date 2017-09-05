@@ -4,13 +4,22 @@ const path = require('path');
 
 module.exports = {
     jwt: {
-        secret: 'this is a secret'
+        secret: 'this is a secret',
     },
     cors: {
-        origin: '*'
+        origin: '*',
     },
     db: {
         name: 'recregtest',
+        poolIdle: 1000,
     },
-    tmpDirectory: path.join(__dirname, '../test/generated')
+    tmpDirectory: path.join(__dirname, '../test/generated'),
+    cohortBucket: 'recregtest',
+    constantContact: {
+        baseApiUrl: 'http://turnip.test',
+        token: 'turnip',
+        apiKey: 'turnip api',
+        secret: 'secret turnip',
+        listId: 42,
+    },
 };

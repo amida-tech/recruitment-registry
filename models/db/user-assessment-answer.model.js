@@ -1,39 +1,42 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('user_assessment_answer', {
+module.exports = function userAssessmentAnswer(sequelize, Sequelize, schema) {
+    const tableName = 'user_assessment_answer';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         answerId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'answer_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'answer'
+                    schema,
+                    tableName: 'answer',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         userAssessmentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_assessment_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'user_assessment'
+                    schema,
+                    tableName: 'user_assessment',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
-        updatedAt: false
+        updatedAt: false,
     });
 };

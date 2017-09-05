@@ -2,27 +2,26 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
+const Base = require('./base');
 
-const SurveyConsent = db.SurveyConsent;
-
-module.exports = class SurveyConsentDocumentDAO {
-    constructor(dependencies) {
+module.exports = class SurveyConsentDocumentDAO extends Base {
+    constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
     }
 
-    listSurveyConsentDocuments({ userId, surveyId, action }, tx) {
+    listSurveyConsentDocuments({ userId, surveyId, action }, inputOptions, tx) {
         const query = {
             where: { surveyId, action },
             raw: true,
-            attributes: ['consentId', 'consentTypeId']
+            attributes: ['consentId', 'consentTypeId'],
         };
         if (tx) {
             query.transaction = tx;
         }
-        return SurveyConsent.findAll(query)
-            .then(surveyConsents => this.surveyConsent.updateConsentsInSurveyConsents(surveyConsents))
-            .then(surveyConsents => {
+        return this.db.SurveyConsent.findAll(query)
+            .then(records => this.surveyConsent.updateConsentsInSurveyConsents(records))
+            .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {
                     return surveyConsents;
                 }
@@ -31,16 +30,24 @@ module.exports = class SurveyConsentDocumentDAO {
                 if (tx) {
                     options.transaction = tx;
                 }
+                if (inputOptions.detail) {
+                    options.summary = false;
+                }
+                if (inputOptions.language) {
+                    options.language = inputOptions.language;
+                }
                 return this.userConsentDocument.listUserConsentDocuments(userId, options)
-                    .then(docs => {
+                    .then((docs) => {
                         const typeIdMap = _.keyBy(surveyConsents, 'consentTypeId');
-                        docs.forEach(doc => {
-                            const surveyConsent = typeIdMap[doc.typeId];
+                        docs.forEach((r) => {
+                            const surveyConsent = typeIdMap[r.typeId];
                             if (surveyConsent.consentId) {
-                                doc.consentId = surveyConsent.consentId;
-                                doc.consentName = surveyConsent.consentName;
+                                r.consentId = surveyConsent.consentId;
+                                r.consentName = surveyConsent.consentName;
                             }
-                            delete doc.typeId;
+                            delete r.updateComment;
+                            delete r.type;
+                            delete r.typeId;
                         });
                         return docs;
                     });

@@ -1,35 +1,38 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('user_audit', {
+module.exports = function userAudit(sequelize, Sequelize, schema) {
+    const tableName = 'user_audit';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         userId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    schema,
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         endpoint: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         operation: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
-        updatedAt: false
+        updatedAt: false,
     });
 };

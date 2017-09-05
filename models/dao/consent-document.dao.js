@@ -2,19 +2,13 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
-const sequelize = db.sequelize;
-const ConsentType = db.ConsentType;
-const ConsentDocument = db.ConsentDocument;
-
 module.exports = class ConsentDocumentDAO extends Translatable {
-    constructor(dependencies) {
-        super('consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
+    constructor(db, dependencies) {
+        super(db, 'ConsentDocumentText', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
     }
 
@@ -27,12 +21,56 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         return r;
     }
 
+    listSurveyConsents() {
+        const attributes = ['id', 'surveyId', 'consentTypeId'];
+        return this.db.SurveyConsent.findAll({ raw: true, attributes })
+            .then((surveyConsents) => {
+                if (!surveyConsents.length) {
+                    return surveyConsents;
+                }
+                const surveyIdSet = new Set(surveyConsents.map(({ surveyId }) => surveyId));
+                return this.survey.listSurveys({ ids: Array.from(surveyIdSet) })
+                    .then((surveys) => {
+                        const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
+                        return surveyMap;
+                    })
+                    .then((surveyMap) => {
+                        const result = new Map();
+                        surveyConsents.forEach(({ consentTypeId, surveyId }) => {
+                            let typeSurveys = result.get(consentTypeId);
+                            if (!typeSurveys) {
+                                typeSurveys = [];
+                                result.set(consentTypeId, typeSurveys);
+                            }
+                            if (!typeSurveys.find(({ id }) => (surveyId === id))) {
+                                let survey = surveyMap.get(surveyId);
+                                if (survey) {
+                                    typeSurveys.push({ id: surveyId, name: survey.name });
+                                }
+                            }
+                        });
+                        // Remove empty elements ()
+                        const resultKeys = Array.from(result.keys());
+                        for(let index in resultKeys) {
+                            if(result.get(resultKeys[index]).length === 0) {
+                              result.delete(resultKeys[index]);
+                            }
+                        }
+                        result.forEach(surveys => surveys.sort((r, p) => (r.id - p.id)));
+                        return result;
+                    });
+            });
+    }
+
     listConsentDocuments(options = {}) {
+        const ConsentDocument = this.db.ConsentDocument;
+
         const typeIds = options.typeIds;
+        const createdAtColumn = this.timestampColumn('consent_document', 'created');
         const query = {
             raw: true,
-            attributes: ['id', 'typeId'],
-            order: 'id'
+            attributes: ['id', 'typeId', createdAtColumn],
+            order: 'id',
         };
         if (options.transaction) {
             query.transaction = options.transaction;
@@ -40,69 +78,81 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         if (typeIds && typeIds.length) {
             query.where = { typeId: { $in: typeIds } };
         }
-        if (options.hasOwnProperty('paranoid')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'paranoid')) {
             query.paranoid = options.paranoid;
         }
         return ConsentDocument.findAll(query)
-            .then(documents => {
+            .then((documents) => {
                 if (options.summary) {
                     return documents;
-                } else {
-                    return this.updateAllTexts(documents, options.language);
                 }
+                return this.updateAllTexts(documents, options.language);
             })
-            .then(documents => {
+            .then((documents) => {
                 if (options.noTypeExpand) {
                     return documents;
                 }
-                const _options = {};
+                const opt = {};
                 if (options.transaction) {
-                    _options.transaction = options.transaction;
+                    opt.transaction = options.transaction;
                 }
                 if (typeIds && typeIds.length) {
-                    _options.ids = typeIds;
+                    opt.ids = typeIds;
                 }
                 if (options.language) {
-                    _options.language = options.language;
+                    opt.language = options.language;
                 }
-                return this.consentType.listConsentTypes(_options)
-                    .then(types => {
+                return this.consentType.listConsentTypes(opt)
+                    .then((types) => {
                         if (options.summary) {
                             return types.map(type => _.omit(type, 'type'));
-                        } else {
-                            return types;
                         }
+                        return types;
                     })
-                    .then(types => {
+                    .then((types) => {
                         if (types.length !== documents.length) {
                             return RRError.reject('noSystemConsentDocuments');
                         }
                         return _.keyBy(types, 'id');
                     })
-                    .then(types => {
+                    .then((types) => {
+                        if (options.surveys) {
+                            return this.listSurveyConsents()
+                                .then((surveysMap) => {
+                                    surveysMap.forEach((surveys, typeId) => {
+                                        Object.assign(types[typeId], { surveys });
+                                    });
+                                    return types;
+                                });
+                        }
+                        return types;
+                    })
+                    .then((types) => {
                         if (options.typeOrder) {
                             const map = _.keyBy(documents, 'typeId');
-                            const result = typeIds.map(typeId => {
-                                return ConsentDocumentDAO.finalizeDocumentFields(map[typeId], types[typeId], options);
+                            const result = typeIds.map((typeId) => {
+                                const docs = map[typeId];
+                                const fields = types[typeId];
+                                return ConsentDocumentDAO.finalizeDocumentFields(docs, fields, options); // eslint-disable-line max-len
                             });
                             return result;
-                        } else {
-                            documents.forEach(document => {
-                                const typeId = document.typeId;
-                                ConsentDocumentDAO.finalizeDocumentFields(document, types[typeId], options);
-                            });
-                            return documents;
                         }
+                        documents.forEach((r) => {
+                            const typeId = r.typeId;
+                            ConsentDocumentDAO.finalizeDocumentFields(r, types[typeId], options);
+                        });
+                        return documents;
                     });
             });
     }
 
     createConsentDocument(input) {
-        return sequelize.transaction(transaction => {
+        const ConsentDocument = this.db.ConsentDocument;
+        return this.transaction((transaction) => {
             const typeId = input.typeId;
             return ConsentDocument.destroy({ where: { typeId }, transaction })
                 .then(() => ConsentDocument.create(input, { transaction }))
-                .then(result => {
+                .then((result) => {
                     const textInput = { id: result.id };
                     textInput.content = input.content;
                     if (input.updateComment) {
@@ -119,39 +169,34 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     getConsentDocument(id, options = {}) {
+        const ConsentDocument = this.db.ConsentDocument;
         return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
             .then(result => this.updateText(result, options.language));
     }
 
-    getConsentDocumentByTypeName(typeName, options = {}) {
-        return ConsentType.findOne({
-                raw: true,
-                where: { name: typeName },
-                attributes: ['id']
-            })
-            .then(consentType => {
-                if (consentType) {
-                    const typeId = consentType.id;
-                    return ConsentDocument.findOne({
-                            raw: true,
-                            where: { typeId },
-                            attributes: ['id', 'typeId']
-                        })
-                        .then(result => this.updateText(result, options.language));
-                } else {
-                    return RRError.reject('consentTypeNotFound');
+    getConsentDocumentByTypeId(typeId, options = {}) {
+        return this.db.ConsentDocument.findOne({
+            raw: true,
+            where: { typeId },
+            attributes: ['id', 'typeId'],
+        })
+            .then((result) => {
+                if (result) {
+                    return this.updateText(result, options.language);
                 }
+                return RRError.reject('consentTypeNotFound');
             });
     }
 
     getUpdateCommentHistory(typeId, language) {
+        const ConsentDocument = this.db.ConsentDocument;
         return ConsentDocument.findAll({
-                raw: true,
-                attributes: ['id'],
-                where: { typeId },
-                order: 'id',
-                paranoid: false
-            })
+            raw: true,
+            attributes: ['id'],
+            where: { typeId },
+            order: 'id',
+            paranoid: false,
+        })
             .then(documents => this.updateAllTexts(documents, language))
             .then(documents => _.map(documents, 'updateComment'));
     }

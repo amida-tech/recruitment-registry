@@ -1,84 +1,87 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('answer_rule', {
+module.exports = function answerRule(sequelize, Sequelize, schema) {
+    const tableName = 'answer_rule';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    schema,
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         logic: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'answer_rule_logic'
+                    schema,
+                    tableName: 'answer_rule_logic',
                 },
-                key: 'name'
-            }
+                key: 'name',
+            },
         },
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'question_id',
             allowNull: true,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question'
+                    schema,
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         sectionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'section_id',
             allowNull: true,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'section'
+                    schema,
+                    tableName: 'section',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         answerQuestionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'answer_question_id',
             allowNull: true,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question'
+                    schema,
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         line: {
-            type: DataTypes.INTEGER
+            type: Sequelize.INTEGER,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }]
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
     });
 };

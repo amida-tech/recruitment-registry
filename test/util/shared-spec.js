@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
 const sinon = require('sinon');
@@ -15,21 +17,24 @@ const comparator = require('./comparator');
 const expect = chai.expect;
 
 class SharedSpec {
-    constructor(generator) {
+    constructor(generator, inputModels) {
+        this.models = inputModels || models;
         this.generator = generator || new Generator();
     }
 
     setUpFn(force = true) {
-        return function () {
-            return models.sequelize.sync({ force });
+        const m = this.models;
+        return function setUp() {
+            return m.sequelize.sync({ force });
         };
     }
 
     createUserFn(hxUser, override) {
+        const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createUser() {
             const user = generator.newUser(override);
-            return models.user.createUser(user)
+            return m.user.createUser(user)
                 .then(({ id }) => {
                     hxUser.push(user, { id });
                 });
@@ -37,26 +42,29 @@ class SharedSpec {
     }
 
     authenticateUserFn(hxUser, index) {
-        return function () {
+        const m = this.models;
+        return function authenticateUser() {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.auth.authenticateUser(username, client.password);
+            return m.auth.authenticateUser(username, client.password);
         };
     }
 
     createProfileSurveyFn(hxSurvey) {
+        const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createProfileSurvey() {
             const survey = generator.newSurvey();
-            return models.profileSurvey.createProfileSurvey(survey)
+            return m.profileSurvey.createProfileSurvey(survey)
                 .then(({ id }) => hxSurvey.push(survey, { id }));
         };
     }
 
     verifyProfileSurveyFn(hxSurvey, index) {
-        return function () {
-            return models.profileSurvey.getProfileSurvey()
-                .then(profileSurvey => {
+        const m = this.models;
+        return function verifyProfileSurvey() {
+            return m.profileSurvey.getProfileSurvey()
+                .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
                     const survey = profileSurvey.survey;
                     const id = hxSurvey.id(index);
@@ -68,19 +76,21 @@ class SharedSpec {
     }
 
     createConsentTypeFn(history) {
+        const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createConsentType() {
             const cst = generator.newConsentType();
-            return models.consentType.createConsentType(cst)
+            return m.consentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
         };
     }
 
     translateConsentTypeFn(index, language, hxType) {
-        return function () {
+        const m = this.models;
+        return function translateConsentType() {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            return models.consentType.updateConsentTypeText(translation, language)
+            return m.consentType.updateConsentTypeText(translation, language)
                 .then(() => {
                     hxType.translate(index, language, translation);
                 });
@@ -88,10 +98,11 @@ class SharedSpec {
     }
 
     translateConsentDocumentFn(index, language, history) {
-        return function () {
+        const m = this.models;
+        return function translateConsentDocument() {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            return models.consentDocument.updateConsentDocumentText(translation, language)
+            return m.consentDocument.updateConsentDocumentText(translation, language)
                 .then(() => {
                     history.hxDocument.translateWithServer(server, language, translation);
                 });
@@ -99,30 +110,33 @@ class SharedSpec {
     }
 
     createConsentDocumentFn(history, typeIndex) {
+        const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createConsentDocument() {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            return models.consentDocument.createConsentDocument(cs)
+            return m.consentDocument.createConsentDocument(cs)
                 .then(server => history.push(typeIndex, cs, server));
         };
     }
 
     createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
+        const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createConsent() {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            return models.consent.createConsent(clientConsent)
+            return m.consent.createConsent(clientConsent)
                 .then(result => hxConsent.pushWithId(clientConsent, result.id));
         };
     }
 
     verifyConsentFn(hxConsent, index) {
-        return function () {
-            const expected = hxConsent.server(index);
-            return models.consent.getConsent(expected.id)
-                .then(consent => {
+        const m = this.models;
+        return function verifyConsent() {
+            const id = hxConsent.id(index);
+            return m.consent.getConsent(id)
+                .then((consent) => {
                     const expected = hxConsent.server(index);
                     expect(consent).to.deep.equal(expected);
                 });
@@ -130,59 +144,57 @@ class SharedSpec {
     }
 
     signConsentTypeFn(history, userIndex, typeIndex) {
-        return function () {
+        const m = this.models;
+        return function signConsentType() {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
-            return models.consentSignature.createSignature({ userId, consentDocumentId });
+            return m.consentSignature.createSignature({ userId, consentDocumentId });
         };
     }
 
     bulkSignConsentTypeFn(history, userIndex, typeIndices) {
-        return function () {
+        const m = this.models;
+        return function bulkSignConsentType() {
             const consentDocumentIds = typeIndices.map(typeIndex => history.id(typeIndex));
             const userId = history.userId(userIndex);
             typeIndices.forEach(typeIndex => history.sign(typeIndex, userIndex));
-            return models.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
+            return m.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
         };
     }
 
-    throwingHandler() {
+    throwingHandler() { // eslint-disable-line class-methods-use-this
         throw new Error('Unexpected no error.');
     }
 
-    expectedErrorHandler(code, ...params) {
-        return function (err) {
+    expectedErrorHandler(code, ...params) { // eslint-disable-line class-methods-use-this
+        return function expectedErrorHandler(err) {
             if (!(err instanceof RRError)) {
-                console.log(err);
+                console.log(err); // eslint-disable-line no-console
             }
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
-            const expected = new RRError(code, ...params);
-            expect(err.message).to.equal(expected.message);
+            expect(err.params).to.deep.equal(params);
             return err;
         };
     }
 
-    expectedSeqErrorHandler(name, fields, code) {
-        return function (err) {
+    expectedSeqErrorHandler(name, fields) { // eslint-disable-line class-methods-use-this
+        return function expectedSeqErrorHandler(err) {
             expect(err.name).to.equal(name);
             expect(err.fields).to.deep.equal(fields);
-            if (code) {
-                expect(err.message).to.equal(RRError.message(code));
-            }
             return err;
         };
     }
 
-    sanityEnoughUserTested(hxUser) {
-        return function () {
+    sanityEnoughUserTested(hxUser) { // eslint-disable-line class-methods-use-this
+        return function sanityEnoughUserTested() {
             const userCount = hxUser.length();
             const counts = _.range(userCount).reduce((r, index) => {
                 if (hxUser.client(index).username) {
-                    ++r.username;
+                    r.username += 1;
                 } else {
-                    ++r.email;
+                    r.email += 1;
                 }
                 return r;
             }, { username: 0, email: 0 });
@@ -191,14 +203,23 @@ class SharedSpec {
         };
     }
 
-    stubRequestGet(error, data) {
+    stubRequestGet(error, data) { // eslint-disable-line class-methods-use-this
         return sinon.stub(request, 'get', (opts, callback) => {
             if (typeof opts === 'function') { callback = opts; }
             if (error) {
                 return callback(typeof error === 'function' ? error() : error, data);
-            } else {
-                return callback(null, typeof data === 'function' ? data() : data);
             }
+            return callback(null, typeof data === 'function' ? data() : data);
+        });
+    }
+
+    stubRequestPost(error, data) { // eslint-disable-line class-methods-use-this
+        return sinon.stub(request, 'post', (opts, callback) => {
+            if (typeof opts === 'function') { callback = opts; }
+            if (error) {
+                return callback(typeof error === 'function' ? error() : error, data);
+            }
+            return callback(null, typeof data === 'function' ? data() : data);
         });
     }
 }

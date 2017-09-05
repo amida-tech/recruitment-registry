@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const History = require('./history');
@@ -63,19 +65,33 @@ module.exports = class ConsentDocumentHistory {
     translatedServer(typeIndex, language) {
         const server = this.activeConsentDocuments[typeIndex];
         const tr = this.hxDocument.serverTranslation(server.id, language);
-        return tr ? tr : server;
+        return tr || server;
     }
 
-    serversInList(typeIndices) {
-        const result = typeIndices.map(index => {
+    serversInList(typeIndices, keepTypeId) {
+        const result = typeIndices.map((index) => {
             const type = this.hxType.server(index);
-            return {
+            const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
-                title: type.title
+                title: type.title,
             };
+            if (keepTypeId) {
+                doc.typeId = type.id;
+            }
+            return doc;
         });
         return _.sortBy(result, 'id');
+    }
+
+    getContents(ids) {
+        const map = new Map();
+        this.activeConsentDocuments.forEach((d) => {
+            if (d) {
+                map.set(d.id, d.content);
+            }
+        });
+        return ids.map(id => map.get(id));
     }
 
     serversInListWithSigned(userIndex) {
@@ -100,12 +116,12 @@ module.exports = class ConsentDocumentHistory {
     }
 
     translatedServersInList(typeIndices, language) {
-        const result = typeIndices.map(index => {
+        const result = typeIndices.map((index) => {
             const type = this.hxType.translatedServer(index, language);
             return {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
-                title: type.title
+                title: type.title,
             };
         });
         return _.sortBy(result, 'id');

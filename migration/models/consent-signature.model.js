@@ -1,16 +1,19 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const ConsentSignature = sequelize.define('consent_signature', {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('consent_signature', {
         consentDocumentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             unique: 'signature',
             references: {
-                model: 'consent_document',
-                key: 'id'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent_document',
+                },
+                key: 'id',
+            },
         },
         userId: {
             type: DataTypes.INTEGER,
@@ -18,35 +21,40 @@ module.exports = function (sequelize, DataTypes) {
             field: 'user_id',
             unique: 'signature',
             references: {
-                model: 'registry_user',
-                key: 'id'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'registry_user',
+                },
+                key: 'id',
+            },
         },
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'language_code',
-            reference: {
-                model: 'language',
-                key: 'code'
-            }
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language',
+                },
+                key: 'code',
+            },
         },
         ip: {
-            type: DataTypes.TEXT
+            type: DataTypes.TEXT,
         },
         userAgent: {
             type: DataTypes.TEXT,
-            field: 'user_agent'
+            field: 'user_agent',
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         updatedAt: false,
         freezeTableName: true,
-        createdAt: 'createdAt'
+        schema: sequelize.options.schema,
+        createdAt: 'createdAt',
     });
-
-    return ConsentSignature;
 };

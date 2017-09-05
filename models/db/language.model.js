@@ -2,59 +2,63 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function language(sequelize, Sequelize, schema) {
     const languages = [{
         name: 'English',
         nativeName: 'English',
-        code: 'en'
+        code: 'en',
     }, {
         name: 'Russian',
         nativeName: 'Русский',
-        code: 'ru'
+        code: 'ru',
     }, {
         name: 'Japanese',
         nativeName: '日本語',
-        code: 'jp'
+        code: 'jp',
     }, {
         name: 'Spanish',
         nativeName: 'Español',
-        code: 'es'
+        code: 'es',
     }, {
         name: 'French',
         nativeName: 'Le français',
-        code: 'fr'
+        code: 'fr',
     }];
 
-    return sequelize.define('language', {
+    const tableName = 'language';
+
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         code: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         name: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         nativeName: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            field: 'native_name'
+            field: 'native_name',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
@@ -65,7 +69,8 @@ module.exports = function (sequelize, DataTypes) {
                     const pxs = languages.map(lang => this.create(lang));
                     return SPromise.all(pxs);
                 }
-            }
-        }
+                return null;
+            },
+        },
     });
 };

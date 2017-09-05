@@ -2,43 +2,43 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function Table(sequelize, DataTypes) {
     const languages = [{
         name: 'English',
         nativeName: 'English',
-        code: 'en'
+        code: 'en',
     }, {
         name: 'Russian',
         nativeName: 'Русский',
-        code: 'ru'
+        code: 'ru',
     }, {
         name: 'Japanese',
         nativeName: '日本語',
-        code: 'jp'
+        code: 'jp',
     }, {
         name: 'Spanish',
         nativeName: 'Español',
-        code: 'es'
+        code: 'es',
     }, {
         name: 'French',
         nativeName: 'Le français',
-        code: 'fr'
+        code: 'fr',
     }];
 
-    const Language = sequelize.define('language', {
+    return sequelize.define('language', {
         code: {
             type: DataTypes.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         nativeName: {
             type: DataTypes.TEXT,
             allowNull: false,
-            field: 'native_name'
+            field: 'native_name',
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -50,10 +50,11 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
@@ -61,12 +62,11 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const pxs = languages.map(lang => Language.create(lang));
+                    const pxs = languages.map(lang => this.create(lang));
                     return SPromise.all(pxs);
                 }
-            }
-        }
+                return null;
+            },
+        },
     });
-
-    return Language;
 };

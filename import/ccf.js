@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 const intoStream = require('into-stream');
 
@@ -10,7 +12,7 @@ const XLSXConverter = require('./xlsx-converter');
 
 const models = require('../models');
 
-const headers2 = {
+const headers = {
     number: 'id',
     'objectId (Hash Tag Used for Questions)': 'key',
     question: 'text',
@@ -21,7 +23,7 @@ const headers2 = {
     answer: 'choice',
     'hash (Hash Tag Used for Answers)': 'answerKey',
     tag: 'tag',
-    toggle: 'toggle'
+    toggle: 'toggle',
 };
 
 const identifierType = 'ccf';
@@ -29,23 +31,23 @@ const identifierType = 'ccf';
 const converters = {
     answers() {
         return new XLSXConverter({
-            dateTimes: ['updated_at']
+            dateTimes: ['updated_at'],
         });
     },
     assessments() {
         return new XLSXConverter({
-            dateTimes: ['updated_at']
+            dateTimes: ['updated_at'],
         });
     },
     surveys() {
         return new XLSXConverter({
             sheets: [{
-                name: 'Questions'
+                name: 'Questions',
             }, {
-                name: 'Pillars'
-            }]
+                name: 'Pillars',
+            }],
         });
-    }
+    },
 };
 
 const answerUpdateSingle = function (line, question) {
@@ -53,20 +55,20 @@ const answerUpdateSingle = function (line, question) {
     question.tag = line.tag;
 };
 
-const answerUpdateChoice = function (line, question, choices, pillarQuestion) {
+const answerUpdateChoice = function (line, question, choices) {
     if (!question.choices) {
         question.choices = [];
     }
     const choice = {
         id: choices.length + 1,
-        value: line.choice
+        value: line.choice,
     };
     if (line.toggle) {
         choice.toggle = line.toggle;
     }
     choice.answerKey = line.answerKey;
-    if (pillarQuestion.condition === choice.answerKey) {
-        pillarQuestion.skipValue = choice.id;
+    if (question.condition === choice.answerKey) {
+        question.skipValue = choice.id;
     }
     choice.tag = line.tag;
     question.choices.push(choice.id);
@@ -82,7 +84,7 @@ const answerUpdate = {
     7: answerUpdateChoice,
     8: answerUpdateChoice,
     9: answerUpdateChoice,
-    10: answerUpdateChoice
+    10: answerUpdateChoice,
 };
 
 const questionTypes = {
@@ -96,30 +98,27 @@ const questionTypes = {
     9: ['integer', 'integer'],
 };
 
-const surveysPost = function (result, key, lines) {
-    lines.Questions = lines.Questions.map(row => {
-        return Object.keys(row).reduce((r, key) => {
-            const newKey = headers2[key] || key;
-            const value = row[key];
-            r[newKey] = value;
-            return r;
-        }, {});
-    });
-    result[`surveysTitleIndex`] = _.keyBy(lines.Pillars, 'title');
-    lines.Pillars.forEach(pillar => pillar.isBHI = (pillar.isBHI === 'true'));
-    if (!(lines.Pillars && result.surveysTitleIndex)) {
+const surveysPost = function (fileData) {
+    fileData.Questions = fileData.Questions.map(row => Object.keys(row).reduce((r, key) => {
+        const newKey = headers[key] || key;
+        const value = row[key];
+        r[newKey] = value;
+        return r;
+    }, {}));
+    const surveysTitleIndex = _.keyBy(fileData.Pillars, 'title');
+    fileData.Pillars.forEach((pillar) => { pillar.isBHI = (pillar.isBHI === 'true'); });
+    if (!(fileData.Pillars && surveysTitleIndex)) {
         throw new Error('Pillar records have to be read before questions.');
     }
     let activePillar = null;
     let activeQuestion = null;
-    let pillarQuestion = null;
     const questions = [];
     const choices = [];
-    lines.Questions.forEach(line => {
+    fileData.Questions.forEach((line) => {
         const objKeys = Object.keys(line);
         if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
             const title = line.id;
-            activePillar = result.surveysTitleIndex[title];
+            activePillar = surveysTitleIndex[title];
             if (!activePillar) {
                 throw new Error(`Unknown pillar: ${title}`);
             }
@@ -135,19 +134,16 @@ const surveysPost = function (result, key, lines) {
                 key: line.key,
                 text: line.text,
                 instruction: line.instruction || '',
-                type: line.type
+                type: line.type,
             };
-            if (activeQuestion.hasOwnProperty('type')) {
+            if (Object.prototype.hasOwnProperty.call(activeQuestion, 'type')) {
                 activeQuestion.type = parseInt(activeQuestion.type, 10);
             }
-            pillarQuestion = {
-                questionId: activeQuestion.id,
-            };
             if (line.condition) {
-                pillarQuestion.condition = line.condition;
-                pillarQuestion.skipCount = line.skipCount;
+                activeQuestion.condition = line.condition;
+                activeQuestion.skipCount = line.skipCount;
             }
-            activePillar.questions.push(pillarQuestion);
+            activePillar.questions.push(activeQuestion);
             questions.push(activeQuestion);
         }
         if (!activeQuestion) {
@@ -155,19 +151,16 @@ const surveysPost = function (result, key, lines) {
         }
         const fnAnswer = answerUpdate[activeQuestion.type];
         if (fnAnswer) {
-            fnAnswer(line, activeQuestion, choices, pillarQuestion);
+            fnAnswer(line, activeQuestion, choices);
             return;
         }
         throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
     });
-    result[key].Questions = questions;
-    result.choices = choices;
-    result.pillars = result.surveys.Pillars;
-    result.questions = result.surveys.Questions;
+    return { choices, pillars: fileData.Pillars, questions };
 };
 
-const answersPost = function (result, key, lines) {
-    lines.forEach(r => {
+const answersPost = function (fileData) {
+    fileData.forEach((r) => {
         if (r.string_value === 'null') {
             delete r.string_value;
         }
@@ -179,7 +172,7 @@ const answersPost = function (result, key, lines) {
     const answers = [];
     const indexAnswers = {};
     const assessmentIndex = {};
-    const jsonByAssessment = _.groupBy(lines, 'hb_assessment_id');
+    const jsonByAssessment = _.groupBy(fileData, 'hb_assessment_id');
     const assessments = Object.keys(jsonByAssessment);
     assessments.forEach((assessment, assessIndex) => {
         const current = jsonByAssessment[assessment];
@@ -187,7 +180,7 @@ const answersPost = function (result, key, lines) {
             delete p.hb_assessment_id;
             const index = `${p.pillar_hash}\t${p.hb_user_id}\t${p.updated_at}`;
             if (assessmentIndex[index] !== undefined && assessmentIndex[index] !== assessIndex) {
-                let record = indexAnswers[index];
+                const record = indexAnswers[index];
                 record.assessments[assessment] = true;
                 return r;
             }
@@ -200,117 +193,195 @@ const answersPost = function (result, key, lines) {
                     updated_at: p.updated_at,
                     answers: [],
                     assessments: {
-                        [assessment]: true
-                    }
+                        [assessment]: true,
+                    },
                 };
                 answers.push(record);
                 indexAnswers[index] = record;
             }
             const answer = { answer_hash: p.answer_hash };
-            if (p.hasOwnProperty('string_value')) {
+            if (Object.prototype.hasOwnProperty.call(p, 'string_value')) {
                 answer.string_value = p.string_value;
-            } else if (p.hasOwnProperty('boolean_value')) {
+            } else if (Object.prototype.hasOwnProperty.call(p, 'boolean_value')) {
                 answer.boolean_value = p.boolean_value;
             }
             record.answers.push(answer);
             return r;
         }, []);
     });
-    result.answers = answers;
-    result.assesmentAnswers = jsonByAssessment;
+    return { answers, assesmentAnswers: jsonByAssessment };
 };
 
-const postAction = {
+const postActions = {
     answers: answersPost,
-    surveys: surveysPost
-};
-
-const importFile = function (filepaths, result, key) {
-    const filepath = filepaths[key];
-    const converter = converters[key]();
-    return converter.fileToRecords(filepath)
-        .then(json => {
-            result[key] = json;
-        });
+    surveys: surveysPost,
 };
 
 const importFiles = function (filepaths) {
     const result = {};
     const keys = ['surveys', 'assessments', 'answers'];
-    const pxs = keys.map(key => importFile(filepaths, result, key));
-    return SPromise.all(pxs)
-        .then(() => {
-            keys.forEach(key => {
-                const fn = postAction[key];
+    const promises = keys.map((key) => {
+        const filepath = filepaths[key];
+        const converter = converters[key]();
+        return converter.fileToRecords(filepath)
+            .then((json) => {
+                const fn = postActions[key];
                 if (fn) {
-                    fn(result, key, result[key]);
+                    Object.assign(result, fn(json));
+                } else {
+                    result[key] = json;
                 }
             });
-            return result;
+    });
+    return SPromise.all(promises)
+        .then(() => result);
+};
+
+const updateChoiceLines = function (lines, question, questionType, choiceMap) {
+    const id = question.id;
+    const { text, instruction = '', key } = question;
+    let questionInfo = `${questionType},"${text}","${instruction}",${key}`;
+    question.choices.forEach((choiceId) => {
+        const { value, toggle = '', answerKey, tag } = choiceMap.get(choiceId);
+        const choiceType = '';
+        const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag},${toggle}`;
+        const line = `${id},${questionInfo},${choiceInfo}`;
+        lines.push(line);
+        questionInfo = ',,,';
+    });
+};
+
+const updateMultiQuestionLines = function (lines, question, questionType, choiceMap) {
+    const id = question.id;
+    question.choices.forEach((choiceId, index) => {
+        const { value, answerKey, tag } = choiceMap.get(choiceId);
+        const choiceType = questionType[index];
+        let questionInfo = `${choiceType},"${value}",,`;
+        const answerInfo = `${answerKey},${tag}`;
+        const line = `${id}-${choiceId},${questionInfo},,,,${answerInfo}`;
+        lines.push(line);
+        questionInfo = ',,,';
+    });
+};
+
+const updateSingleQuestionLine = function (lines, question, questionType) {
+    const { id, text, instruction = '', key, answerKey, tag } = question;
+    const questionInfo = `${questionType},"${text}","${instruction}",${key}`;
+    const answerInfo = `${answerKey},${tag}`;
+    const line = `${id},${questionInfo},,,,${answerInfo}`;
+    lines.push(line);
+};
+
+const importQuestionsToDB = function ({ questions, choices }) {
+    const choiceMap = new Map(choices.map(choice => [choice.id, choice]));
+    const csv = questions.reduce((r, question) => {
+        const questionType = questionTypes[question.type];
+        if (questionType === 'choice' || questionType === 'choices') {
+            updateChoiceLines(r, question, questionType, choiceMap);
+            return r;
+        }
+        if (Array.isArray(questionType)) {
+            updateMultiQuestionLines(r, question, questionType, choiceMap);
+            return r;
+        }
+        updateSingleQuestionLine(r, question, questionType);
+        return r;
+    }, ['id,type,text,instruction,key,choiceId,choiceText,choiceType,answerKey,tag,toggle']);
+    const options = { meta: [{ name: 'ccType', type: 'question' }, { name: 'toggle', type: 'choice' }], sourceType: identifierType };
+    const stream = intoStream(csv.join('\n'));
+    return models.question.importQuestions(stream, options);
+};
+
+const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
+    const sectionQuestionMap = new Map();
+    const parentQuestionMap = new Map();
+    let sectionId = 0;
+    let parentSectionId;
+    const sectionCsv = jsonDB.pillars.reduce((r, pillar) => {
+        let skipCountIndex = 0;
+        pillar.questions.forEach((question) => {
+            if (skipCountIndex) {
+                skipCountIndex -= 1;
+            }
+            if (!skipCountIndex) {
+                parentSectionId = '';
+            }
+            sectionId += 1;
+            if (question.type >= 8) {
+                const line = `${sectionId},${question.text},${question.instruction},${question.type},${question.key}`;
+                r.push(line);
+            } else {
+                const line = `${sectionId},,,${question.type},${question.key}`;
+                r.push(line);
+            }
+            sectionQuestionMap.set(question.id, { sectionId, parentSectionId });
+            if (question.skipCount) {
+                sectionId += 1;
+                const line = `${sectionId}`;
+                r.push(line);
+                parentQuestionMap.set(question.id, sectionId);
+                parentSectionId = sectionId;
+                skipCountIndex = question.skipCount + 1;
+                const questionChoiceId = question.skipValue;
+                const ruleId = rules.length;
+                const rule = `${ruleId},${pillar.id},not-equals,${sectionId},${question.id},${questionChoiceId}`;
+                rules.push(rule);
+            }
+        });
+        return r;
+    }, ['id,name,description,type,key']);
+    const sectionStream = intoStream(sectionCsv.join('\n'));
+    const sectionImportOptions = { meta: [{ name: 'type' }, { name: 'key' }] };
+    return models.section.importSections(sectionStream, sectionImportOptions)
+        .then(sectionIdMap => ({ questionIdMap, sectionIdMap, parentQuestionMap, sectionQuestionMap }));
+};
+
+const importSurveysToDb = function (jsonDB, rules, spec) {
+    const { questionIdMap, sectionIdMap, parentQuestionMap, sectionQuestionMap } = spec;
+    const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
+        const { id, title, isBHI, maxScore, description } = pillar;
+        let surveyInfo = `${title},${description},${isBHI},${maxScore}`;
+        const required = 'true';
+        pillar.questions.forEach((question) => {
+            const questionId = question.id;
+            const { sectionId, parentSectionId = '' } = sectionQuestionMap.get(questionId);
+            if (question.type >= 8) {
+                question.choices.forEach((choiceId) => {
+                    const multiQuestionId = `${questionId}-${choiceId}`;
+                    const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${multiQuestionId},${required}`;
+                    r.push(line);
+                });
+            } else {
+                const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${questionId},${required}`;
+                r.push(line);
+            }
+            const conditionSectionId = parentQuestionMap.get(questionId);
+            if (conditionSectionId) {
+                const line = `${id},${surveyInfo},${questionId},,${conditionSectionId},,`;
+                r.push(line);
+            }
+            surveyInfo = ',,,';
+        });
+        return r;
+    }, ['id,name,description,isBHI,maxScore,parentQuestionId,parentSectionId,sectionId,questionId,required']);
+    const stream = intoStream(surveysCsv.join('\n'));
+    const meta = [{ name: 'isBHI', type: 'boolean' }, { name: 'maxScore', type: 'integer' }];
+    const options = { meta, sourceType: identifierType };
+    return models.survey.importSurveys(stream, { questionIdMap, sectionIdMap }, options)
+        .then((surveyIdMap) => {
+            const ruleStream = intoStream(rules.join('\n'));
+            return models.answerRule.importAnswerRules(ruleStream, { sectionIdMap, questionIdMap, surveyIdMap })
+                .then(() => surveyIdMap);
         });
 };
 
 const importToDb = function (jsonDB) {
-    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle, choice.answerKey, choice.tag]]));
-    const csv = jsonDB.questions.reduce((r, question) => {
-        let id = question.id;
-        const type = questionTypes[question.type];
-        let questionType = type;
-        let ccType = question.type;
-        let text = question.text;
-        let instruction = question.instruction || '';
-        let key = question.key;
-        if (type === 'choice' || type === 'choices' || Array.isArray(type)) {
-            question.choices.forEach((choiceId, index) => {
-                const [choiceText, choiceToggle, answerKey, tag] = choiceMap.get(choiceId);
-                let choiceType = '';
-                if (type === 'choices') {
-                    choiceType = 'bool';
-                    if (choiceToggle && (choiceToggle === 'checkalloff')) {
-                        choiceType = 'bool-sole';
-                    }
-                }
-                if (Array.isArray(type)) {
-                    questionType = 'choices';
-                    choiceType = type[index];
-                }
-                const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey},${tag}`;
-                r.push(line);
-                questionType = text = instruction = key = '';
-            });
-            return r;
-        }
-        const line = [id, questionType, text, instruction, ccType, key, '', '', '', question.answerKey, question.tag].join(',');
-        r.push(line);
-        return r;
-    }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey,tag']);
-    const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
-    const stream = intoStream(csv.join('\n'));
-    return models.question.import(stream, options)
-        .then(idMap => {
-            const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
-                const id = pillar.id;
-                let name = pillar.title;
-                let isBHI = pillar.isBHI;
-                let maxScore = pillar.maxScore;
-                const description = '';
-                const required = 'true';
-                pillar.questions.forEach(question => {
-                    const questionId = question.questionId;
-                    const skipCount = question.skipCount || '';
-                    const skipValue = question.skipValue || '';
-                    const line = `${id},${name},${description},${isBHI},${maxScore},${questionId},${required},${skipCount},${skipValue}`;
-                    r.push(line);
-                    name = '';
-                });
-                return r;
-            }, ['id,name,description,isBHI,maxScore,questionId,required,skipCount,skipValue']);
-            const stream = intoStream(surveysCsv.join('\n'));
-            const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
-            return models.survey.import(stream, idMap, options)
-                .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
-                .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
-        });
+    const rules = ['id,surveyId,logic,sectionId,answerQuestionId,questionChoiceId'];
+    return importQuestionsToDB(jsonDB)
+        .then(questionIdMap => importSectionsToDB(jsonDB, rules, questionIdMap))
+        .then(spec => importSurveysToDb(jsonDB, rules, spec))
+        .then(surveyIdMap => _.values(surveyIdMap).map(survey => ({ id: survey })))
+        .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
 };
 
 const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
@@ -321,7 +392,7 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
             answer.answers.forEach(({ questionChoiceId, questionChoiceType, value }) => {
                 if (questionChoiceType === 'month') {
                     if (value.length === 1) {
-                        value = '0' + value;
+                        value = `0${value}`;
                     }
                 }
                 r.push({ userId, surveyId, createdAt, questionId, questionChoiceId, value });
@@ -329,17 +400,17 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
             return r;
         }
         if (questionType === 'choice') {
-            const questionChoiceId = answer.answers.reduce((p, answer) => {
-                if ((answer.questionChoiceType !== 'bool') || (typeof answer.value !== 'boolean')) {
-                    throw new RRError('ccfInconsistentAnswerForType', 'choice', answer.questionChoiceType);
+            const questionChoiceId = answer.answers.reduce((p, a) => {
+                if ((a.questionChoiceType !== 'bool') || (typeof a.value !== 'boolean')) {
+                    throw new RRError('ccfInconsistentAnswerForType', 'choice', a.questionChoiceType);
                 }
-                if (!answer.value) {
+                if (!a.value) {
                     return p;
                 }
                 if (p !== null) {
                     throw new RRError('ccfMultipleSelectionsForChoice');
                 }
-                p = answer.questionChoiceId;
+                p = a.questionChoiceId;
                 return p;
             }, null);
             if (questionChoiceId === null) {
@@ -348,7 +419,12 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
             r.push({ userId, surveyId, createdAt, questionId, questionChoiceId });
             return r;
         }
-        const value = answer.answers[0].value;
+        let value = answer.answers[0].value;
+        if (questionType === 'month') {
+            if (value.length === 1) {
+                value = `0${value}`;
+            }
+        }
         r.push({ userId, surveyId, createdAt, questionId, value });
         return r;
     }, []);
@@ -357,12 +433,10 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
 
 const importAnswersToDb = function (jsonDB, userIdMap) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(identifierType)
-        .then(surveyIdMap => {
-            return models.answerIdentifier.getTypeInformationByAnswerIdentifier(identifierType)
-                .then(answerIdMap => ({ surveyIdMap, answerIdMap }));
-        })
+        .then(surveyIdMap => models.answerIdentifier.getTypeInformationByAnswerIdentifier(identifierType)
+                .then(answerIdMap => ({ surveyIdMap, answerIdMap })))
         .then(({ surveyIdMap, answerIdMap }) => {
-            let records = jsonDB.answers.map(answer => {
+            let records = jsonDB.answers.map((answer) => {
                 const surveyIdentifier = answer.pillar_hash;
                 const surveyId = surveyIdMap.get(surveyIdentifier);
                 const answerIndex = new Map();
@@ -377,17 +451,17 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         r.push(dbAnswer);
                         answerIndex.set(questionId, dbAnswer);
                     }
-                    let answer = {};
+                    const answer2 = {};
                     if (answerInfo.questionChoiceId) {
-                        answer.questionChoiceId = answerInfo.questionChoiceId;
-                        answer.questionChoiceType = answerInfo.questionChoiceType;
+                        answer2.questionChoiceId = answerInfo.questionChoiceId;
+                        answer2.questionChoiceType = answerInfo.questionChoiceType;
                     }
-                    if (record.hasOwnProperty('string_value')) {
-                        answer.value = record.string_value.toString();
-                    } else if (record.hasOwnProperty('boolean_value')) {
-                        answer.value = record.boolean_value;
+                    if (Object.prototype.hasOwnProperty.call(record, 'string_value')) {
+                        answer2.value = record.string_value.toString();
+                    } else if (Object.prototype.hasOwnProperty.call(record, 'boolean_value')) {
+                        answer2.value = record.boolean_value;
                     }
-                    dbAnswer.answers.push(answer);
+                    dbAnswer.answers.push(answer2);
                     return r;
                 }, []);
                 const userId = userIdMap.get(answer.user_id);
@@ -398,13 +472,14 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
             records.forEach((record, index) => {
                 const assessmentSet = jsonDB.answers[index].assessments;
                 const endIndex = overallIndex + record.length;
-                jsonDB.assessments.forEach(assessment => {
+                jsonDB.assessments.forEach((assessment) => {
                     if (assessmentSet[assessment.id]) {
                         let answerIndices = assessment.answerIndices;
                         if (!answerIndices) {
-                            assessment.answerIndices = (answerIndices = []);
+                            answerIndices = [];
+                            assessment.answerIndices = answerIndices;
                         }
-                        _.range(overallIndex, endIndex).forEach(answerIndex => {
+                        _.range(overallIndex, endIndex).forEach((answerIndex) => {
                             answerIndices.push(answerIndex);
                         });
                     }
@@ -412,12 +487,12 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                 overallIndex = endIndex;
             });
             records = _.flatten(records);
-            records.forEach(record => {
+            records.forEach((record) => {
                 record.language = 'en';
             });
             return models.answer.importRecords(records)
-                .then(ids => {
-                    const records = jsonDB.assessments.map((assessment, index, assessments) => {
+                .then((ids) => {
+                    const records2 = jsonDB.assessments.map((assessment, index, assessments) => {
                         const createdAt = assessment.updated_at;
                         const record = {
                             userId: userIdMap.get(assessment.hb_user_id),
@@ -425,10 +500,10 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                             sequence: index,
                             status: 'collected',
                             meta: {
-                                key: assessment.assessment_id
+                                key: assessment.assessment_id,
                             },
                             createdAt,
-                            updatedAt: createdAt
+                            updatedAt: createdAt,
                         };
                         const nextIndex = index + 1;
                         if (nextIndex < assessments.length) {
@@ -437,7 +512,7 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         record.answerIds = assessment.answerIndices.map(answerIndex => ids[answerIndex]);
                         return record;
                     });
-                    return models.userAssessment.importBulk(records);
+                    return models.userAssessment.importBulk(records2);
                 });
         });
 };
@@ -445,32 +520,19 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
 const importUsers = function (filepath) {
     const converter = new XLSXConverter();
     return converter.fileToRecords(filepath)
-        .then(users => {
-            const userIdMap = new Map();
-            const promises = users.map(user => {
-                const username = `username_${user.id}`;
-                const email = `${username}@dummy.com`;
-                const record = { username, email, password: 'pw' };
-                return models.user.createUser(record)
-                    .then(({ id }) => userIdMap.set(user.id, id));
-            });
-            return SPromise.all(promises).then(() => userIdMap);
-        });
+        .then(users => users.map(({ id }) => id))
+        .then(ids => models.user.importDummyUsers(ids));
 };
 
-const importCCFFiles = function (filepaths) {
+const ImportFiles = function (filepaths) {
     return importUsers(filepaths.users)
-        .then(userIdMap => {
-            return importFiles(filepaths)
-                .then(ccfData => {
-                    return importToDb(ccfData)
-                        .then(() => importAnswersToDb(ccfData, userIdMap));
-                })
-                .then(() => userIdMap);
-        });
+        .then(userIdMap => importFiles(filepaths)
+            .then(ccfData => importToDb(ccfData)
+                .then(() => importAnswersToDb(ccfData, userIdMap)))
+            .then(() => userIdMap));
 };
 
 module.exports = {
     converters,
-    importCCFFiles
+    ImportFiles,
 };

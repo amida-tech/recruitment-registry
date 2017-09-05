@@ -1,31 +1,37 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const SurveyText = sequelize.define('survey_text', {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('survey_text', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
-                model: 'survey',
-                key: 'id'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey',
+                },
+                key: 'id',
+            },
         },
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
-                key: 'code'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language',
+                },
+                key: 'code',
+            },
         },
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         description: {
-            type: DataTypes.TEXT
+            type: DataTypes.TEXT,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -33,15 +39,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
-
-    return SurveyText;
 };

@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const fs = require('fs');
 const chai = require('chai');
 const _ = require('lodash');
@@ -13,7 +15,7 @@ module.exports = {
         expect(lines, `no lines in ${filepath}`).to.have.length.above(0);
         const header = lines[0];
         const names = header.split(',');
-        const numFields = names.reduce((r, name, index) => name ? index : r, 0) + 1;
+        const numFields = names.reduce((r, name, index) => (name ? index : r), 0) + 1;
         return lines.reduce((r, line) => {
             const fields = line.split(',').slice(0, numFields);
             const hasField = fields.some(field => field);
@@ -22,7 +24,6 @@ module.exports = {
             }
             return r;
         }, []);
-
     },
     contentToLines(content) {
         const lines = content.split('\n');
@@ -33,7 +34,7 @@ module.exports = {
         const contentLines = this.contentToLines(content);
         expect(contentLines, `no content to compare for ${filepath}`).to.have.length.above(0);
         const numLines = Math.min(expectedLines.length, contentLines.length);
-        _.range(numLines).forEach(index => {
+        _.range(numLines).forEach((index) => {
             expect(contentLines[index], `line ${contentLines[0][0]} equals ${contentLines[index][0]}`).to.deep.equal(expectedLines[index]);
         });
         expect(contentLines.length, `lines mismatch for ${filepath}`).to.equal(expectedLines.length);

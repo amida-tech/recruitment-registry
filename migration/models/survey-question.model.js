@@ -1,30 +1,36 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const SurveyQuestion = sequelize.define('survey_question', {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('survey_question', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
-                model: 'survey',
-                key: 'id'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey',
+                },
+                key: 'id',
+            },
         },
         questionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
-                model: 'question',
-                key: 'id'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question',
+                },
+                key: 'id',
+            },
         },
         line: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         required: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -36,11 +42,11 @@ module.exports = function (sequelize, DataTypes) {
         },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [{ unique: true, fields: ['survey_id', 'question_id'], where: { deleted_at: { $eq: null } } }],
     });
-
-    return SurveyQuestion;
 };

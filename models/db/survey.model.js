@@ -1,47 +1,61 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey', {
+module.exports = function survey(sequelize, Sequelize, schema) {
+    const tableName = 'survey';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         status: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             defaultValue: 'published',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey_status'
+                    schema,
+                    tableName: 'survey_status',
                 },
-                key: 'name'
-            }
+                key: 'name',
+            },
         },
         version: {
-            type: DataTypes.INTEGER
+            type: Sequelize.INTEGER,
         },
         groupId: {
-            type: DataTypes.INTEGER,
-            field: 'group_id'
+            type: Sequelize.INTEGER,
+            field: 'group_id',
         },
         meta: {
-            type: DataTypes.JSON
+            type: Sequelize.JSON,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
-        }
+        },
+        authorId: {
+            type: Sequelize.INTEGER,
+            field: 'author_id',
+            references: {
+                model: {
+                    schema,
+                    tableName: 'registry_user',
+                },
+                key: 'id',
+            },
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

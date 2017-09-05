@@ -1,5 +1,9 @@
 /* global describe,before,it*/
+
 'use strict';
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const path = require('path');
@@ -17,37 +21,37 @@ const History = require('../util/history');
 const questionCommon = require('../util/question-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
-describe('question integration unit', function () {
+describe('question integration unit', () => {
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
-    for (let i = 0; i < 12; ++i) {
+    _.range(12).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
-    }
+    });
 
     it('list all questions', tests.listQuestionsFn('export'));
 
-    _.forEach([1, 6, 10], index => {
+    _.forEach([1, 6, 10], (index) => {
         it(`delete question ${index}`, tests.deleteQuestionFn(index));
     });
 
     it('list all questions (export)', tests.listQuestionsFn('export'));
 
-    for (let i = 12; i < 24; ++i) {
+    _.range(12, 24).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
-    }
+    });
 
-    _.forEach([4, 17], index => {
+    _.forEach([4, 17], (index) => {
         it(`delete question ${index}`, tests.deleteQuestionFn(index));
     });
 
@@ -55,39 +59,39 @@ describe('question integration unit', function () {
 
     const generatedDirectory = path.join(__dirname, '../generated');
 
-    it('create output directory if necessary', function (done) {
+    it('create output directory if necessary', (done) => {
         mkdirp(generatedDirectory, done);
     });
 
-    it('export questions to csv', function (done) {
+    it('export questions to csv', (done) => {
         rrSuperTest.get('/questions/csv', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'question.csv');
                 fs.writeFileSync(filepath, res.text);
             })
             .end(done);
     });
 
-    it('reset database', shared.setUpFn(rrSuperTest));
+    it('reset database', shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     let idMap;
 
-    it('import csv into db', function (done) {
+    it('import csv into db', (done) => {
         const filepath = path.join(generatedDirectory, 'question.csv');
         rrSuperTest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
-            .expect(function (res) {
+            .expect((res) => {
                 idMap = res.body;
             })
             .end(done);
     });
 
-    it('list imported questions and verify', function () {
+    it('list imported questions and verify', () => {
         const query = { scope: 'export' };
-        return function (done) {
+        return function listImported(done) {
             rrSuperTest.get('/questions', true, 200, query)
-                .expect(function (res) {
+                .expect((res) => {
                     const fields = questionCommon.getFieldsForList('export');
                     const expected = hxQuestion.listServers(fields);
                     questionCommon.updateIds(expected, idMap);

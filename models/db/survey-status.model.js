@@ -2,20 +2,23 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_status', {
+module.exports = function surveyStatus(sequelize, Sequelize, schema) {
+    const tableName = 'survey_status';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         hooks: {
@@ -25,7 +28,8 @@ module.exports = function (sequelize, DataTypes) {
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
-            }
-        }
+                return null;
+            },
+        },
     });
 };

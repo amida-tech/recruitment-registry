@@ -2,20 +2,22 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
 const shared = require('./shared.js');
 
-exports.createSmtp = function (req, res) {
-    models.smtp.createSmtp(req.body)
+exports.createSmtp = function createSmtp(req, res) {
+    const type = _.get(req, 'swagger.params.type.value');
+    const smtp = Object.assign({ type }, req.body);
+    req.models.smtp.createSmtp(smtp)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.getSmtp = function (req, res) {
+exports.getSmtp = function getSmtp(req, res) {
+    const type = _.get(req, 'swagger.params.type.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
-    models.smtp.getSmtp(options)
-        .then(smtp => {
+    const options = language ? { language, type } : { type };
+    req.models.smtp.getSmtp(options)
+        .then((smtp) => {
             if (smtp) {
                 res.status(200).json({ exists: true, smtp });
             } else {
@@ -25,15 +27,18 @@ exports.getSmtp = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.updateSmtpText = function (req, res) {
+exports.updateSmtpText = function updateSmtpText(req, res) {
+    const type = _.get(req, 'swagger.params.type.value');
     const language = _.get(req, 'swagger.params.language.value');
-    models.smtp.updateSmtpText(req.body, language)
+    const smtp = Object.assign({ type }, req.body);
+    req.models.smtp.updateSmtpText(smtp, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.deleteSmtp = function (req, res) {
-    models.smtp.deleteSmtp()
+exports.deleteSmtp = function deleteSmtp(req, res) {
+    const type = _.get(req, 'swagger.params.type.value');
+    req.models.smtp.deleteSmtp(type)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

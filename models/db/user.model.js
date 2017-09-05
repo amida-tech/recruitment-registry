@@ -1,6 +1,6 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const moment = require('moment');
 
@@ -8,76 +8,86 @@ const config = require('../../config');
 const SPromise = require('../../lib/promise');
 const RRError = require('../../lib/rr-error');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function User(sequelize, Sequelize, schema) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
-        context: bcrypt
+        context: bcrypt,
     });
     const bchash = SPromise.promisify(bcrypt.hash, {
-        context: bcrypt
+        context: bcrypt,
     });
     const randomBytes = SPromise.promisify(crypto.randomBytes, {
-        context: crypto
+        context: crypto,
     });
 
-    return sequelize.define('registry_user', {
+    const tableName = 'registry_user';
+    const modelName = `${schema}_${tableName}`;
+    const Table = sequelize.define(modelName, {
         username: {
-            type: DataTypes.TEXT,
-            unique: {
-                msg: RRError.message('uniqueUsername')
-            },
+            type: Sequelize.TEXT,
+            unique: true,
             validate: {
-                notEmpty: true
+                notEmpty: true,
             },
-            allowNull: false
+            allowNull: false,
         },
         email: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             validate: {
-                isEmail: true
+                isEmail: true,
             },
-            allowNull: false
+            allowNull: false,
         },
         password: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             validate: {
-                notEmpty: true
+                notEmpty: true,
             },
-            allowNull: false
+            allowNull: false,
         },
         role: {
-            type: DataTypes.ENUM('admin', 'participant', 'clinician', 'import'),
-            allowNull: false
+            type: Sequelize.ENUM('admin', 'participant', 'clinician', 'import'),
+            allowNull: false,
         },
         originalUsername: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             field: 'original_username',
-            allowNull: true
+            allowNull: true,
         },
         resetPasswordToken: {
             unique: true,
-            type: DataTypes.STRING,
-            field: 'reset_password_token'
+            type: Sequelize.STRING,
+            field: 'reset_password_token',
         },
         resetPasswordExpires: {
-            type: DataTypes.DATE,
-            field: 'reset_password_expires'
+            type: Sequelize.DATE,
+            field: 'reset_password_expires',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-            defaultValue: sequelize.literal('NOW()')
+            defaultValue: sequelize.literal('NOW()'),
         },
         updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at'
+            type: Sequelize.DATE,
+            field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
+        firstname: {
+            type: Sequelize.TEXT,
+        },
+        lastname: {
+            type: Sequelize.TEXT,
+        },
+        institution: {
+            type: Sequelize.TEXT,
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
@@ -85,15 +95,17 @@ module.exports = function (sequelize, DataTypes) {
         indexes: [{
             name: 'registry_user_lower_email_key',
             unique: true,
-            fields: [sequelize.fn('lower', sequelize.col('email'))]
+            fields: [sequelize.fn('lower', sequelize.col('email'))],
         }],
         hooks: {
             afterSync(options) {
                 if (options.force) {
                     const role = 'admin';
                     const user = Object.assign({ role }, config.superUser);
+                    user.originalUsername = user.username;
                     return this.create(user);
                 }
+                return null;
             },
             beforeCreate(user) {
                 return user.updatePassword();
@@ -102,47 +114,46 @@ module.exports = function (sequelize, DataTypes) {
                 if (user.changed('password')) {
                     return user.updatePassword();
                 }
-            }
+                return null;
+            },
         },
-        instanceMethods: {
-            authenticate(password) {
-                return bccompare(password, this.password)
-                    .then(result => {
-                        if (!result) {
-                            throw new RRError('authenticationError');
-                        }
-                    });
-            },
-            updatePassword() {
-                return bchash(this.password, config.crypt.hashrounds)
-                    .then(hash => {
-                        this.password = hash;
-                    });
-            },
-            updateResetPWToken() {
-                return randomBytes(config.crypt.resetTokenLength)
-                    .then(buf => buf.toString('hex'))
-                    .then(token => {
-                        return randomBytes(config.crypt.resetPasswordLength)
-                            .then(passwordBuf => {
-                                return {
-                                    token,
-                                    password: passwordBuf.toString('hex')
-                                };
-                            });
-                    })
-                    .then(result => {
-                        this.resetPasswordToken = result.token;
-                        this.password = result.password;
-                        let m = moment.utc();
-                        m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
-                        this.resetPasswordExpires = m.toISOString();
-                        return this.save()
-                            .then(() => {
-                                return result.token;
-                            });
-                    });
-            }
-        }
     });
+
+    Table.prototype.authenticate = function authenticate(password) {
+        return bccompare(password, this.password)
+            .then((result) => {
+                if (!result) {
+                    throw new RRError('authenticationError');
+                }
+            });
+    };
+
+
+    Table.prototype.updatePassword = function updatePassword() {
+        return bchash(this.password, config.crypt.hashrounds)
+            .then((hash) => {
+                this.password = hash;
+            });
+    };
+
+    Table.prototype.updateResetPWToken = function updateResetPWToken() {
+        return randomBytes(config.crypt.resetTokenLength)
+            .then(buf => buf.toString('hex'))
+            .then(token => randomBytes(config.crypt.resetPasswordLength)
+                    .then(passwordBuf => ({
+                        token,
+                        password: passwordBuf.toString('hex'),
+                    })))
+            .then((result) => {
+                this.resetPasswordToken = result.token;
+                this.password = result.password;
+                const m = moment.utc();
+                m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
+                this.resetPasswordExpires = m.toISOString();
+                return this.save()
+                    .then(() => result.token);
+            });
+    };
+
+    return Table;
 };

@@ -64,7 +64,7 @@
                     "description": "Role for users",
                     "required": false,
                     "type": "string",
-                    "enum": ["participant", "clinician"]
+                    "enum": ["participant", "clinician", "all"]
                 }],
                 "responses": {
                     "200": {
@@ -128,6 +128,30 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "patch": {
+                "operationId": "patchUser",
+                "summary": "Patches user",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "userPatch",
+                    "in": "body",
+                    "description": "User fields to be updated",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/userPatch"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/users/me": {
@@ -157,12 +181,12 @@
                     "self": []
                 }],
                 "parameters": [{
-                    "name": "user",
+                    "name": "userPatch",
                     "in": "body",
                     "description": "User fields to be updated",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/userUpdate"
+                        "$ref": "#/definitions/userPatch"
                     }
                 }],
                 "responses": {
@@ -234,6 +258,9 @@
                 },{
 
                     "participant": []
+                },{
+
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "scope",
@@ -338,8 +365,9 @@
                 "security": [{
                     "admin": []
                 },{
-
                     "participant": []
+                },{
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -577,6 +605,79 @@
                 }
             }
         },
+        "/answers/multi-user-csv": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "Exports answers as csv file",
+                "operationId": "exportMultiUserAnswers",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-ids",
+                    "in": "query",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports answer csv file",
+                "operationId": "importMultiUserAnswers",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "answercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "surveyidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "useridmap",
+                    "in": "formData",
+                    "description": "User Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/export": {
             "x-swagger-router-controller": "answer.controller",
             "get": {
@@ -584,6 +685,40 @@
                 "operationId": "listAnswersExport",
                 "security": [{
                     "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/multi-user-export": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "List answers multi user export ready",
+                "operationId": "listAnswersMultiUserExport",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-ids",
+                    "in": "query",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
                 }],
                 "responses": {
                     "200": {
@@ -632,6 +767,186 @@
                 }
             }
         },
+        "/answers/identifier-queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users using identifiers",
+                "operationId": "countParticipantsIdentifiers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchParticipants",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/identifier-user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchParticipantsIdentifiers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/federated": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns federated answers",
+                "operationId": "federatedListAnswers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/federated-queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users",
+                "operationId": "federatedSearchAnswers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
@@ -661,6 +976,9 @@
             "get": {
                 "summary": "Gets profile survey",
                 "operationId": "getProfileSurvey",
+                "security": [{
+                    "any": []
+                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -857,6 +1175,8 @@
                 "operationId": "listQuestions",
                 "security": [{
                     "admin": []
+                },  {
+                  "clinician": []
                 }],
                 "parameters": [{
                     "name": "scope",
@@ -872,6 +1192,25 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "survey-id",
+                    "in": "query",
+                    "description": "Survey id",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "common-only",
+                    "in": "query",
+                    "description": "Common flag",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "federated",
+                    "in": "query",
+                    "description": "Federated flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -947,6 +1286,8 @@
                 "operationId": "getQuestion",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -955,6 +1296,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 1
+                }, {
+                    "name": "federated",
+                    "in": "query",
+                    "description": "Include federated identifiers",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -1212,6 +1559,35 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "get": {
+                "summary": "Gets consent documents",
+                "operationId": "listConsentDocuments",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "surveys",
+                    "in": "query",
+                    "description": "Include survey information",
+                    "required": false,
+                    "type": "boolean"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consentDocumentDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/consent-documents/{id}": {
@@ -1246,17 +1622,18 @@
                 }
             }
         },
-        "/consent-documents/type-name/{typeName}": {
+        "/consent-documents/type/{typeId}": {
             "x-swagger-router-controller": "consent-document.controller",
             "parameters": [{
-                "name": "typeName",
+                "name": "typeId",
                 "in": "path",
                 "required": true,
-                "type": "string"
+                "type": "integer",
+                "minimum": 1
             }],
             "get": {
                 "summary": "Gets consent document (section)",
-                "operationId": "getConsentDocumentByTypeName",
+                "operationId": "getConsentDocumentByTypeId",
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1493,17 +1870,18 @@
                 }
             }
         },
-        "/user-consent-documents/type-name/{typeName}": {
+        "/user-consent-documents/type/{typeId}": {
             "x-swagger-router-controller": "user-consent-document.controller",
             "parameters": [{
-                "name": "typeName",
+                "name": "typeId",
                 "in": "path",
                 "required": true,
-                "type": "string"
+                "type": "integer",
+                "minimum": 1
             }],
             "get": {
-                "summary": "Gets consent document (section)/signature by type name",
-                "operationId": "getUserConsentDocumentByTypeName",
+                "summary": "Gets consent document (section)/signature by type id",
+                "operationId": "getUserConsentDocumentByTypeId",
                 "security": [{
                     "participant": []
                 }],
@@ -1887,8 +2265,15 @@
                 }
             }
         },
-        "/smtp": {
+        "/smtp/{type}": {
             "x-swagger-router-controller": "smtp.controller",
+            "parameters": [{
+                "name": "type",
+                "in": "path",
+                "required": true,
+                "type": "string",
+                "enum": ["reset-password", "cohort-csv"]
+            }],
             "post": {
                 "summary": "Update smtp settings",
                 "operationId": "createSmtp",
@@ -1955,8 +2340,15 @@
                 }
             }
         },
-        "/smtp/text/{language}": {
+        "/smtp/{type}/text/{language}": {
             "x-swagger-router-controller": "smtp.controller",
+            "parameters": [{
+                "name": "type",
+                "in": "path",
+                "required": true,
+                "type": "string",
+                "enum": ["reset-password", "cohort-csv"]
+            }],
             "patch": {
                 "summary": "Updates or translates reset password text fields",
                 "operationId": "updateSmtpText",
@@ -1996,6 +2388,8 @@
                 "operationId": "listUserSurveys",
                 "security": [{
                     "participant": []
+                },{
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2253,6 +2647,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "detail",
+                    "in": "query",
+                    "description": "include content of the document",
+                    "required": false,
+                    "type": "boolean"
                 }],
                  "responses": {
                     "200": {
@@ -2667,6 +3067,33 @@
                 }
             }
         },
+        "/question-choices": {
+            "x-swagger-router-controller": "question-choice.controller",
+            "post": {
+                "operationId": "createQuestionChoice",
+                "summary": "Creates new question choice",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newQuestionChoice",
+                    "in": "body",
+                    "description": "Question choice specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newQuestionChoice"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/question-choices/{id}": {
             "x-swagger-router-controller": "question-choice.controller",
             "parameters": [{
@@ -2675,6 +3102,29 @@
                 "required": true,
                 "type": "integer"
             }],
+            "patch": {
+                "summary": "Patches question choice",
+                "operationId": "patchQuestionChoice",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "questionChoicePatch",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/questionChoicePatch"
+                    }
+                }],
+                 "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "delete": {
                 "summary": "Deletes question choice",
                 "operationId": "deleteQuestionChoice",
@@ -2702,7 +3152,7 @@
                     "description": "Restrict list to nearby zips",
                     "required": false,
                     "type": "string",
-                    "pattern": "^[0-9]{5}$"
+                    "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})$"
                 }],
                 "responses": {
                     "200": {
@@ -2836,6 +3286,441 @@
                     }
                 }
             }
+        },
+        "/registries": {
+            "x-swagger-router-controller": "registry.controller",
+            "get": {
+                "operationId": "listRegistries",
+                "summary": "List registries",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/registries"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createRegistry",
+                "summary": "Creates new registry",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "registry",
+                    "in": "body",
+                    "description": "Registry specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newRegistry"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/registries/{id}": {
+            "x-swagger-router-controller": "registry.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getRegistry",
+                "summary": "Gets registry",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/registry"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteRegistry",
+                "summary": "Deletes registry",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-audits": {
+            "x-swagger-router-controller": "user-audit.controller",
+            "get": {
+                "operationId": "listUserAudits",
+                "summary": "List user audits",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userAudits"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/filters": {
+            "x-swagger-router-controller": "filter.controller",
+            "get": {
+                "operationId": "listFilters",
+                "summary": "List filters",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/filterList"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createFilter",
+                "summary": "Creates new filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "filter",
+                    "in": "body",
+                    "description": "Filter specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newFilter"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/filters/{id}": {
+            "x-swagger-router-controller": "filter.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getFilter",
+                "summary": "Gets filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/filter"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patchFilter",
+                "summary": "Patches filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "filterPatch",
+                    "in": "body",
+                    "description": "Filter patch specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/filterPatch"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteFilter",
+                "summary": "Deletes filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/cohorts": {
+            "x-swagger-router-controller": "cohort.controller",
+            "get": {
+                "operationId": "listCohorts",
+                "summary": "List cohorts",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/cohortList"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createCohort",
+                "summary": "Creates new cohort",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "cohort",
+                    "in": "body",
+                    "description": "Cohort specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newCohort"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/cohorts/{id}": {
+            "x-swagger-router-controller": "cohort.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getCohort",
+                "summary": "Gets cohort",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/cohort"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patchCohort",
+                "summary": "Patches cohort",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "cohortPatch",
+                    "in": "body",
+                    "description": "Cohort patch specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/cohortPatch"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteCohort",
+                "summary": "Deletes filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/files": {
+            "x-swagger-router-controller": "file.controller",
+            "post": {
+                "summary": "Stores file in database",
+                "operationId": "createFile",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "file",
+                    "in": "formData",
+                    "description": "File to be stored in db",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "filename",
+                    "in": "formData",
+                    "description": "Name of the file",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all files",
+                "operationId": "listFiles",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/files"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "x-swagger-router-controller": "file.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Get contents of file",
+                "operationId": "getFile",
+                "produces": ["application/octet-stream"],
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -2855,6 +3740,11 @@
             "name": "Authorization"
         },
         "self": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "any": {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
@@ -2922,6 +3812,10 @@
             },
             "additionalProperties": false
         },
+        "role": {
+            "type": "string",
+            "enum": ["participant", "clinician", "admin"]
+        },
         "newUser": {
             "type": "object",
             "required": ["password"],
@@ -2933,11 +3827,23 @@
                     "type": "string"
                 },
                 "role": {
-                    "type": "string"
+                    "$ref": "#/definitions/role"
                 },
                 "email": {
                     "type": "string",
                     "format": "email"
+                },
+                "firstname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "lastname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "institution": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false,
@@ -2955,11 +3861,27 @@
                     "type": "string"
                 },
                 "role": {
-                    "type": "string"
+                    "$ref": "#/definitions/role"
                 },
                 "email": {
                     "type": "string",
                     "format": "email"
+                },
+                "firstname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "lastname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "institution": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 }
             },
             "additionalProperties": false,
@@ -2971,7 +3893,7 @@
                 "$ref": "#/definitions/user"
             }
         },
-        "userUpdate": {
+        "userPatch": {
             "type": "object",
             "properties": {
                 "password": {
@@ -2980,6 +3902,15 @@
                 "email": {
                     "type": "string",
                     "format": "email"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
+                },
+                "institution": {
+                    "type": "string"
                 }
             },
             "additionalProperties": false
@@ -2988,8 +3919,8 @@
             "type": "string",
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
-                "date", "year", "month", "day", "choice-ref",
-                "pounds", "zip", "feet-inches", "blood-pressure"
+                "date", "year", "month", "day", "choice-ref", "open-choice",
+                "pounds", "zip", "feet-inches", "blood-pressure", "file"
             ]
         },
         "questionMeta": {
@@ -3045,6 +3976,9 @@
                 },
                 "instruction": {
                     "type": "string"
+                },
+                "common": {
+                    "type": "boolean"
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
@@ -3259,6 +4193,9 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "sections": {
                   "type": "array",
                     "items": {
@@ -3324,6 +4261,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "title": {
                     "type": "string"
                 }
@@ -3347,6 +4288,15 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "authorId": {
+                    "type": "integer"
+                },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
@@ -3457,6 +4407,53 @@
             },
             "additionalProperties": false
         },
+        "surveyInfoSection": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
+                },
+                "questions": {
+                    "$ref": "#/definitions/surveyInfoQuestions"
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 2
+        },
+        "surveyInfoQuestion": {
+            "type": "object",
+            "required": ["id", "required"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyInfoQuestions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfoQuestion"
+            }
+        },
+        "surveyInfoSections": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfoSection"
+            }
+        },
         "surveyInfo": {
             "type": "object",
             "required": ["id", "name"],
@@ -3470,25 +4467,23 @@
                 "description": {
                     "type": "string"
                 },
+                "authorId": {
+                    "type": "integer"
+                },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["id", "required"],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "required": {
-                                "type": "boolean"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
+                    "$ref": "#/definitions/surveyInfoQuestions"
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
                 }
             },
             "additionalProperties": false
@@ -3505,29 +4500,192 @@
             "required": ["questions"],
             "properties": {
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/questionQuery"
-                    },
-                    "minItems": 1
+                    "$ref": "#/definitions/questionQueries"
+                },
+                "federated": {
+                    "type": "boolean"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "questionQuery": {
             "type": "object",
-            "required": ["id"],
+            "required": ["id", "answers"],
             "properties": {
                 "id": {
                     "type": "integer"
                 },
-                "answer": {
-                    "$ref": "#/definitions/answer"
+                "exclude": {
+                    "type": "boolean"
                 },
                 "answers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/answer"
+                        "$ref": "#/definitions/filterAnswer"
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "answerIdentifiersQuery": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/answerIdentifierQuery"
+            }
+        },
+        "questionQueries": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/questionQuery"
+            }
+        },
+        "newFilter": {
+            "type": "object",
+            "required": ["name", "questions"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                }
+            },
+            "additionalProperties": false
+        },
+        "filter": {
+            "type": "object",
+            "required": ["id", "name", "questions", "createdAt"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                }
+            },
+            "additionalProperties": false
+        },
+        "filterList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name", "createdAt"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "dateTime"
                     }
+                },
+                "additionalProperties": false
+            }
+        },
+        "filterPatch": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+        },
+        "newCohort": {
+            "type": "object",
+            "required": ["filterId"],
+            "properties": {
+                "filterId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "federated": {
+                    "type": "boolean"
+                },
+                "local": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cohort": {
+            "type": "object",
+            "required": ["id", "name", "createdAt"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cohortList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name", "createdAt"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "dateTime"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "cohortPatch": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -3559,7 +4717,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
+            "enum": ["bool", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
         },
         "surveyStatus": {
             "type": "string",
@@ -3577,6 +4735,10 @@
                     "minimum": 1
                 },
                 "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "identifier": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -3708,6 +4870,26 @@
                     },
                     "additionalProperties": false
                 },
+                "fileValue": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "name": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "content": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Base64 encoded binary or text content"
+                        }
+                    },
+                    "minProperties": 1,
+                    "maxProperties": 2
+                },
                 "yearValue": {
                     "type": "string",
                     "pattern": "^\\d{4}$"
@@ -3725,7 +4907,182 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-         "newRuleChoicesItem": {
+        "filterAnswer": {
+            "type": "object",
+            "properties": {
+                "choice": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "integerRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "floatValue": {
+                    "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                }
+            },
+            "minProperties": 1,
+            "maxProperties": 2,
+            "additionalProperties": false
+        },
+        "answerIdentifierQuery": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questionText": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "exclude": {
+                    "type": "boolean"
+                },
+                "questionChoiceText": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "integerRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "floatValue": {
+                    "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                }
+            },
+            "minProperties": 2,
+            "maxProperties": 5,
+            "additionalProperties": false
+        },
+        "newRuleChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
@@ -3849,6 +5206,14 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "answerIdentifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "text": {
                     "type": "string",
                      "minLength": 1
@@ -3858,6 +5223,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "common": {
+                    "type": "boolean"
                 },
                 "multiple": {
                     "type": "boolean"
@@ -3915,6 +5283,21 @@
             "additionalProperties": false,
             "minProperties": 2
         },
+        "newIdentifier": {
+            "type": "object",
+            "required": ["type", "value"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "value": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "newChoice": {
             "type": "object",
             "required": ["text"],
@@ -3931,6 +5314,9 @@
                 },
                 "code": {
                     "type": "string"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 }
             },
             "additionalProperties": false
@@ -3955,9 +5341,18 @@
                 "multiple": {
                     "type": "boolean"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "questionIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 },
                 "choiceSetId": {
                     "type": "integer",
@@ -4055,7 +5450,7 @@
             "required": ["user"],
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/userUpdate"
+                    "$ref": "#/definitions/userPatch"
                 },
                 "answers": {
                     "type": "array",
@@ -4237,6 +5632,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "title": {
                     "type": "string",
                     "minLength": 1
@@ -4334,6 +5733,10 @@
                 "id": {
                     "type": "integer"
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "typeId": {
                     "type": "integer"
                 },
@@ -4356,6 +5759,10 @@
                 },
                 "typeId": {
                     "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 },
                 "content": {
                     "type": "string",
@@ -4396,6 +5803,14 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "typeId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "type": {
                     "type": "string",
                     "minLength": 1
@@ -4406,6 +5821,12 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                },
+                "surveys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/surveyInfo"
+                    }
                 }
             },
             "additionalProperties": false
@@ -4697,9 +6118,13 @@
         },
         "surveyConsentInfo": {
             "type": "object",
-            "required": ["id", "consentTypeId", "action"],
+            "required": ["id", "consentTypeId", "action", "surveyId"],
             "properties": {
                 "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "surveyId": {
                     "type": "integer",
                     "minimum": 1
                 },
@@ -4742,6 +6167,10 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "consentId": {
                     "type": "integer",
                     "minimum": 1
@@ -4754,6 +6183,10 @@
                 },
                 "title": {
                     "type": "string"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -4886,17 +6319,17 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "choices": {
+                "answerIdentifiers": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["id", "answerIdentifier"],
+                        "required": ["identifier", "questionChoiceId"],
                         "properties": {
-                            "id": {
+                            "questionChoiceId": {
                                 "type": "integer",
                                 "minimum": 1
                             },
-                            "answerIdentifier": {
+                            "identifier": {
                                 "type": "string",
                                 "minLength": 1
                             }
@@ -5035,21 +6468,102 @@
                 }
             }
         },
+        "newQuestionChoice": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "before": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "questionChoicePatch": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "before": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "zip": {
             "type": "string",
-            "pattern": "^[0-9]{5}$"
+            "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})"
         },
         "newResearchSite": {
             "type": "object",
-            "required": ["name", "url", "city", "state", "zip"],
+            "required": ["name", "phone", "url", "street", "city", "state", "zip"],
             "properties": {
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone2": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext2": {
                     "type": "string",
                     "minLength": 1
                 },
                 "url": {
                     "type": "string",
                     "format": "uri",
+                    "minLength": 1
+                },
+                "street": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "street2": {
+                    "type": "string",
                     "minLength": 1
                 },
                 "city": {
@@ -5069,7 +6583,7 @@
         },
         "researchSite": {
             "type": "object",
-            "required": ["id", "name", "url", "city", "state", "zip"],
+            "required": ["id", "name", "phone", "url", "street", "city", "state", "zip"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -5079,9 +6593,33 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "phone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone2": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext2": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "url": {
                     "type": "string",
                     "format": "uri",
+                    "minLength": 1
+                },
+                "street": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "street2": {
+                    "type": "string",
                     "minLength": 1
                 },
                 "city": {
@@ -5112,9 +6650,33 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "phone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone2": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext2": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "url": {
                     "type": "string",
                     "format": "uri",
+                    "minLength": 1
+                },
+                "street": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "street2": {
+                    "type": "string",
                     "minLength": 1
                 },
                 "city": {
@@ -5145,6 +6707,104 @@
                 }
             },
             "additionalProperties": false
+        },
+        "newRegistry": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 2,
+            "maxProperties": 2
+        },
+        "registry": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "registries": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/registries"
+            }
+        },
+        "userAudit": {
+            "type": "object",
+            "required": ["userId", "endpoint", "operation"],
+            "properties": {
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "endpoint": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "operation": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "userAudits": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/userAudit"
+            }
+        },
+        "file": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "files": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/file"
+            }
         }
     }
 }

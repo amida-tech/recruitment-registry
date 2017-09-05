@@ -2,44 +2,50 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
 const shared = require('./shared.js');
 
-const consentDocument = models.consentDocument;
-
-exports.createConsentDocument = function (req, res) {
-    consentDocument.createConsentDocument(req.body)
+exports.createConsentDocument = function createConsentDocument(req, res) {
+    req.models.consentDocument.createConsentDocument(req.body)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getConsentDocument = function (req, res) {
+exports.getConsentDocument = function getConsentDocument(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    consentDocument.getConsentDocument(id, { language })
+    req.models.consentDocument.getConsentDocument(id, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getConsentDocumentByTypeName = function (req, res) {
-    const typeName = _.get(req, 'swagger.params.typeName.value');
+exports.getConsentDocumentByTypeId = function getConsentDocumentByTypeId(req, res) {
+    const typeId = _.get(req, 'swagger.params.typeId.value');
     const language = _.get(req, 'swagger.params.language.value');
-    consentDocument.getConsentDocumentByTypeName(typeName, { language })
+    req.models.consentDocument.getConsentDocumentByTypeId(typeId, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.updateConsentDocumentText = function (req, res) {
+exports.updateConsentDocumentText = function updateConsentDocumentText(req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    consentDocument.updateConsentDocumentText(req.body, language)
+    req.models.consentDocument.updateConsentDocumentText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.getUpdateCommentHistory = function (req, res) {
+exports.getUpdateCommentHistory = function getUpdateCommentHistory(req, res) {
     const typeId = _.get(req, 'swagger.params.typeId.value');
     const language = _.get(req, 'swagger.params.language.value');
-    consentDocument.getUpdateCommentHistory(typeId, language)
+    req.models.consentDocument.getUpdateCommentHistory(typeId, language)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.listConsentDocuments = function listConsentDocuments(req, res) {
+    const surveys = _.get(req, 'swagger.params.surveys.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = { language, surveys, summary: true, keepTypeId: true };
+    req.models.consentDocument.listConsentDocuments(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

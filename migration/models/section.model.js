@@ -1,26 +1,25 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const Section = sequelize.define('rr_section', {
-        indices: {
-            type: DataTypes.ARRAY(DataTypes.INTEGER),
-            allowNull: false
-        },
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('section', {
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
         },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'updated_at',
+        },
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false,
+        updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
-
-    return Section;
 };

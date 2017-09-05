@@ -1,60 +1,63 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('staging_bhr_gap', {
+module.exports = function staginBHRGap(sequelize, Sequelize, schema) {
+    const tableName = 'staging_bhr_gap';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         username: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         assessmentName: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            field: 'assessment_name'
+            field: 'assessment_name',
         },
         status: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         lineIndex: {
-            type: DataTypes.INTEGER,
-            field: 'line_index'
+            type: Sequelize.INTEGER,
+            field: 'line_index',
         },
         questionId: {
-            type: DataTypes.INTEGER,
-            field: 'question_id'
+            type: Sequelize.INTEGER,
+            field: 'question_id',
         },
         questionChoiceId: {
-            type: DataTypes.INTEGER,
-            field: 'question_choice_id'
+            type: Sequelize.INTEGER,
+            field: 'question_choice_id',
         },
         multipleIndex: {
-            type: DataTypes.INTEGER,
-            field: 'multiple_index'
+            type: Sequelize.INTEGER,
+            field: 'multiple_index',
         },
         value: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         lastAnswer: {
-            type: DataTypes.BOOLEAN,
-            field: 'last_answer'
+            type: Sequelize.BOOLEAN,
+            field: 'last_answer',
         },
         daysAfterBaseline: {
-            type: DataTypes.INTEGER,
-            field: 'days_after_baseline'
-        }
+            type: Sequelize.INTEGER,
+            field: 'days_after_baseline',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         timestamps: false,
-        indexes: [{ fields: ['username', 'assessment_name', 'line_index'] }]
+        indexes: [{ fields: ['username', 'assessment_name', 'line_index'] }],
     });
 };

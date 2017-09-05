@@ -1,57 +1,60 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('user_assessment', {
+module.exports = function userAssessment(sequelize, Sequelize, schema) {
+    const tableName = 'user_assessment';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         userId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    schema,
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         assessmentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'assessment_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'assessment'
+                    schema,
+                    tableName: 'assessment',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         meta: {
-            type: DataTypes.JSON
+            type: Sequelize.JSON,
         },
         sequence: {
-            type: DataTypes.INTEGER,
-            allowNull: false
+            type: Sequelize.INTEGER,
+            allowNull: false,
         },
         status: {
-            type: DataTypes.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
-            allowNull: false
+            type: Sequelize.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
@@ -59,6 +62,6 @@ module.exports = function (sequelize, DataTypes) {
         indexes: [
             { fields: ['assessment_id'] },
             { fields: ['user_id'] },
-        ]
+        ],
     });
 };

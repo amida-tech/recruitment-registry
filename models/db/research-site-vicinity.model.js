@@ -1,38 +1,41 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('research_site_vicinity', {
+module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
+    const tableName = 'research_site_vicinity';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         researchSiteId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'research_site_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'research_site'
+                    schema,
+                    tableName: 'research_site',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         zip: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
-            field: 'created_at'
+            type: Sequelize.DATE,
+            field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }]
+        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }],
     });
 };

@@ -1,48 +1,51 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_question', {
+module.exports = function surveyQuestion(sequelize, Sequelize, schema) {
+    const tableName = 'survey_question';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    schema,
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question'
+                    schema,
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         line: {
-            type: DataTypes.INTEGER
+            type: Sequelize.INTEGER,
         },
         required: {
-            type: DataTypes.BOOLEAN
+            type: Sequelize.BOOLEAN,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

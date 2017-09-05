@@ -2,70 +2,75 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
+const Base = require('./base');
 
-const sequelize = db.sequelize;
-const Smtp = db.Smtp;
-const SmtpText = db.SmtpText;
-
-module.exports = class SMTPDAO {
-    constructor() {}
-
+module.exports = class SMTPDAO extends Base {
     createSmtpTx(smtp, transaction) {
-        return Smtp.destroy({ where: { deletedAt: null }, transaction })
+        const Smtp = this.db.Smtp;
+        const SmtpText = this.db.SmtpText;
+        const type = smtp.type;
+        return Smtp.destroy({ where: { type }, transaction })
             .then(() => {
                 const fields = _.omit(smtp, ['subject', 'content']);
+                if (!fields.type) {
+                    fields.type = type;
+                }
                 const { subject, content } = smtp;
                 return Smtp.create(fields, { transaction })
                     .then(() => {
                         if (content) {
-                            return SmtpText.destroy({ where: {}, transaction })
-                                .then(() => SmtpText.create({ subject, content, language: 'en' }, { transaction }));
+                            const record = { type, subject, content, language: 'en' };
+                            return SmtpText.destroy({ where: { type }, transaction })
+                                .then(() => SmtpText.create(record, { transaction }));
                         }
+                        return null;
                     });
             });
     }
 
     createSmtp(smtp) {
-        return sequelize.transaction(tx => this.createSmtpTx(smtp, tx));
+        return this.transaction(tx => this.createSmtpTx(smtp, tx));
     }
 
-    updateSmtpTextTx({ subject, content }, language, transaction) {
-        return SmtpText.destroy({ where: { language }, transaction })
-            .then(() => SmtpText.create({ subject, content, language }, { transaction }));
+    updateSmtpTextTx({ type, subject, content }, language, transaction) {
+        const SmtpText = this.db.SmtpText;
+        return SmtpText.destroy({ where: { type, language }, transaction })
+            .then(() => SmtpText.create({ type, subject, content, language }, { transaction }));
     }
 
     updateSmtpText(smtpText, language) {
-        language = language || 'en';
-        return sequelize.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
+        return this.transaction(tx => this.updateSmtpTextTx(smtpText, language || 'en', tx));
     }
 
-    getSmtp(options = {}) {
+    getSmtp(options) {
+        const Smtp = this.db.Smtp;
+        const SmtpText = this.db.SmtpText;
         const attributes = {
-            exclude: ['id', 'createdAt', 'deletedAt']
+            exclude: ['id', 'createdAt', 'deletedAt', 'type'],
         };
-        return Smtp.findOne({ raw: true, attributes })
-            .then(smtp => {
+        const type = options.type;
+        return Smtp.findOne({ where: { type }, raw: true, attributes })
+            .then((smtp) => {
                 if (!smtp) {
                     return null;
                 }
                 const language = options.language || 'en';
                 return SmtpText.findOne({
-                        raw: true,
-                        where: { language },
-                        attributes: ['subject', 'content']
-                    })
-                    .then(text => {
+                    raw: true,
+                    where: { type, language },
+                    attributes: ['subject', 'content'],
+                })
+                    .then((text) => {
                         if (!text && (language !== 'en')) {
                             return SmtpText.findOne({
                                 raw: true,
-                                where: { language: 'en' },
-                                attributes: ['subject', 'content']
+                                where: { type, language: 'en' },
+                                attributes: ['subject', 'content'],
                             });
                         }
                         return text;
                     })
-                    .then(text => {
+                    .then((text) => {
                         if (text) {
                             Object.assign(smtp, text);
                         }
@@ -74,7 +79,7 @@ module.exports = class SMTPDAO {
             });
     }
 
-    deleteSmtp() {
-        return Smtp.destroy({ where: { deletedAt: null } });
+    deleteSmtp(type) {
+        return this.db.Smtp.destroy({ where: { type } });
     }
 };

@@ -1,35 +1,38 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('assessment', {
+module.exports = function assessment(sequelize, Sequelize, schema) {
+    const tableName = 'assessment';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            unique: true
+            unique: true,
         },
         sequenceType: {
-            type: DataTypes.ENUM('ondemand', 'biyearly'),
+            type: Sequelize.ENUM('ondemand', 'biyearly'),
             field: 'sequence_type',
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

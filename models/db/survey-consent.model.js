@@ -1,64 +1,68 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_consent', {
+module.exports = function surveyConsent(sequelize, Sequelize, schema) {
+    const tableName = 'survey_consent';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    schema,
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         consentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'consent_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent'
+                    schema,
+                    tableName: 'consent',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         consentTypeId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_type_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    schema,
+                    tableName: 'consent_type',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         action: {
-            type: DataTypes.ENUM('read', 'create'),
-            allowNull: false
+            type: Sequelize.ENUM('read', 'create'),
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{
             unique: true,
-            fields: ['survey_id', 'consent_type_id', 'action']
-        }]
+            fields: ['survey_id', 'consent_type_id', 'action'],
+            where: { deleted_at: { $eq: null } },
+        }],
     });
 };

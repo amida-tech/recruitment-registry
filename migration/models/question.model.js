@@ -1,24 +1,45 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const Question = sequelize.define('question', {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('question', {
         type: {
             type: DataTypes.TEXT,
             allowNull: false,
             references: {
-                model: 'question_type',
-                key: 'name'
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question_type',
+                },
+                key: 'name',
+            },
+        },
+        choiceSetId: {
+            type: DataTypes.INTEGER,
+            field: 'choice_set_id',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'choice_set',
+                },
+                key: 'id',
             },
         },
         version: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         groupId: {
             type: DataTypes.INTEGER,
-            field: 'group_id'
+            field: 'group_id',
         },
         meta: {
-            type: DataTypes.JSON
+            type: DataTypes.JSON,
+        },
+        multiple: {
+            type: DataTypes.BOOLEAN,
+        },
+        maxCount: {
+            type: DataTypes.INTEGER,
+            field: 'max_count',
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -30,15 +51,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
-
-    return Question;
 };

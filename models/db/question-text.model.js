@@ -1,52 +1,60 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('question_text', {
+module.exports = function questionText(sequelize, Sequelize, schema) {
+    const tableName = 'question_text';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question'
+                    schema,
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         text: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         instruction: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [{
+            name: 'question_text_lower_text_key',
+            fields: [sequelize.fn('lower', sequelize.col('text'))],
+            where: { deleted_at: { $eq: null }, language_code: 'en' },
+        }],
     });
 };

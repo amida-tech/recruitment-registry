@@ -1,74 +1,77 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('question_choice', {
+module.exports = function questionChoice(sequelize, Sequelize, schema) {
+    const tableName = 'question_choice';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question'
+                    schema,
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         type: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'answer_type'
+                    schema,
+                    tableName: 'answer_type',
                 },
-                key: 'name'
-            }
+                key: 'name',
+            },
         },
         code: {
-            type: DataTypes.TEXT
+            type: Sequelize.TEXT,
         },
         meta: {
-            type: DataTypes.JSON
+            type: Sequelize.JSON,
         },
         line: {
-            type: DataTypes.INTEGER
+            type: Sequelize.INTEGER,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         choiceSetId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'choice_set_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'choice_set'
+                    schema,
+                    tableName: 'choice_set',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         indexes: [{
             fields: ['question_id'],
-            where: { deleted_at: { $eq: null } }
+            where: { deleted_at: { $eq: null } },
         }, {
             fields: ['choice_set_id'],
-            where: { deleted_at: { $eq: null } }
+            where: { deleted_at: { $eq: null } },
         }],
-        paranoid: true
+        paranoid: true,
     });
 };

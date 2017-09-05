@@ -11,6 +11,7 @@ class History {
         this.removed = [];
         this.listFields = listFields;
         this.translations = {};
+        this.idIndex = {};
     }
 
     reset() {
@@ -27,6 +28,7 @@ class History {
         this.clients.push(client);
         this.servers.push(server);
         this.history.push(server);
+        this.idIndex[server.id] = server;
         this.currentIndex.push(index);
         return index;
     }
@@ -43,7 +45,7 @@ class History {
             const removed = this.servers.splice(currentIndex, 1);
             this.removed.push(...removed);
             this.currentIndex[index] = -this.removed.length;
-            _.range(index + 1, this.currentIndex.length).forEach(i => {
+            _.range(index + 1, this.currentIndex.length).forEach((i) => {
                 if (this.currentIndex[i] >= 0) {
                     this.currentIndex[i] = this.currentIndex[i] - 1;
                 }
@@ -85,6 +87,10 @@ class History {
         return this.history[index];
     }
 
+    serverById(id) {
+        return this.idIndex[id];
+    }
+
     listClients() {
         return this.clients;
     }
@@ -96,9 +102,9 @@ class History {
         } else {
             list = this.servers;
         }
-        fields = fields || this.listFields;
-        if (fields) {
-            list = list.map(element => _.pick(element, fields));
+        const listFields = fields || this.listFields;
+        if (listFields) {
+            list = list.map(element => _.pick(element, listFields));
         }
         return list;
     }
@@ -112,6 +118,7 @@ class History {
         const currentIndex = this.currentIndex[index];
         this.servers[currentIndex] = server;
         this.history[index] = server;
+        this.idIndex[server.id] = server;
     }
 
     updateLastServer(server) {
@@ -120,10 +127,10 @@ class History {
 
     reloadServer(server) {
         const id = server.id;
-        [this.history, this.servers, this.removed].forEach(collection => {
-            const index = _.findLastIndex(collection, { id });
+        [this.history, this.servers, this.removed].forEach((r) => {
+            const index = _.findLastIndex(r, { id });
             if (index >= 0) {
-                collection[index] = server;
+                r[index] = server;
             }
         });
     }
@@ -145,14 +152,14 @@ class History {
         const server = this.history[index];
         const id = server.id;
         const tr = _.get(this.translations, `${id}.${language}`);
-        return tr ? tr : server;
+        return tr || server;
     }
 
     translatedHistory(language) {
-        return this.history.map(server => {
+        return this.history.map((server) => {
             const id = server.id;
             const tr = _.get(this.translations, `${id}.${language}`);
-            return tr ? tr : server;
+            return tr || server;
         });
     }
 
@@ -160,15 +167,15 @@ class History {
         return _.get(this.translations, `${id}.${language}`);
     }
 
-    listTranslatedServers(language) {
+    listTranslatedServers(language, fields) {
         let result = this.servers;
-        result = result.map(server => {
+        result = result.map((server) => {
             const id = server.id;
             const tr = _.get(this.translations, `${id}.${language}`);
-            return tr ? tr : server;
+            return tr || server;
         });
-        if (this.listFields) {
-            result = result.map(element => _.pick(element, this.listFields));
+        if (fields || this.listFields) {
+            result = result.map(element => _.pick(element, fields || this.listFields));
         }
         return result;
     }

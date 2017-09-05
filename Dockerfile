@@ -4,7 +4,8 @@ FROM quay.io/aptible/nodejs:v6.9.x
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install python2.7 -y && \
     apt-get install make -y && \
-    apt-get install build-essential g++ -y
+    apt-get install build-essential g++ -y && \
+    apt-get install zip -y
 
 ENV PYTHON /usr/bin/python2.7
 

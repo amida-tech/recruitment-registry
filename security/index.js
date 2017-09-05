@@ -5,30 +5,28 @@ const config = require('../config');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-const models = require('../models');
-
 const invalidAuth = {
     message: 'Invalid authorization',
     code: 'invalid_auth',
-    statusCode: 401
+    statusCode: 401,
 };
 
 const noAuth = {
     message: 'No authorization',
     code: 'no_auth',
-    statusCode: 401
+    statusCode: 401,
 };
 
 const invalidUser = {
     message: 'Invalid user',
     code: 'invalid_user',
-    statusCode: 403
+    statusCode: 403,
 };
 
 const unauthorizedUser = {
     message: 'Unauthorized user',
     code: 'unauth_user',
-    statusCode: 403
+    statusCode: 403,
 };
 
 const jwtAuth = function (req, header, verifyUserFn, callback) {
@@ -36,30 +34,28 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
         const matches = header.match(/(\S+)\s+(\S+)/);
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
-            return jwt.verify(token, config.jwt.secret, {}, function (err, payload) {
+            return jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
                 if (err) {
                     return callback(invalidAuth);
                 }
-                models.auth.getUser(payload)
-                    .then(user => {
+                return req.models.auth.getUser(payload)
+                    .then((user) => {
                         if (user) {
-                            let err = verifyUserFn(user);
+                            const err2 = verifyUserFn(user);
                             req.user = user;
-                            return callback(err);
-                        } else {
-                            return callback(invalidUser);
+                            return callback(err2);
                         }
+                        return callback(invalidUser);
                     });
             });
-        } else {
-            return callback(invalidAuth);
         }
+        return callback(invalidAuth);
     }
-    callback(noAuth);
+    return callback(noAuth);
 };
 
-const roleCheck = function (role) {
-    return function (user) {
+const roleCheck = function roleCheck(role) {
+    return function roleCh(user) {
         if (user.role === role) {
             return null;
         }
@@ -67,8 +63,8 @@ const roleCheck = function (role) {
     };
 };
 
-const rolesCheck = function (roles) {
-    return function (user) {
+const rolesCheck = function rolesCheck(roles) {
+    return function rolesChe(user) {
         if (roles.indexOf(user.role) >= 0) {
             return null;
         }
@@ -92,5 +88,10 @@ module.exports = {
     },
     self(req, def, header, callback) {
         jwtAuth(req, header, _.constant(null), callback);
-    }
+    },
+    any(req, def, header, callback) {
+        jwtAuth(req, header, _.constant(null), function nullFunction() {
+            callback(null);
+        });
+    },
 };
