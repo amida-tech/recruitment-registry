@@ -100,7 +100,7 @@ describe('cohort integration', function cohortIntegeration() {
         it(`create filter ${index}`, filterTests.createFilterFn());
         it(`get filter ${index}`, filterTests.getFilterFn(index));
         if (index % 2 === 0) {
-            it(`create cohort ${index / 2}`, createCohortFn(index));
+            it(`create cohort ${index / 2}`, createCohortFn(index / 2));
             it(`get cohort ${index / 2}`, getCohortFn(index / 2));
             it(`patch cohort ${index / 2}`, patchCohortFn(index / 2));
         }
