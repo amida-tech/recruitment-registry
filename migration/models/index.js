@@ -11,7 +11,7 @@ const sequelize = new Sequelize(dbName, config.db.user, config.db.pass, {
     host: config.db.host,
     dialect: config.db.dialect,
     dialectOptions: {
-        ssl: (config.env === 'production')
+        ssl: process.env.RECREG_DB_SSL || false
     },
     port: config.db.port,
     pool: {
