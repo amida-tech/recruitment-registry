@@ -1,9 +1,11 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const SurveyGenerator = require('./survey-generator');
 
 const patterns = [
-    'MSSS', 'SMSMS', 'MSSSMMM', 'SSSM', 'MMSSS', 'MSMSM', 'SMMSSS'
+    'MSSS', 'SMSMS', 'MSSSMMM', 'SSSM', 'MMSSS', 'MSMSM', 'SMMSSS',
 ];
 
 module.exports = class MultiQuestionSurveyGenerator extends SurveyGenerator {
@@ -14,7 +16,7 @@ module.exports = class MultiQuestionSurveyGenerator extends SurveyGenerator {
 
     newSurvey() {
         const result = this.newBody();
-        ++this.patternIndex;
+        this.patternIndex += 1;
         const pattern = patterns[this.patternIndex % patterns.length];
         result.questions = pattern.split('').map((code, index) => {
             let question;

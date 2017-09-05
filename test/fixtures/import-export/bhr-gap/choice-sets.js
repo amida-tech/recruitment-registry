@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const countChoices = function (count, plus) {
@@ -12,13 +14,13 @@ const countChoices = function (count, plus) {
 
 module.exports = [{
     reference: 'yes-no-1-2',
-    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }]
+    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }],
 }, {
     reference: 'count-0-8-plus',
-    choices: countChoices(8, true)
+    choices: countChoices(8, true),
 }, {
     reference: 'count-0-3-plus',
-    choices: countChoices(3, true)
+    choices: countChoices(3, true),
 }, {
     reference: 'condition',
     choices: [
@@ -26,8 +28,8 @@ module.exports = [{
         { text: 'Very Good', code: '2' },
         { text: 'Good', code: '3' },
         { text: 'Fair', code: '4' },
-        { text: 'Poor', code: '5' }
-    ]
+        { text: 'Poor', code: '5' },
+    ],
 }, {
     reference: 'primary-occupation',
     choices: [
@@ -37,6 +39,6 @@ module.exports = [{
         { text: 'Education', code: '9' },
         { text: 'Construction', code: '10' },
         { text: 'Finance', code: '11' },
-        { text: 'Other', code: '20' }
-    ]
+        { text: 'Other', code: '20' },
+    ],
 }];

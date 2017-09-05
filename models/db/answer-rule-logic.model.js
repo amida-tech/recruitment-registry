@@ -2,20 +2,23 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('answer_rule_logic', {
+module.exports = function answerRuleLogic(sequelize, Sequelize, schema) {
+    const tableName = 'answer_rule_logic';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         hooks: {
@@ -25,12 +28,13 @@ module.exports = function (sequelize, DataTypes) {
                         'equals',
                         'exists',
                         'not-equals',
-                        'not-exists'
+                        'not-exists',
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
-            }
-        }
+                return null;
+            },
+        },
     });
 };

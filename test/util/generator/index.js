@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const Answerer = require('./answerer');
@@ -27,10 +29,12 @@ class Generator {
         this.researchSiteIndex = 0;
         this.zipCodeApiIndex = 0;
         this.stateIndex = 0;
+        this.sectionIndex = -1;
+        this.registryIndex = -1;
     }
 
-    updateSurveyGenerator(SurveyGenerator) {
-        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGenerator);
+    updateSurveyGenerator(SurveyGeneratorClass) {
+        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGeneratorClass);
     }
 
     updateAnswererClass(AnswererClass) {
@@ -38,7 +42,8 @@ class Generator {
     }
 
     newUser(override) {
-        const userIndex = ++this.userIndex;
+        this.userIndex += 1;
+        const userIndex = this.userIndex;
         let username = 'uSeRnAmE';
         let email = 'eMaIl';
         if ((userIndex + 1) % 3 === 0) {
@@ -48,7 +53,7 @@ class Generator {
         let user = {
             username: `${username}_${userIndex}`,
             password: `password_${userIndex}`,
-            email: `${email}_${userIndex}@example.com`
+            email: `${email}_${userIndex}@example.com`,
         };
         if ((userIndex + 1) % 2 === 0) {
             delete user.username;
@@ -59,11 +64,16 @@ class Generator {
         if (!user.role) {
             user.role = 'participant';
         }
+        if (userIndex % 2 === 1) {
+            user.firstname = `firstname_${userIndex}`;
+            user.lastname = `lastname_${userIndex}`;
+            user.institution = `institution_${userIndex}`;
+        }
         return user;
     }
 
-    newQuestion() {
-        return this.questionGenerator.newQuestion();
+    newQuestion(options) {
+        return this.questionGenerator.newQuestion(options);
     }
 
     newSurvey(options) {
@@ -77,9 +87,8 @@ class Generator {
     answerQuestion(question) {
         if (question.id < 0) {
             return { questionId: -question.id };
-        } else {
-            return this.answerer.answerQuestion(question);
         }
+        return this.answerer.answerQuestion(question);
     }
 
     answerQuestions(questions) {
@@ -92,11 +101,12 @@ class Generator {
     }
 
     newConsentType() {
-        const index = ++this.consentTypeIndex;
+        this.consentTypeIndex += 1;
+        const index = this.consentTypeIndex;
         return {
             name: `name_${index}`,
             title: `title_${index}`,
-            type: `type_${index}`
+            type: `type_${index}`,
         };
     }
 
@@ -104,9 +114,10 @@ class Generator {
         if (!override.typeId) {
             throw new Error('typeId is required');
         }
-        const index = ++this.consentDocumentIndex;
+        this.consentDocumentIndex += 1;
+        const index = this.consentDocumentIndex;
         const result = {
-            content: `Sample consent section content ${index}`
+            content: `Sample consent section content ${index}`,
         };
         const count = this.consentTypeAdded[override.typeId] || 0;
         if (count) {
@@ -121,16 +132,18 @@ class Generator {
         if (!override.sections) {
             throw new Error('sections is required.');
         }
-        const index = ++this.consentIndex;
+        this.consentIndex += 1;
+        const index = this.consentIndex;
         const result = {
-            name: `name_${index}`
+            name: `name_${index}`,
         };
         Object.assign(result, override);
         return result;
     }
 
     newAssessment(surveyIds) {
-        const index = ++this.assessmentIndex;
+        this.assessmentIndex += 1;
+        const index = this.assessmentIndex;
         const name = `name_${index}`;
         const sequenceType = (index % 2 === 0) ? 'ondemand' : 'biyearly';
         const lookback = (index % 2 === 1);
@@ -139,21 +152,21 @@ class Generator {
     }
 
     newChoiceSet() {
-        const choiceSetIndex = ++this.choiceSetIndex;
+        this.choiceSetIndex += 1;
+        const choiceSetIndex = this.choiceSetIndex;
         const reference = `reference_${choiceSetIndex}`;
         const numChoices = (choiceSetIndex % 4) + 2;
         const startValue = choiceSetIndex % 3;
-        const choices = _.range(numChoices).map(index => {
-            return {
-                text: `text_${choiceSetIndex}_${index}`,
-                code: `${startValue + index}`
-            };
-        });
+        const choices = _.range(numChoices).map(index => ({
+            text: `text_${choiceSetIndex}_${index}`,
+            code: `${startValue + index}`,
+        }));
         return { reference, choices };
     }
 
     nextLanguage() {
-        const index = ++this.languageIndex;
+        this.languageIndex += 1;
+        const index = this.languageIndex;
         const i4 = index % 4;
         switch (i4) {
         case 2:
@@ -165,29 +178,79 @@ class Generator {
         }
     }
 
-    newResearchSite(zip) {
-        const index = ++this.researchSiteIndex;
-        return {
+    newResearchSite(zip, hasOptionalFields) {
+        hasOptionalFields = !!hasOptionalFields;
+        this.researchSiteIndex += 1;
+        const index = this.researchSiteIndex;
+        const withOptionalFields = {
             name: `name_${index}`,
+            phone: `phone_${index}`,
+            ext: `ext_${index}`,
+            phone2: `phone2_${index}`,
+            ext2: `ext2_${index}`,
             url: `server_${index}@example.com`,
+            street: `street_${index}`,
+            street2: `suite_${index}`,
             city: `city_${index}`,
             state: this.newState(index),
-            zip
+            zip,
         };
+        const withoutOptionalFields = {
+            name: `name_${index}`,
+            phone: `phone_${index}`,
+            url: `server_${index}@example.com`,
+            street: `street_${index}`,
+            city: `city_${index}`,
+            state: this.newState(index),
+            zip,
+        };
+        return (hasOptionalFields ? withOptionalFields : withoutOptionalFields);
     }
 
     newZipCodeApiObject(zip) {
-        const index = ++this.zipCodeApiIndex;
+        this.zipCodeApiIndex += 1;
+        const index = this.zipCodeApiIndex;
         return {
-            zip_code: zip,
-            distance: index + 1,
+            zip,
             city: `city_${index}`,
-            state: this.newState(index)
+            state: this.newState(index),
+            distance: index + 1,
         };
     }
 
     newState(index) {
-        return ['MA', 'MD', 'ID', 'VA', 'GA'][(index || ++this.stateIndex) % 5];
+        let stateIndex = index;
+        if (stateIndex === undefined) {
+            this.stateIndex += 1;
+            stateIndex = this.stateIndex;
+        }
+        return ['MA', 'MD', 'ID', 'VA', 'GA'][stateIndex % 5];
+    }
+
+    newSection() {
+        this.sectionIndex += 1;
+        const index = this.sectionIndex;
+        const type = index % 3;
+        const result = (index % 2) ? { meta: { type: index } } : {};
+        if (type === 0) {
+            Object.assign(result, { name: `name_${index}` });
+        } else if (type === 2) {
+            const description = `description_${index}`;
+            Object.assign(result, { name: `name_${index}`, description });
+        }
+        return result;
+    }
+
+    newRegistry() {
+        this.registryIndex += 1;
+        const index = this.registryIndex;
+        const registry = { name: `name_${index}` };
+        if (index % 2) {
+            registry.url = `https://example.com/api_${index}`;
+        } else {
+            registry.schema = `schema_${index}`;
+        }
+        return registry;
     }
 }
 

@@ -2,111 +2,129 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
-const exportCSVConverter = require('../../export/csv-converter.js');
-const importCSVConverter = require('../../import/csv-converter.js');
+const ExportCSVConverter = require('../../export/csv-converter.js');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
-const sequelize = db.sequelize;
-const SurveyQuestion = db.SurveyQuestion;
-const Question = db.Question;
-const QuestionIdentifier = db.QuestionIdentifier;
-const AnswerIdentifier = db.AnswerIdentifier;
+const cleanDBQuestion = function (question) {
+    const result = _.omitBy(question, _.isNil);
+    if (question.common === null) {
+        result.common = false;
+    }
+    return result;
+};
+
+const exportMetaQuestionProperties = function (meta, metaOptions, withChoice, fromQuestion) {
+    return metaOptions.reduce((r, propertyInfo) => {
+        if (fromQuestion && withChoice) {
+            return r;
+        }
+        const name = propertyInfo.name;
+        if (Object.prototype.hasOwnProperty.call(meta, name)) {
+            r[name] = meta[name];
+        }
+        return r;
+    }, {});
+};
+
+const importMetaQuestionProperties = function (record, metaOptions, fromType) {
+    return metaOptions.reduce((r, propertyInfo) => {
+        if (propertyInfo.type === fromType) {
+            const name = propertyInfo.name;
+            const value = record[name];
+            if (value !== undefined && value !== null) {
+                r[name] = value;
+            }
+        }
+        return r;
+    }, {});
+};
 
 module.exports = class QuestionDAO extends Translatable {
-    constructor(dependencies) {
-        super('question_text', 'questionId', ['text', 'instruction'], { instruction: true });
+    constructor(db, dependencies) {
+        super(db, 'QuestionText', 'questionId', ['text', 'instruction'], { instruction: true });
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, code, type, meta, answerIdentifier }, line) => {
-            type = type || 'bool';
-            const choice = { questionId, text, type, line };
-            if (meta) {
-                choice.meta = meta;
-            }
-            if (code) {
-                choice.code = code;
-            }
-            return this.questionChoice.createQuestionChoiceTx(choice, transaction)
-                .then(({ id }) => {
+        const choicesWithParent = choices.map(ch => Object.assign({ questionId }, ch));
+        return this.questionChoice.createQuestionChoicesTx(choicesWithParent, transaction)
+            .then((ids) => {
+                const idRecords = choices.reduce((r, choice, index) => {
+                    const answerIdentifier = choice.answerIdentifier;
                     if (answerIdentifier) {
                         const { type, value: identifier } = answerIdentifier;
-                        const questionChoiceId = id;
-                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, questionChoiceId }, transaction)
-                            .then(() => ({ id }));
+                        const questionChoiceId = ids[index];
+                        const idRecord = { type, identifier, questionId, questionChoiceId };
+                        r.push(idRecord);
                     }
-                    return { id };
-                })
-                .then(({ id }) => {
-                    const result = { id, text: choice.text };
-                    if (meta) {
-                        result.meta = meta;
-                    }
-                    if (code) {
-                        choice.code = code;
-                    }
-                    return result;
-                });
-        });
-        return SPromise.all(pxs);
+                    return r;
+                }, []);
+                return this.db.AnswerIdentifier.bulkCreate(idRecords, { transaction })
+                    .then(() => ids);
+            })
+            .then(ids => ids.map((id, index) => {
+                const fields = _.pick(choices[index], ['text', 'code', 'meta']);
+                return Object.assign({ id }, fields);
+            }));
     }
 
     updateChoiceSetReference(choiceSetReference, transaction) {
         if (choiceSetReference) {
             return this.choiceSet.getChoiceSetIdByReference(choiceSetReference, transaction);
-        } else {
-            return SPromise.resolve(null);
         }
+        return SPromise.resolve(null);
     }
 
     createQuestionTx(question, transaction) {
+        const Question = this.db.Question;
         return this.updateChoiceSetReference(question.choiceSetReference, transaction)
-            .then(choiceSetId => {
-                const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
+            .then((choiceSetId) => {
+                const baseFields = _.omit(question, ['oneOfChoices', 'choices']);
                 if (choiceSetId) {
                     baseFields.choiceSetId = choiceSetId;
                 }
                 return Question.create(baseFields, { transaction, raw: true })
-                    .then(result => {
+                    .then((result) => {
                         const { text, instruction } = question;
                         const id = result.id;
                         return this.createTextTx({ text, instruction, id }, transaction)
                             .then(() => {
-                                let { oneOfChoices, choices } = question;
+                                const oneOfChoices = question.oneOfChoices;
+                                let choices = question.choices;
                                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                                 const nChoices = (choices && choices.length) || 0;
                                 if (nOneOfChoices || nChoices) {
                                     if (nOneOfChoices) {
-                                        choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
+                                        choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' })); // eslint-disable-line max-len
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
-                                        .then(choices => (result.choices = choices));
+                                        .then(chs => (result.choices = chs)); // eslint-disable-line no-param-reassign, max-len
                                 }
+                                return null;
                             })
                             .then(() => {
                                 if (question.questionIdentifier) {
                                     const questionId = result.id;
                                     const { type, value: identifier } = question.questionIdentifier;
-                                    return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);
+                                    return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);  // eslint-disable-line max-len
                                 }
+                                return null;
                             })
                             .then(() => {
                                 const questionId = result.id;
                                 if (question.answerIdentifier) {
                                     const { type, value: identifier } = question.answerIdentifier;
-                                    return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction);
+                                    return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction); // eslint-disable-line max-len
                                 } else if (question.answerIdentifiers) {
                                     const { type, values } = question.answerIdentifiers;
-                                    const promises = values.map((identifier, multipleIndex) => {
-                                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction);
-                                    });
+                                    const promises = values.map((identifier, multipleIndex) => this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction)); // eslint-disable-line max-len
                                     return SPromise.all(promises);
                                 }
+                                return null;
                             })
                             .then(() => result);
                     });
@@ -114,146 +132,229 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestion(question) {
-        return sequelize.transaction(transaction => {
-            return this.createQuestionTx(question, transaction);
-        });
+        return this.transaction(transaction => this.createQuestionTx(question, transaction));
     }
 
-    replaceQuestion(id, replacement) {
-        return SurveyQuestion.count({ where: { questionId: id } })
-            .then(count => {
+    replaceQuestion(parentId, replacement) {
+        const SurveyQuestion = this.db.SurveyQuestion;
+        const Question = this.db.Question;
+        return SurveyQuestion.count({ where: { questionId: parentId } })
+            .then((count) => {
                 if (count) {
                     return RRError.reject('qxReplaceWhenActiveSurveys');
-                } else {
-                    return sequelize.transaction(transaction => {
-                        return Question.findById(id, { transaction })
-                            .then(question => {
-                                if (!question) {
-                                    return RRError.reject('qxNotFound');
+                }
+                return this.transaction((transaction) => {
+                    const px = Question.findById(parentId, { transaction });
+                    return px.then((question) => {
+                        if (!question) {
+                            return RRError.reject('qxNotFound');
+                        }
+                        const version = question.version || 1;
+                        const newQuestion = Object.assign({}, replacement, {
+                            version: version + 1,
+                            groupId: question.groupId || question.id,
+                        });
+                        return this.createQuestionTx(newQuestion, transaction)
+                            .then(({ id }) => {
+                                if (!question.groupId) {
+                                    const update = { version: 1, groupId: question.id };
+                                    return question.update(update, { transaction })
+                                        .then(() => id);
                                 }
-                                const version = question.version || 1;
-                                const newQuestion = Object.assign({}, replacement, {
-                                    version: version + 1,
-                                    groupId: question.groupId || question.id
-                                });
-                                return this.createQuestionTx(newQuestion, transaction)
-                                    .then(({ id }) => {
-                                        if (!question.groupId) {
-                                            return question.update({ version: 1, groupId: question.id }, { transaction })
-                                                .then(() => id);
-                                        } else {
-                                            return id;
-                                        }
-                                    })
-                                    .then(id => {
-                                        return question.destroy({ transaction })
-                                            .then(() => SurveyQuestion.destroy({ where: { questionId: question.id } }))
-                                            .then(() => ({ id }));
-                                    });
+                                return id;
+                            })
+                            .then((id) => {
+                                const where = { questionId: question.id };
+                                return question.destroy({ transaction })
+                                    .then(() => SurveyQuestion.destroy({ where }))
+                                    .then(() => ({ id }));
                             });
                     });
-                }
+                });
             });
     }
 
-    getQuestion(id, options = {}) {
+    getQuestion(qid, options = {}) {
+        const Question = this.db.Question;
         const language = options.language;
-        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId'] })
-            .then(question => {
+        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common'];
+        return Question.findById(qid, { raw: true, attributes })
+            .then((question) => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
                 }
-                if (question.meta === null) {
-                    delete question.meta;
-                }
-                if (question.maxCount === null) {
-                    delete question.maxCount;
-                }
-                if (question.multiple === null) {
-                    delete question.multiple;
-                }
-                if (question.choiceSetId === null) {
-                    delete question.choiceSetId;
-                }
-                return question;
+                return cleanDBQuestion(question);
             })
-            .then(question => {
+            .then((question) => {
                 if (question.choiceSetId) {
                     return this.questionChoice.listQuestionChoices(question.choiceSetId, language)
-                        .then(choices => {
-                            question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));
-                            delete question.choiceSetId;
+                        .then((choices) => {
+                            question.choices = choices.map(({ id, text, code }) => ({ id, text, code })); // eslint-disable-line no-param-reassign, max-len
+                            delete question.choiceSetId; // eslint-disable-line no-param-reassign, max-len
                             return question;
                         });
                 }
                 return question;
             })
             .then(question => this.updateText(question, language))
-            .then(question => {
-                if (['choice', 'choices'].indexOf(question.type) < 0) {
+            .then((question) => {
+                if (['choice', 'open-choice', 'choices'].indexOf(question.type) < 0) {
                     return question;
                 }
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
-                    .then(choices => {
+                    .then((choices) => {
                         if (question.type === 'choice') {
-                            choices.forEach(choice => delete choice.type);
+                            choices.forEach(r => delete r.type);
                         }
-                        question.choices = choices;
+                        if (question.type === 'open-choice') {
+                            choices.forEach((r) => {
+                                if (r.type === 'bool') {
+                                    delete r.type;
+                                }
+                            });
+                        }
+                        question.choices = choices;  // eslint-disable-line no-param-reassign, max-len
                         return question;
                     });
+            })
+            .then((question) => {
+                if (options.federated) {
+                    return this.updateFederatedIdentifier(question);
+                }
+                return question;
             });
     }
 
-    _updateQuestionTextTx({ id, text, instruction }, language, tx) {
+    updateFederatedIdentifier(question) {
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            attributes: ['identifier', 'questionChoiceId'],
+            where: { type: 'federated', questionId: question.id },
+        })
+            .then((result) => {
+                if (result.length < 1) {
+                    return question;
+                }
+                if (['choice', 'choices'].indexOf(question.type) < 0) {
+                    question.answerIdentifier = result[0].identifier;  // eslint-disable-line no-param-reassign, max-len
+                    return question;
+                }
+                const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));  // eslint-disable-line no-param-reassign, max-len
+                question.choices.forEach((r) => {
+                    const identifier = map.get(r.id);
+                    if (identifier) {
+                        r.identifier = identifier;
+                    }
+                });
+                return question;
+            });
+    }
+
+    auxUpdateQuestionTextTx({ id, text, instruction }, language, tx) {
         if (text) {
             return this.createTextTx({ id, text, instruction, language }, tx);
-        } else {
-            return SPromise.resolve();
         }
+        return SPromise.resolve();
     }
 
     updateQuestionTextTx(translation, language, tx) {
-        return this._updateQuestionTextTx(translation, language, tx)
+        return this.auxUpdateQuestionTextTx(translation, language, tx)
             .then(() => {
                 const choices = translation.choices;
                 if (choices) {
-                    return this.questionChoice.updateMultipleChoiceTextsTx(choices, language, tx);
+                    return this.questionChoice.createMultipleTextsTx(choices, language, tx);
                 }
+                return null;
             });
     }
 
     updateQuestionText(translation, language) {
-        return sequelize.transaction(tx => {
-            return this.updateQuestionTextTx(translation, language, tx);
-        });
+        return this.transaction(tx => this.updateQuestionTextTx(translation, language, tx));
     }
 
     deleteQuestion(id) {
+        const SurveyQuestion = this.db.SurveyQuestion;
+        const Question = this.db.Question;
         return SurveyQuestion.count({ where: { questionId: id } })
-            .then(count => {
+            .then((count) => {
                 if (count) {
                     return RRError.reject('qxReplaceWhenActiveSurveys');
-                } else {
-                    return Question.destroy({ where: { id } })
-                        .then(() => {
-                            return SurveyQuestion.destroy({ where: { questionId: id } });
-                        });
                 }
+                return Question.destroy({ where: { id } })
+                        .then(() => SurveyQuestion.destroy({ where: { questionId: id } }));
             });
     }
 
-    listQuestions({ scope, ids, language } = {}) {
-        scope = scope || 'summary';
+    findQuestions({ scope, ids, surveyId, commonOnly }) {
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
-        const options = { raw: true, attributes, order: 'id' };
-        if (ids) {
-            options.where = { id: { $in: ids } };
+        if (scope === 'complete') {
+            attributes.push('common');
         }
-        return Question.findAll(options)
-            .then(questions => {
+        const options = { attributes };
+        if (ids || commonOnly) {
+            const where = {};
+            if (commonOnly) {
+                where.common = true;
+            }
+            if (ids) {
+                where.id = { $in: ids };
+            }
+            options.where = where;
+        }
+        const Question = this.db.Question;
+        if (surveyId) {
+            Object.assign(options, { model: Question, as: 'question' });
+            const include = [options];
+            const where = { surveyId };
+            const sqOptions = { raw: true, where, include, attributes: [], order: 'question_id' };
+            return this.db.SurveyQuestion.findAll(sqOptions)
+                .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {  // eslint-disable-line no-param-reassign, max-len
+                    const newKey = key.split('.')[1];
+                    r[newKey] = question[key];
+                    return r;
+                }, {})));
+        }
+        Object.assign(options, { raw: true, order: 'id' });
+        return Question.findAll(options);
+    }
+
+    findFederatedQuestions(options = {}) {
+        return this.db.QuestionIdentifier.findAll({
+            raw: true,
+            attributes: ['questionId', 'identifier'],
+            where: { type: 'federated' },
+        })
+            .then((records) => {
+                const map = new Map(records.map(record => [record.questionId, record.identifier]));
+                const ids = records.map(record => record.questionId);
+                const optionsWithIds = Object.assign({ ids, options });
+                return this.findQuestions(optionsWithIds)
+                    .then((results) => {
+                        results.forEach((result) => {
+                            const identifier = map.get(result.id);
+                            Object.assign(result, { identifier });
+                        });
+                        return results;
+                    });
+            });
+    }
+
+    findQuestionsForList(options) {
+        if (options.federated) {
+            return this.findFederatedQuestions(options);
+        }
+        return this.findQuestions(options);
+    }
+
+    listQuestions(options = {}) {
+        const { ids, language } = options;
+        const scope = options.scope || 'summary';
+        return this.findQuestionsForList(options)
+            .then(questions => questions.map(question => cleanDBQuestion(question)))
+            .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
                     return RRError.reject('qxNotFound');
                 }
@@ -262,30 +363,16 @@ module.exports = class QuestionDAO extends Translatable {
                 }
                 const map = new Map(questions.map(question => ([question.id, question])));
                 if (ids) {
-                    questions = ids.map(id => map.get(id)); // order by specified ids
+                    questions = ids.map(id => map.get(id));  // eslint-disable-line no-param-reassign, max-len
                 }
-                questions.forEach(question => {
-                    if (question.meta === null) {
-                        delete question.meta;
-                    }
-                    if (question.maxCount === null) {
-                        delete question.maxCount;
-                    }
-                    if (question.multiple === null) {
-                        delete question.multiple;
-                    }
-                    if (question.choiceSetId === null) {
-                        delete question.choiceSetId;
-                    }
-                });
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         const promises = questions.reduce((r, question) => {
                             if (question.choiceSetId) {
-                                const promise = this.questionChoice.listQuestionChoices(question.choiceSetId, language)
-                                    .then(choices => {
-                                        question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));
-                                        delete question.choiceSetId;
+                                const promise = this.questionChoice.listQuestionChoices(question.choiceSetId, language)  // eslint-disable-line max-len
+                                    .then((choices) => {
+                                        question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));  // eslint-disable-line no-param-reassign, max-len
+                                        delete question.choiceSetId;  // eslint-disable-line no-param-reassign, max-len
                                     });
                                 r.push(promise);
                             }
@@ -296,117 +383,99 @@ module.exports = class QuestionDAO extends Translatable {
                     .then(() => {
                         if (scope !== 'summary') {
                             return this.questionChoice.getAllQuestionChoices(ids, language)
-                                .then(choices => {
-                                    choices.forEach(choice => {
-                                        const q = map.get(choice.questionId);
+                                .then((choices) => {
+                                    choices.forEach((r) => {
+                                        const q = map.get(r.questionId);
                                         if (q) {
-                                            delete choice.questionId;
-                                            if (q.type === 'choice') {
-                                                delete choice.type;
+                                            delete r.questionId;
+                                            if (q.type === 'choice' || q.type === 'choice-ref') {
+                                                delete r.type;
+                                            }
+                                            if (q.type === 'open-choice') {
+                                                if (r.type === 'bool') {
+                                                    delete r.type;
+                                                }
                                             }
                                             if (q.choices) {
-                                                q.choices.push(choice);
+                                                q.choices.push(r);
                                             } else {
-                                                q.choices = [choice];
+                                                q.choices = [r];
                                             }
                                         }
                                     });
                                 });
                         }
+                        return null;
                     })
                     .then(() => questions);
             });
     }
 
-    addQuestionIdentifiersTx(questionId, allIdentifiers, transaction) {
-        const { type, identifier, answerIdentifier, choices } = allIdentifiers;
+    addQuestionIdentifiersTx(questionId, identifiers, transaction) {
+        const QuestionIdentifier = this.db.QuestionIdentifier;
+        const { type, identifier, answerIdentifier, answerIdentifiers } = identifiers;
         return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
             .then(() => {
                 if (answerIdentifier) {
-                    return AnswerIdentifier.create({ type, identifier: answerIdentifier, questionId }, { transaction });
+                    const record = { type, identifier: answerIdentifier, questionId };
+                    return this.db.AnswerIdentifier.create(record, { transaction });
                 }
-                const pxs = choices.map(({ answerIdentifier: identifier, id: questionChoiceId }) => {
-                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction });
-                });
-                return SPromise.all(pxs);
+                const records = answerIdentifiers.map(r => ({
+                    type,
+                    identifier: r.identifier,
+                    questionId,
+                    questionChoiceId: r.questionChoiceId,
+                }));
+                return this.db.AnswerIdentifier.bulkCreate(records, { transaction });
             });
     }
 
-    addQuestionIdentifiers(questionId, allIdentifiers) {
-        return sequelize.transaction(transaction => {
-            return this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction);
-        });
+    addQuestionIdentifiers(questionId, identifiers) {
+        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, identifiers, transaction)); // eslint-disable-line max-len
     }
 
-    exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            if (fromQuestion && withChoice) {
-                return r;
-            }
-            const name = propertyInfo.name;
-            if (meta.hasOwnProperty(name)) {
-                r[name] = meta[name];
-            }
-            return r;
-        }, {});
-    }
-
-    export (options = {}) {
+    exportQuestions(options = {}) {
         return this.listQuestions({ scope: 'export' })
-            .then(questions => {
-                return questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
-                    const questionLine = { id, type, text, instruction };
-                    if (meta && options.meta) {
-                        Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, choices, true));
-                    }
-                    if (!choices) {
-                        r.push(questionLine);
-                        return r;
-                    }
-                    choices.forEach(({ id, type, text, code, meta }, index) => {
-                        const line = { choiceId: id, choiceText: text };
-                        if (type) {
-                            line.choiceType = type;
-                        }
-                        if (code) {
-                            line.choiceCode = code;
-                        }
-                        if (meta && options.meta) {
-                            Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, true, false));
-                        }
-                        if (index === 0) {
-                            Object.assign(line, questionLine);
-                        } else {
-                            line.id = questionLine.id;
-                        }
-                        r.push(line);
-                    });
+            .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {  // eslint-disable-line no-param-reassign, max-len
+                const questionLine = { id, type, text, instruction };
+                if (meta && options.meta) {
+                    Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, choices, true)); // eslint-disable-line max-len
+                }
+                if (!choices) {
+                    r.push(questionLine);
                     return r;
-                }, []);
-            })
-            .then(lines => {
-                const converter = new exportCSVConverter();
+                }
+                choices.forEach((choice, index) => {
+                    const line = { choiceId: choice.id, choiceText: choice.text };
+                    if (choice.type) {
+                        line.choiceType = choice.type;
+                    }
+                    if (choice.code) {
+                        line.choiceCode = choice.code;
+                    }
+                    if (choice.meta && options.meta) {
+                        Object.assign(questionLine, exportMetaQuestionProperties(choice.meta, options.meta, true, false)); // eslint-disable-line max-len
+                    }
+                    if (index === 0) {
+                        Object.assign(line, questionLine);
+                    } else {
+                        line.id = questionLine.id;
+                    }
+                    r.push(line);
+                });
+                return r;
+            }, []))
+            .then((lines) => {
+                const converter = new ExportCSVConverter();
                 return converter.dataToCSV(lines);
             });
     }
 
-    importMetaQuestionProperties(record, metaOptions, fromType) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            if (propertyInfo.type === fromType) {
-                const name = propertyInfo.name;
-                const value = record[name];
-                if (value !== undefined && value !== null) {
-                    r[name] = value;
-                }
-            }
-            return r;
-        }, {});
-    }
-
-    import (stream, options = {}) {
-        const converter = new importCSVConverter();
+    importQuestions(stream, options = {}) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
-            .then(records => {
+            .then((records) => {
                 const numRecords = records.length;
                 if (!numRecords) {
                     return [];
@@ -420,7 +489,7 @@ module.exports = class QuestionDAO extends Translatable {
                             question.instruction = record.instruction;
                         }
                         if (options.meta) {
-                            const meta = this.importMetaQuestionProperties(record, options.meta, 'question');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'question'); // eslint-disable-line max-len
                             if (Object.keys(meta).length > 0) {
                                 question.meta = meta;
                             }
@@ -443,7 +512,7 @@ module.exports = class QuestionDAO extends Translatable {
                             choice.code = record.choiceCode;
                         }
                         if (options.meta) {
-                            const meta = this.importMetaQuestionProperties(record, options.meta, 'choice');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'choice'); // eslint-disable-line max-len
                             if (Object.keys(meta).length > 0) {
                                 choice.meta = meta;
                             }
@@ -456,58 +525,53 @@ module.exports = class QuestionDAO extends Translatable {
                 }, new Map());
                 return [...map.values()];
             })
-            .then(records => {
+            .then((records) => {
                 if (!records.length) {
                     return {};
                 }
-                return sequelize.transaction(transaction => {
+                return this.transaction((transaction) => {
                     const mapIds = {};
                     const pxs = records.map(({ id, question }) => {
-                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']);
+                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']); // eslint-disable-line max-len
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
                                 const type = options.sourceType;
-                                const identifier = question.key;
-                                if (type && identifier) {
-                                    return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
-                                        .then(() => {
-                                            if (!question.choices) {
-                                                const identifier = question.answerKey;
-                                                const tag = parseInt(question.tag, 10);
-                                                return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction });
-                                            }
-                                        })
+                                if (type && !question.choices) {
+                                    const identifier = question.answerKey;
+                                    const tag = parseInt(question.tag, 10);
+                                    return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction }) // eslint-disable-line max-len
                                         .then(() => questionId);
                                 }
                                 return questionId;
                             })
-                            .then(questionId => {
+                            .then((questionId) => {
                                 const choices = question.choices;
                                 if (choices) {
-                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey', 'tag']));
-                                    return this.createChoicesTx(questionId, inputChoices, transaction)
-                                        .then(choicesIds => choicesIds.map(choicesId => choicesId.id))
-                                        .then(choicesIds => {
+                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey', 'tag'])); // eslint-disable-line max-len
+                                    return this.createChoicesTx(questionId, inputChoices, transaction)  // eslint-disable-line no-param-reassign, max-len
+                                        .then(choicesIds => choicesIds.map(choicesId => choicesId.id))  // eslint-disable-line no-param-reassign, max-len
+                                        .then((choicesIds) => {
                                             const type = options.sourceType;
                                             if (type) {
-                                                const pxs = choicesIds.map((questionChoiceId, index) => {
+                                                const pxs2 = choicesIds.map((questionChoiceId, index) => {  // eslint-disable-line no-param-reassign, max-len
                                                     const identifier = choices[index].answerKey;
                                                     const tag = parseInt(choices[index].tag, 10);
-                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction });
+                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction }); // eslint-disable-line max-len
                                                 });
-                                                return SPromise.all(pxs)
+                                                return SPromise.all(pxs2)
                                                     .then(() => choicesIds);
                                             }
                                             return choicesIds;
                                         })
-                                        .then(choicesIds => {
+                                        .then((choicesIds) => {
                                             mapIds[id] = {
                                                 questionId,
-                                                choicesIds: _.zipObject(choices.map(choice => choice.id), choicesIds)
+                                                choicesIds: _.zipObject(choices.map(choice => choice.id), choicesIds), // eslint-disable-line max-len
                                             };
                                         });
                                 }
                                 mapIds[id] = { questionId };
+                                return null;
                             });
                     });
                     return SPromise.all(pxs).then(() => mapIds);

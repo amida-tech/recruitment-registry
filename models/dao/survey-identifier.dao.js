@@ -1,25 +1,22 @@
 'use strict';
 
-const db = require('../db');
-const RRError = require('../../lib/rr-error');
+const Base = require('./base');
 
-const SurveyIdentifier = db.SurveyIdentifier;
-
-module.exports = class SurveyIdentifierDAO {
-    constructor() {}
-
+module.exports = class SurveyIdentifierDAO extends Base {
     createSurveyIdentifier(surveyIdentifier, transaction) {
+        const SurveyIdentifier = this.db.SurveyIdentifier;
         return SurveyIdentifier.create(surveyIdentifier, { transaction })
             .then(({ id }) => ({ id }));
     }
 
     getIdentifiersBySurveyId(type, ids) {
+        const SurveyIdentifier = this.db.SurveyIdentifier;
         return SurveyIdentifier.findAll({
-                where: { type, id: { $in: ids } },
-                attributes: ['surveyId', 'identifier'],
-                raw: true
-            })
-            .then(records => {
+            where: { type, id: { $in: ids } },
+            attributes: ['surveyId', 'identifier'],
+            raw: true,
+        })
+            .then((records) => {
                 const map = records.map(({ surveyId, identifier }) => [surveyId, identifier]);
                 return new Map(map);
             });
@@ -28,31 +25,22 @@ module.exports = class SurveyIdentifierDAO {
     updateSurveysWithIdentifier(surveys, type) {
         const ids = surveys.map(survey => survey.id);
         return this.getIdentifiersBySurveyId(type, ids)
-            .then(identifierMap => {
-                surveys.forEach(survey => survey.identifier = identifierMap.get(survey.id));
+            .then((identifierMap) => {
+                surveys.forEach((r) => { r.identifier = identifierMap.get(r.id); });
                 return surveys;
             });
     }
 
     getIdsBySurveyIdentifier(type) {
+        const SurveyIdentifier = this.db.SurveyIdentifier;
         return SurveyIdentifier.findAll({
-                where: { type },
-                attributes: ['surveyId', 'identifier'],
-                raw: true
-            })
-            .then(records => {
+            where: { type },
+            attributes: ['surveyId', 'identifier'],
+            raw: true,
+        })
+            .then((records) => {
                 const map = records.map(({ surveyId, identifier }) => [identifier, surveyId]);
                 return new Map(map);
-            });
-    }
-
-    getIdBySurveyIdentifier(type, identifier) {
-        return SurveyIdentifier.findOne({ where: { type, identifier }, raw: true, attributes: ['surveyId'] })
-            .then(record => {
-                if (!record) {
-                    return RRError.reject('surveyIdentifierNotFound', type, identifier);
-                }
-                return record.surveyId;
             });
     }
 };

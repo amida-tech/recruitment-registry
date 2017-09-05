@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const QuestionGenerator = require('./question-generator');
@@ -30,9 +32,9 @@ const sectionGenerators = {
         sections[lastIndex].name = 'parent_1';
         return [
             { name: 'parent_0', sections: sections.slice(0, lastIndex) },
-            sections[2]
+            sections[2],
         ];
-    }
+    },
 };
 
 module.exports = class SurveyGenerator {
@@ -55,14 +57,14 @@ module.exports = class SurveyGenerator {
     }
 
     incrementIndex() {
-        ++this.surveyIndex;
+        this.surveyIndex += 1;
     }
 
     sectionType() {
         return this.surveyIndex % 4;
     }
 
-    count() {
+    count() { // eslint-disable-line class-methods-use-this
         return null;
     }
 
@@ -75,7 +77,8 @@ module.exports = class SurveyGenerator {
     }
 
     newBody() {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         if (surveyIndex % 2 === 0) {
@@ -85,7 +88,7 @@ module.exports = class SurveyGenerator {
         if (metaIndex > 0) {
             result.meta = {
                 displayAsWizard: metaIndex === 1,
-                saveProgress: metaIndex === 2
+                saveProgress: metaIndex === 2,
             };
         }
         return result;
@@ -109,8 +112,8 @@ module.exports = class SurveyGenerator {
             const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
             surveyQuestions[questionGroupIndex].sections = [{ questions: [...sectionSurveyQuestions] }];
             if (this.surveyIndex % 2) {
-                const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
-                surveyQuestions[questionGroupIndex].sections.push({ name: 'addl_section_name', questions: [...sectionSurveyQuestions] });
+                const r = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
+                surveyQuestions[questionGroupIndex].sections.push({ name: 'addl_section_name', questions: [...r] });
             }
         }
         if (!sectionType) {
@@ -122,7 +125,8 @@ module.exports = class SurveyGenerator {
     }
 
     newSurveyQuestionIds(questionIds) {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));

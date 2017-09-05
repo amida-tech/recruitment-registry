@@ -1,5 +1,9 @@
 /* global describe,before,it*/
+
 'use strict';
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -12,62 +16,50 @@ const SharedSpec = require('./util/shared-spec.js');
 const expect = chai.expect;
 const shared = new SharedSpec();
 
-describe('language unit', function () {
+describe('language unit', () => {
     before(shared.setUpFn());
 
     let languages;
 
-    it('list existing languages', function () {
-        return models.language.listLanguages()
-            .then(result => {
+    it('list existing languages', () => models.language.listLanguages()
+            .then((result) => {
                 languages = result;
                 expect(languages).to.have.length.above(0);
-            });
-    });
+            }));
 
     const example = {
         code: 'tr',
         name: 'Turkish',
-        nativeName: 'Türkçe'
+        nativeName: 'Türkçe',
     };
 
-    it('create language', function () {
-        return models.language.createLanguage(example)
+    it('create language', () => models.language.createLanguage(example)
             .then(() => {
                 languages.push(example);
                 _.sortBy(languages, 'code');
-            });
-    });
+            }));
 
-    it('get language', function () {
-        return models.language.getLanguage(example.code)
-            .then(result => {
+    it('get language', () => models.language.getLanguage(example.code)
+            .then((result) => {
                 expect(result).to.deep.equal(example);
-            });
-    });
+            }));
 
-    it('list existing languages', function () {
-        return models.language.listLanguages()
-            .then(result => {
+    it('list existing languages', () => models.language.listLanguages()
+            .then((result) => {
                 expect(result).to.deep.equal(languages);
-            });
-    });
+            }));
 
-    it('delete language', function () {
-        return models.language.deleteLanguage('fr')
+    it('delete language', () => models.language.deleteLanguage('fr')
             .then(() => {
                 _.remove(languages, { code: 'fr' });
-            });
-    });
+            }));
 
-    it('list existing languages', function () {
-        return models.language.listLanguages()
-            .then(result => {
+    it('list existing languages', () => models.language.listLanguages()
+            .then((result) => {
                 expect(result).to.deep.equal(languages);
-            });
-    });
+            }));
 
-    it('patch language', function () {
+    it('patch language', () => {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
         return models.language.patchLanguage('tr', languageUpdate)
             .then(() => {
@@ -76,10 +68,8 @@ describe('language unit', function () {
             });
     });
 
-    it('list existing languages', function () {
-        return models.language.listLanguages()
-            .then(result => {
+    it('list existing languages', () => models.language.listLanguages()
+            .then((result) => {
                 expect(result).to.deep.equal(languages);
-            });
-    });
+            }));
 });

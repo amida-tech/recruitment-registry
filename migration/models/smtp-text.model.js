@@ -1,23 +1,26 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const SmtpText = sequelize.define('smtp_text', {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('smtp_text', {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
-                key: 'code'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language',
+                },
+                key: 'code',
+            },
         },
         subject: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         content: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -26,14 +29,13 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
-
-    return SmtpText;
 };

@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 
 const models = require('../../models');
@@ -17,7 +19,7 @@ const SpecTests = class AssessmentSpecTests {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
-        return function () {
+        return function createAssessmen() {
             const surveyIds = indices.map(index => hxSurvey.id(index));
             const assessment = generator.newAssessment(surveyIds);
             return models.assessment.createAssessment(assessment)
@@ -27,10 +29,10 @@ const SpecTests = class AssessmentSpecTests {
 
     getAssessmentFn(index) {
         const hxAssessment = this.hxAssessment;
-        return function () {
+        return function getAssessment() {
             const id = hxAssessment.id(index);
             return models.assessment.getAssessment(id)
-                .then(assessment => {
+                .then((assessment) => {
                     expect(assessment).to.deep.equal(hxAssessment.server(index));
                 });
         };
@@ -38,9 +40,9 @@ const SpecTests = class AssessmentSpecTests {
 
     listAssessmentFn() {
         const hxAssessment = this.hxAssessment;
-        return function () {
+        return function listAssessment() {
             return models.assessment.listAssessments()
-                .then(list => {
+                .then((list) => {
                     expect(list).to.deep.equal(hxAssessment.listServers());
                 });
         };
@@ -60,11 +62,11 @@ const IntegrationTests = class AssessmentSpecTests {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
-        return function (done) {
+        return function createAssessment(done) {
             const surveyIds = indices.map(index => hxSurvey.id(index));
             const assessment = generator.newAssessment(surveyIds);
             rrSuperTest.post('/assessments', assessment, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxAssessment.pushWithId(assessment, res.body.id);
                 })
                 .end(done);
@@ -74,10 +76,10 @@ const IntegrationTests = class AssessmentSpecTests {
     getAssessmentFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxAssessment = this.hxAssessment;
-        return function (done) {
+        return function getAssessment(done) {
             const id = hxAssessment.id(index);
             rrSuperTest.get(`/assessments/${id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.server(index));
                 })
                 .end(done);
@@ -87,9 +89,9 @@ const IntegrationTests = class AssessmentSpecTests {
     listAssessmentFn() {
         const rrSuperTest = this.rrSuperTest;
         const hxAssessment = this.hxAssessment;
-        return function (done) {
+        return function listAssessment(done) {
             rrSuperTest.get('/assessments', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.listServers());
                 })
                 .end(done);
@@ -99,5 +101,5 @@ const IntegrationTests = class AssessmentSpecTests {
 
 module.exports = {
     SpecTests,
-    IntegrationTests
+    IntegrationTests,
 };

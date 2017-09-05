@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -15,23 +17,23 @@ const surveyExamples = require('../fixtures/example/survey');
 const config = require('../../config');
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
 
-describe('user set-up and login use-case', function () {
+describe('user set-up and login use-case', () => {
     const userExample = userExamples.Alzheimer;
-    const surveyExample = surveyExamples.Alzheimer;
+    const surveyExample = surveyExamples.alzheimer;
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
-    it('login as super user', shared.loginFn(store, config.superUser));
+    it('login as super user', shared.loginFn(config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(store, surveyExample.survey));
+    it('create registry', shared.createSurveyProfileFn(surveyExample));
 
-    it('logout as super user', shared.logoutFn(store));
+    it('logout as super user', shared.logoutFn());
 
     // --------
 
@@ -39,29 +41,28 @@ describe('user set-up and login use-case', function () {
 
     let survey;
 
-    it('get profile survey', function (done) {
-        store.get('/profile-survey', false, 200)
-            .expect(function (res) {
+    it('get profile survey', function getProfileSurvey() {
+        return rrSuperTest.get('/profile-survey', false, 200)
+            .then((res) => {
                 survey = res.body.survey;
-            })
-            .end(done);
+            });
     });
 
     // --------- set up account
 
     let answers;
 
-    it('fill user profile and submit', function (done) {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+    it('fill user profile and submit', function fileeProfile() {
+        answers = helper.formAnswersToPost(survey, surveyExamples.alzheimerAnswer);
         const user = userExample;
-        store.authPost('/profiles', { user, answers }, 201).end(done);
+        return rrSuperTest.authPost('/profiles', { user, answers }, 201);
     });
 
     // -------- verification
 
-    it('verify user profile', function (done) {
-        store.get('/profiles', true, 200)
-            .expect(function (res) {
+    it('verify user profile', function verifyProfile() {
+        return rrSuperTest.get('/profiles', true, 200)
+            .then((res) => {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -69,35 +70,33 @@ describe('user set-up and login use-case', function () {
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
+                expectedUser.createdAt = user.createdAt;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
-
-            })
-            .end(done);
+            });
     });
 
     // --------
 
-    it('update user profile', function (done) {
-        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+    it('update user profile', function updateProfile() {
+        answers = helper.formAnswersToPost(survey, surveyExamples.alzheimerReanswer);
         const userUpdates = {
-            email: 'updated@example.com'
+            email: 'updated@example.com',
         };
         const user = userUpdates;
-        store.patch('/profiles', { user, answers }, 204)
+        return rrSuperTest.patch('/profiles', { user, answers }, 204)
             .send({
                 user: userUpdates,
-                answers
-            })
-            .end(done);
+                answers,
+            });
     });
 
-    it('verify user profile', function (done) {
-        store.get('/profiles', true, 200)
-            .expect(function (res) {
+    it('verify user profile', function verifyUserProfile() {
+        return rrSuperTest.get('/profiles', true, 200)
+            .then((res) => {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -106,13 +105,12 @@ describe('user set-up and login use-case', function () {
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
+                expectedUser.createdAt = user.createdAt;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
-
-            })
-            .end(done);
+            });
     });
 });

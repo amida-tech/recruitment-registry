@@ -1,2 +1,2 @@
-worker: node syncDecember15.js
+worker: node seed.js
 web: node index.js

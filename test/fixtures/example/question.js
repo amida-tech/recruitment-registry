@@ -7,13 +7,8 @@ module.exports = [{
         { text: 'Football' },
         { text: 'Basketball', type: 'bool' },
         { text: 'Soccer' },
-        { text: 'Tennis', type: 'bool' }
+        { text: 'Tennis', type: 'bool' },
     ],
-    actions: [
-        { text: 'Go there', type: 'yes' },
-        { text: 'Go here', type: 'no' },
-        { text: 'Go everywhere', type: 'yes' }
-    ]
 }, {
     text: 'What is your hair color?',
     type: 'choice',
@@ -21,18 +16,14 @@ module.exports = [{
         'Black',
         'Brown',
         'Blonde',
-        'Other'
+        'Other',
     ],
-    actions: [
-        { text: 'Yesss', type: 'yes' },
-        { text: 'Huraaa', type: 'no' }
-    ]
 }, {
     text: 'Where were you born?',
-    type: 'text'
+    type: 'text',
 }, {
     text: 'Do you have pets?',
-    type: 'bool'
+    type: 'bool',
 }, {
     text: 'How did you hear about us?',
     type: 'choices',
@@ -41,6 +32,6 @@ module.exports = [{
         { text: 'Newspaper' },
         { text: 'Internet', type: 'bool' },
         { text: 'Friends', type: 'bool' },
-        { text: 'Other', type: 'text' }
-    ]
+        { text: 'Other', type: 'text' },
+    ],
 }];

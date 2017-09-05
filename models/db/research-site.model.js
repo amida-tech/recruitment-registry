@@ -1,45 +1,73 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('research_site', {
+module.exports = function researchSite(sequelize, Sequelize, schema) {
+    const tableName = 'research_site';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
+        },
+        phone: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+            defaultValue: '999-999-9999',
+        },
+        ext: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
+        phone2: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
+        ext2: {
+            type: Sequelize.TEXT,
+            allowNull: true,
         },
         url: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
+        },
+        street: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+        },
+        street2: {
+            type: Sequelize.TEXT,
+            allowNull: true,
         },
         city: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         state: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         zip: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
-            field: 'created_at'
+            type: Sequelize.DATE,
+            field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at'
+            type: Sequelize.DATE,
+            field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

@@ -1,22 +1,22 @@
 'use strict';
 
-const db = require('../db');
+const Base = require('./base');
 
-const ConsentSignature = db.ConsentSignature;
-
-module.exports = class UserConsentDocumentDAO {
-    constructor(dependencies) {
-        Object.assign(this, dependencies);
+const signatureToInfo = function (signature) {
+    if (signature) {
+        return { signature: true, language: signature.language };
     }
+    return { signature: false };
+};
 
-    addSignatureInfo(consentDocument, signature) {
-        if (signature) {
-            consentDocument.signature = true;
-            consentDocument.language = signature.language;
-        } else {
-            consentDocument.signature = false;
-        }
-        return consentDocument;
+const addSignatureInfo = function (consentDocument, signature) {
+    return Object.assign(consentDocument, signatureToInfo(signature));
+};
+
+module.exports = class UserConsentDocumentDAO extends Base {
+    constructor(db, dependencies) {
+        super(db);
+        Object.assign(this, dependencies);
     }
 
     listUserConsentDocuments(userId, options = {}) {
@@ -24,7 +24,7 @@ module.exports = class UserConsentDocumentDAO {
         const consentDocOptions = Object.assign({ summary: true }, options);
         delete consentDocOptions.includeSigned;
         return this.consentDocument.listConsentDocuments(consentDocOptions)
-            .then(activeDocuments => {
+            .then((activeDocuments) => {
                 const attributes = ['consentDocumentId'];
                 if (includeSigned) {
                     attributes.push('language');
@@ -33,29 +33,28 @@ module.exports = class UserConsentDocumentDAO {
                 if (options.transaction) {
                     query.transaction = options.transaction;
                 }
-                return ConsentSignature.findAll(query)
-                    .then(signedDocuments => new Map(signedDocuments.map(signedDocument => [signedDocument.consentDocumentId, signedDocument])))
-                    .then(signedDocumentMap => {
+                return this.db.ConsentSignature.findAll(query)
+                    .then(docs => new Map(docs.map(r => [r.consentDocumentId, r])))
+                    .then((docMap) => {
                         if (includeSigned) {
-                            activeDocuments.forEach(activeDocument => {
-                                const signature = signedDocumentMap.get(activeDocument.id);
-                                this.addSignatureInfo(activeDocument, signature);
+                            activeDocuments.forEach((activeDocument) => {
+                                const signature = docMap.get(activeDocument.id);
+                                addSignatureInfo(activeDocument, signature);
                             });
                             return activeDocuments;
-                        } else {
-                            return activeDocuments.filter(activeDocument => !signedDocumentMap.has(activeDocument.id));
                         }
+                        return activeDocuments.filter(r => !docMap.has(r.id));
                     });
             });
     }
 
     fillSignature(result, userId, id) {
-        return ConsentSignature.findOne({
-                where: { userId, consentDocumentId: id },
-                raw: true,
-                attributes: ['language']
-            })
-            .then(signature => this.addSignatureInfo(result, signature));
+        return this.db.ConsentSignature.findOne({
+            where: { userId, consentDocumentId: id },
+            raw: true,
+            attributes: ['language'],
+        })
+            .then(signature => addSignatureInfo(result, signature));
     }
 
     getUserConsentDocument(userId, id, options) {
@@ -63,8 +62,8 @@ module.exports = class UserConsentDocumentDAO {
             .then(result => this.fillSignature(result, userId, id));
     }
 
-    getUserConsentDocumentByTypeName(userId, typeName, options = {}) {
-        return this.consentDocument.getConsentDocumentByTypeName(typeName, options)
+    getUserConsentDocumentByTypeId(userId, typeId, options = {}) {
+        return this.consentDocument.getConsentDocumentByTypeId(typeId, options)
             .then(result => this.fillSignature(result, userId, result.id));
     }
 };

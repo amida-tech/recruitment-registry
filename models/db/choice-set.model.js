@@ -1,26 +1,29 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('choice_set', {
+module.exports = function choiceSet(sequelize, Sequelize, schema) {
+    const tableName = 'choice_set';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         reference: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
-            field: 'created_at'
+            type: Sequelize.DATE,
+            field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         indexes: [{ unique: true, fields: ['reference'], where: { deleted_at: { $eq: null } } }],
-        paranoid: true
+        paranoid: true,
     });
 };

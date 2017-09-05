@@ -1,172 +1,222 @@
 /* global it*/
+
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
+const _ = require('lodash');
+
+const config = require('../../config');
 
 const appgen = require('../../app-generator');
-const db = require('../../models/db');
+const models = require('../../models');
+const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
 
 const expect = chai.expect;
+const unknownError = new RRError('unknown');
+const i18n = require('../../i18n');
 
 class SharedIntegration {
-    constructor(generator) {
+    constructor(rrSuperTest, generator) {
         this.generator = generator || new Generator();
+        this.rrSuperTest = rrSuperTest;
     }
 
-    setUpFn(store, options = {}) {
-        return function (done) {
-            appgen.generate(options, function (err, app) {
+    setUpFn(options) {
+        const rrSuperTest = this.rrSuperTest;
+        return function setup(done) {
+            appgen.generate(options || { models }, (err, app) => {
                 if (err) {
                     return done(err);
                 }
-                store.initialize(app);
-                done();
+                rrSuperTest.initialize(app);
+                return done();
             });
         };
     }
 
-    loginFn(store, login) {
-        return function (done) {
-            store.authBasic(login).end(done);
+    static setUpMultiFn(rrSuperTests, options = {}) {
+        return function setupMulti(done) {
+            appgen.generate(options, (err, app) => {
+                if (err) {
+                    return done(err);
+                }
+                rrSuperTests.forEach(rrSuperTest => rrSuperTest.initialize(app));
+                return done();
+            });
         };
     }
 
-    loginIndexFn(store, history, index) {
-        const shared = this;
-        return function (done) {
-            const login = history.client(index);
-            login.username = login.username || login.email.toLowerCase();
-            shared.loginFn(store, login)(done);
+    setUpErrFn(options = {}) { // eslint-disable-line class-methods-use-this
+        return function setupErr(done) {
+            appgen.generate(options, (err) => {
+                if (!err) {
+                    return done(new Error('Expected error did not happen.'));
+                }
+                return done();
+            });
         };
     }
 
-    logoutFn(store) {
-        return function () {
-            store.resetAuth();
+    loginFn(user) {
+        const rrSuperTest = this.rrSuperTest;
+        return function login() {
+            const fullUser = Object.assign({ id: 1, role: 'admin' }, user);
+            return rrSuperTest.authBasic(fullUser);
         };
     }
 
-    badLoginFn(store, login) {
-        return function (done) {
-            store.authBasic(login, 401).end(done);
+    loginIndexFn(hxUser, index) {
+        const self = this;
+        return function loginIndex() {
+            const user = _.cloneDeep(hxUser.client(index));
+            user.username = user.username || user.email.toLowerCase();
+            user.id = hxUser.id(index);
+            return self.rrSuperTest.authBasic(user);
         };
     }
 
-    createProfileSurveyFn(store, hxSurvey) {
+    logoutFn() {
+        const rrSuperTest = this.rrSuperTest;
+        return function logout() {
+            rrSuperTest.resetAuth();
+        };
+    }
+
+    badLoginFn(login) {
+        const rrSuperTest = this.rrSuperTest;
+        return function badLogin() {
+            return rrSuperTest.authBasic(login, 401);
+        };
+    }
+
+    createProfileSurveyFn(hxSurvey) {
         const generator = this.generator;
-        return function (done) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createProfileSurvey(done) {
             const clientSurvey = generator.newSurvey();
-            store.post('/profile-survey', clientSurvey, 201)
-                .end(function (err, res) {
+            rrSuperTest.post('/profile-survey', clientSurvey, 201)
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
-                    hxSurvey.push(clientSurvey, res.body);
-                    done();
+                    const userId = rrSuperTest.userId;
+                    const server = { id: res.body.id, authorId: userId };
+                    Object.assign(server, clientSurvey);
+                    hxSurvey.push(clientSurvey, server);
+                    return done();
                 });
         };
     }
 
-    verifyProfileSurveyFn(store, hxSurvey, index) {
-        return function (done) {
-            store.get('/profile-survey', false, 200)
-                .expect(function (res) {
+    verifyProfileSurveyFn(hxSurvey, index) {
+        const rrSuperTest = this.rrSuperTest;
+        return function verifyProfileSurvey(done) {
+            rrSuperTest.get('/profile-survey', false, 200)
+                .expect((res) => {
                     expect(res.body.exists).to.equal(true);
                     const survey = res.body.survey;
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
+                    const expected = _.cloneDeep(hxSurvey.server(index));
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete expected.authorId;
+                    }
+                    comparator.survey(expected, survey);
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey);
                 })
                 .end(done);
         };
     }
 
-    createUserFn(store, history, user, override) {
+    createUserFn(history, user, override) {
         const generator = this.generator;
-        return function (done) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createUser() {
             if (!user) {
                 user = generator.newUser(override);
             }
-            store.post('/users', user, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            return rrSuperTest.post('/users', user, 201)
+                .then((res) => {
                     history.push(user, { id: res.body.id });
-                    done();
                 });
         };
     }
 
-    createSurveyFn(store, hxSurvey, hxQuestion, qxIndices) {
+    createSurveyFn(hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
-        return function (done) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createSurvey(done) {
             const inputSurvey = generator.newSurvey();
             delete inputSurvey.sections;
             if (hxQuestion) {
                 inputSurvey.questions = qxIndices.map(index => ({
                     id: hxQuestion.server(index).id,
-                    required: false
+                    required: false,
                 }));
             }
-            store.post('/surveys', inputSurvey, 201)
-                .end(function (err, res) {
+            rrSuperTest.post('/surveys', inputSurvey, 201)
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     hxSurvey.push(inputSurvey, res.body);
-                    done();
+                    return done();
                 });
         };
     }
 
-    createSurveyProfileFn(store, survey) {
-        return function (done) {
-            store.post('/profile-survey', survey, 201)
-                .expect(function (res) {
+    createSurveyProfileFn(survey) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createSurveyProfile(done) {
+            rrSuperTest.post('/profile-survey', survey, 201)
+                .expect((res) => {
                     expect(!!res.body.id).to.equal(true);
                 })
                 .end(done);
         };
     }
 
-    createConsentTypeFn(store, history) {
+    createConsentTypeFn(history) {
+        const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
-        return function (done) {
+        return function createConsentType(done) {
             const cst = generator.newConsentType();
-            store.post('/consent-types', cst, 201)
-                .end(function (err, res) {
+            rrSuperTest.post('/consent-types', cst, 201)
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     history.pushType(cst, res.body);
-                    done();
+                    return done();
                 });
         };
     }
 
-    createConsentFn(store, hxConsent, hxConsentDocument, typeIndices) {
+    createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
+        const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
-        return function (done) {
+        return function createConsent(done) {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            store.post('/consents', clientConsent, 201)
-                .expect(function (res) {
+            rrSuperTest.post('/consents', clientConsent, 201)
+                .expect((res) => {
                     hxConsent.pushWithId(clientConsent, res.body.id);
                 })
                 .end(done);
         };
     }
 
-    verifyConsentFn(store, hxConsent, index) {
-        return function (done) {
+    verifyConsentFn(hxConsent, index) {
+        const rrSuperTest = this.rrSuperTest;
+        return function verifyConsent(done) {
             const id = hxConsent.id(index);
-            store.get(`/consents/${id}`, true, 200)
-                .expect(function (res) {
+            rrSuperTest.get(`/consents/${id}`, true, 200)
+                .expect((res) => {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -174,85 +224,112 @@ class SharedIntegration {
         };
     }
 
-    signConsentTypeFn(store, hxConsentDocument, userIndex, typeIndex) {
-        return function (done) {
+    signConsentTypeFn(hxConsentDocument, userIndex, typeIndex) {
+        const rrSuperTest = this.rrSuperTest;
+        return function signConsentType(done) {
             const consentDocumentId = hxConsentDocument.id(typeIndex);
             hxConsentDocument.sign(typeIndex, userIndex);
-            store.post('/consent-signatures', { consentDocumentId }, 201).end(done);
+            rrSuperTest.post('/consent-signatures', { consentDocumentId }, 201).end(done);
         };
     }
 
-    bulkSignConsentTypeFn(store, hxConsentDocument, userIndex, typeIndices) {
-        return function (done) {
+    bulkSignConsentTypeFn(hxConsentDocument, userIndex, typeIndices) {
+        const rrSuperTest = this.rrSuperTest;
+        return function bulkSignConsentType(done) {
             const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
             typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
-            store.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
+            rrSuperTest.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
         };
     }
 
-    createConsentDocumentFn(store, history, typeIndex) {
+    createConsentDocumentFn(history, typeIndex) {
+        const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
-        return function (done) {
+        return function createConsentDocument(done) {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            store.post('/consent-documents', cs, 201)
-                .end(function (err, res) {
+            rrSuperTest.post('/consent-documents', cs, 201)
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     history.push(typeIndex, cs, res.body);
-                    done();
+                    return done();
                 });
         };
     }
 
-    translateConsentTypeFn(store, index, language, hxType) {
-        return function (done) {
+    translateConsentTypeFn(index, language, hxType) {
+        const rrSuperTest = this.rrSuperTest;
+        return function translateConsentType(done) {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            store.patch(`/consent-types/text/${language}`, translation, 204)
-                .end(function (err) {
+            rrSuperTest.patch(`/consent-types/text/${language}`, translation, 204)
+                .end((err) => {
                     if (err) {
                         return done(err);
                     }
                     hxType.translate(index, language, translation);
-                    done();
+                    return done();
                 });
         };
     }
 
-    translateConsentDocumentFn(store, index, language, history) {
-        return function (done) {
+    translateConsentDocumentFn(index, language, history) {
+        const rrSuperTest = this.rrSuperTest;
+        return function translateConsentDocument(done) {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            store.patch(`/consent-documents/text/${language}`, translation, 204)
-                .end(function (err) {
+            rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204)
+                .end((err) => {
                     if (err) {
                         return done(err);
                     }
                     history.hxDocument.translateWithServer(server, language, translation);
-                    done();
+                    return done();
                 });
         };
     }
 
-    verifyUserAudit(store) {
-        it('verify user audit', function () {
-            const userAudit = store.getUserAudit();
-            return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
-                .then(users => new Map(users.map(user => [user.username, user.id])))
-                .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
-                .then(expected => {
-                    return db.UserAudit.findAll({
-                            raw: true,
-                            attributes: ['userId', 'endpoint', 'operation'],
-                            order: 'created_at'
-                        })
-                        .then(actual => {
-                            expect(actual).to.deep.equal(expected);
-                        });
+    verifyUserAudit() {
+        const rrSuperTest = this.rrSuperTest;
+        it('login as super', this.loginFn(config.superUser));
+
+        it('verify user audit', function vua() {
+            const userAudit = rrSuperTest.getUserAudit();
+            return rrSuperTest.get('/users', true, 200, { role: 'all' })
+                .then(res => new Map(res.body.map(user => [user.username, user.id])))
+                .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
+                    const userId = userMap.get(username);
+                    return { userId, operation, endpoint };
+                }))
+                .then((expected) => {
+                    const px = rrSuperTest.get('/user-audits', true, 200);
+                    return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
                 });
         });
+
+        it('logout as super', this.logoutFn());
+    }
+
+    verifyErrorMessage(res, code, ...params) { // eslint-disable-line class-methods-use-this
+        const req = {};
+        const response = {};
+        i18n.init(req, response);
+        const expected = (new RRError(code, ...params)).getMessage(response);
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
+        expect(res.body.message).to.equal(expected);
+    }
+
+    verifyErrorMessageLang(res, language, code, ...params) { // eslint-disable-line class-methods-use-this
+        const req = { url: `http://aaa.com/anything?language=${language}` };
+        const response = {};
+        i18n.init(req, response);
+        const expected = (new RRError(code, ...params)).getMessage(response);
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
+        expect(res.body.message).to.equal(expected);
     }
 }
 

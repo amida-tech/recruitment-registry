@@ -1,49 +1,52 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('user_survey', {
+module.exports = function userSurvey(sequelize, Sequelize, schema) {
+    const tableName = 'user_survey';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         userId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    schema,
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    schema,
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         status: {
-            type: DataTypes.ENUM('new', 'in-progress', 'completed'),
-            allowNull: false
+            type: Sequelize.ENUM('new', 'in-progress', 'completed'),
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

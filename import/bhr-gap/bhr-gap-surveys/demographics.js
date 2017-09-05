@@ -4,32 +4,32 @@ module.exports = {
     name: 'Demographics',
     identifier: {
         type: 'bhr-gap',
-        value: 'demographics'
+        value: 'demographics',
     },
     questions: [{
         text: 'What is your weight (lbs)?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID177' },
-        choiceSetReference: 'weight-ranges-lbs'
+        choiceSetReference: 'weight-ranges-lbs',
     }, {
         text: 'What is your height (ft\'in")?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID178' },
-        choiceSetReference: 'height-ft-inches'
+        choiceSetReference: 'height-ft-inches',
     }, {
         text: 'What is your current marital status?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID180' },
-        choiceSetReference: 'marital-status'
+        choiceSetReference: 'marital-status',
     }, {
         text: 'Please indicate your primary residence type',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID189' },
-        choiceSetReference: 'primary-residence-type'
+        choiceSetReference: 'primary-residence-type',
     }, {
         text: 'What is/was the field of your primary occupation during most of adult life',
         required: false,
@@ -47,7 +47,7 @@ module.exports = {
         text: 'Please indicate *Other occupation',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID183' }
+        answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID183' },
     }, {
         text: 'Please indicate your role in your primary occupational industry',
         required: false,
@@ -65,8 +65,8 @@ module.exports = {
             { text: 'Temporary employee', answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID184_10' } },
             { text: 'Researcher', answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID184_11' } },
             { text: 'Self-employed', answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID184_12' } },
-            { text: 'Other', answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID184_13' } }
-        ]
+            { text: 'Other', answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID184_13' } },
+        ],
     }, {
         text: 'Are you retired?',
         required: false,
@@ -85,7 +85,7 @@ module.exports = {
         required: true,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID186' },
-        choiceSetReference: 'retirement-year'
+        choiceSetReference: 'retirement-year',
     }, {
         text: 'Are you a veteran of the Armed Forces?',
         required: true,
@@ -104,6 +104,6 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID193' },
-        choiceSetReference: 'armed-forces-branch'
-    }]
+        choiceSetReference: 'armed-forces-branch',
+    }],
 };

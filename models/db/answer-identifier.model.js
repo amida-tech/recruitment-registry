@@ -1,60 +1,63 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('answer_identifier', {
+module.exports = function answerIdentifier(sequelize, Sequelize, schema) {
+    const tableName = 'answer_identifier';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         type: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         identifier: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question'
+                    schema,
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionChoiceId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'question_choice_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'question_choice'
+                    schema,
+                    tableName: 'question_choice',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         multipleIndex: {
-            type: DataTypes.INTEGER,
-            field: 'multiple_index'
+            type: Sequelize.INTEGER,
+            field: 'multiple_index',
         },
         tag: {
-            type: DataTypes.INTEGER
+            type: Sequelize.INTEGER,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at'
-        }
+            type: Sequelize.DATE,
+            field: 'updated_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-        indexes: [{ fields: ['question_id', 'question_choice_id'] }]
+        indexes: [{ fields: ['question_id', 'question_choice_id'] }],
     });
 };

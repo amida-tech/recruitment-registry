@@ -1,28 +1,34 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    const ConsentTypeText = sequelize.define('consent_type_text', {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('consent_type_text', {
         consentTypeId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'consent_type_id',
             references: {
-                model: 'consent_type',
-                key: 'id'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent_type',
+                },
+                key: 'id',
+            },
         },
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
-                key: 'code'
-            }
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language',
+                },
+                key: 'code',
+            },
         },
         title: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -30,15 +36,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
-
-    return ConsentTypeText;
 };

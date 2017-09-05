@@ -1,35 +1,37 @@
 'use strict';
 
-const SPromise = require('../../lib/promise');
-
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('question_type', {
+module.exports = function questionType(sequelize, Sequelize, schema) {
+    const tableName = 'question_type';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         hooks: {
             afterSync(options) {
                 if (options.force) {
                     const names = [
-                        'text', 'choice', 'choices', 'bool', 'integer', 'float',
-                        'zip', 'date', 'pounds', 'year', 'month', 'day',
-                        'feet-inches', 'blood-pressure', 'choice-ref'
+                        'text', 'choice', 'choices', 'bool', 'integer',
+                        'float', 'zip', 'date', 'pounds', 'year', 'month',
+                        'day', 'feet-inches', 'blood-pressure', 'choice-ref',
+                        'open-choice', 'file',
                     ];
-                    const ps = names.map(name => this.create({ name }));
-                    return SPromise.all(ps);
+                    return this.bulkCreate(names.map(name => ({ name })));
                 }
-            }
-        }
+                return null;
+            },
+        },
     });
 };

@@ -2,40 +2,37 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
 const shared = require('./shared.js');
 
-const language = models.language;
-
-exports.createLanguage = function (req, res) {
-    language.createLanguage(req.body)
+exports.createLanguage = function createLanguage(req, res) {
+    req.models.language.createLanguage(req.body)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getLanguage = function (req, res) {
+exports.getLanguage = function getLanguage(req, res) {
     const code = _.get(req, 'swagger.params.code.value');
-    language.getLanguage(code)
+    req.models.language.getLanguage(code)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.patchLanguage = function (req, res) {
+exports.patchLanguage = function patchLanguage(req, res) {
     const code = _.get(req, 'swagger.params.code.value');
-    language.patchLanguage(code, req.body)
+    req.models.language.patchLanguage(code, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.deleteLanguage = function (req, res) {
+exports.deleteLanguage = function deleteLanguage(req, res) {
     const code = _.get(req, 'swagger.params.code.value');
-    language.deleteLanguage(code)
+    req.models.language.deleteLanguage(code)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.listLanguages = function (req, res) {
-    language.listLanguages()
+exports.listLanguages = function listLanguages(req, res) {
+    req.models.language.listLanguages()
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

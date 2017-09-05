@@ -1,49 +1,52 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('consent_type_text', {
+module.exports = function consentTypeText(sequelize, Sequelize, schema) {
+    const tableName = 'consent_type_text';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         consentTypeId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_type_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    schema,
+                    tableName: 'consent_type',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         title: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

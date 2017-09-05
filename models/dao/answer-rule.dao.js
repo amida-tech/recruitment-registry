@@ -1,18 +1,18 @@
 'use strict';
 
 const _ = require('lodash');
-const db = require('../db');
+const Base = require('./base');
 const answerCommon = require('./answer-common');
 
-const AnswerRule = db.AnswerRule;
-const AnswerRuleValue = db.AnswerRuleValue;
-const Question = db.Question;
-const QuestionChoice = db.QuestionChoice;
+const ExportCSVConverter = require('../../export/csv-converter.js');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
-module.exports = class AnswerRuleDAO {
-    constructor() {}
-
-    getSurveyAnswerRules(surveyId) {
+module.exports = class AnswerRuleDAO extends Base {
+    getSurveyAnswerRules({ surveyId }) {
+        const AnswerRule = this.db.AnswerRule;
+        const AnswerRuleValue = this.db.AnswerRuleValue;
+        const Question = this.db.Question;
+        const QuestionChoice = this.db.QuestionChoice;
         const where = { surveyId };
         const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
         const include = [
@@ -20,13 +20,13 @@ module.exports = class AnswerRuleDAO {
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
         ];
         return AnswerRule.findAll({ raw: true, where, attributes, include, order: 'line' })
-            .then(answerRules => {
+            .then((answerRules) => {
                 if (answerRules.length < 1) {
                     return answerRules;
                 }
                 const rules = {};
                 const ruleIds = [];
-                const result = answerRules.map(answerRule => {
+                const result = answerRules.map((answerRule) => {
                     const { id, logic, questionId, answerQuestionId, sectionId } = answerRule;
                     const questionType = answerRule['answerQuestion.type'];
                     const rule = { id, logic, type: questionType };
@@ -37,21 +37,21 @@ module.exports = class AnswerRuleDAO {
                     return ruleInfo;
                 });
                 return AnswerRuleValue.findAll({
-                        where: { ruleId: { $in: ruleIds } },
-                        attributes: ['ruleId', 'questionChoiceId', 'value'],
-                        raw: true,
-                        include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }]
-                    })
-                    .then(answerRuleValues => {
+                    where: { ruleId: { $in: ruleIds } },
+                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    raw: true,
+                    include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }],
+                })
+                    .then((answerRuleValues) => {
                         if (answerRuleValues.length) {
-                            answerRuleValues.forEach(answer => {
-                                if (answer['questionChoice.type']) {
-                                    answer.choiceType = answer['questionChoice.type'];
+                            answerRuleValues.forEach((r) => {
+                                if (r['questionChoice.type']) {
+                                    r.choiceType = r['questionChoice.type'];
                                 }
-                                delete answer['questionChoice.type'];
+                                delete r['questionChoice.type'];
                             });
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
-                            ruleIds.forEach(ruleId => {
+                            ruleIds.forEach((ruleId) => {
                                 const entries = groupedResult[ruleId];
                                 if (entries) {
                                     const rule = rules[ruleId];
@@ -59,7 +59,7 @@ module.exports = class AnswerRuleDAO {
                                 }
                             });
                         }
-                        ruleIds.forEach(ruleId => {
+                        ruleIds.forEach((ruleId) => {
                             delete rules[ruleId].type;
                         });
                         return result;
@@ -68,8 +68,8 @@ module.exports = class AnswerRuleDAO {
     }
 
     getQuestionExpandedSurveyAnswerRules(surveyId) {
-        return this.getSurveyAnswerRules(surveyId)
-            .then(answerRules => {
+        return this.getSurveyAnswerRules({ surveyId })
+            .then((answerRules) => {
                 if (!answerRules.length) {
                     return { sectionAnswerRulesMap: null, questionAnswerRulesMap: null };
                 }
@@ -96,6 +96,125 @@ module.exports = class AnswerRuleDAO {
                     }
                     return r;
                 }, { sectionAnswerRulesMap: new Map(), questionAnswerRulesMap: new Map() });
+            });
+    }
+
+    exportAnswerRules() {
+        const AnswerRule = this.db.AnswerRule;
+        const AnswerRuleValue = this.db.AnswerRuleValue;
+        const attributes = ['id', 'surveyId', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
+        return AnswerRule.findAll({ raw: true, attributes, order: ['surveyId', 'line'] })
+            .then((answerRules) => {
+                if (answerRules.length < 1) {
+                    return answerRules;
+                }
+                const ruleIds = answerRules.map(answerRule => answerRule.id);
+                return AnswerRuleValue.findAll({
+                    where: { ruleId: { $in: ruleIds } },
+                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    raw: true,
+                    order: 'id',
+                })
+                    .then(answerRuleValues => answerRuleValues.reduce((r, { ruleId, questionChoiceId, value }) => { // eslint-disable-line max-len
+                        let current = r.get(ruleId);
+                        if (!current) {
+                            current = [];
+                            r.set(ruleId, current);
+                        }
+                        current.push({ questionChoiceId, value });
+                        return r;
+                    }, new Map()))
+                    .then(valueMap => answerRules.reduce((r, rule) => {
+                        const values = valueMap.get(rule.id);
+                        if (values) {
+                            values.forEach((value) => {
+                                Object.assign(value, rule);
+                                r.push(value);
+                            });
+                        } else {
+                            r.push(rule);
+                        }
+                        return r;
+                    }, []));
+            })
+            .then((lines) => {
+                const converter = new ExportCSVConverter();
+                return converter.dataToCSV(lines);
+            });
+    }
+
+    importAnswerRules(stream, { sectionIdMap, questionIdMap, surveyIdMap }) {
+        const AnswerRule = this.db.AnswerRule;
+        const AnswerRuleValue = this.db.AnswerRuleValue;
+        const converter = new ImportCSVConverter({ checkType: false });
+        return converter.streamToRecords(stream)
+            .then((records) => {
+                const ruleIdMap = new Map();
+                const rules = records.reduce((r, record, line) => {
+                    if (ruleIdMap.has(record.id)) {
+                        return r;
+                    }
+                    const rule = { id: record.id, logic: record.logic, line };
+                    rule.surveyId = surveyIdMap[record.surveyId];
+                    if (record.questionId) {
+                        rule.questionId = questionIdMap[record.questionId].questionId;
+                    }
+                    if (record.answerQuestionId) {
+                        rule.answerQuestionId = questionIdMap[record.answerQuestionId].questionId;
+                    }
+                    if (record.sectionId) {
+                        rule.sectionId = sectionIdMap[record.sectionId];
+                    }
+                    r.push(rule);
+                    return r;
+                }, []);
+                const ruleValues = records.reduce((r, record, line) => {
+                    const { id, value, questionChoiceId, answerQuestionId } = record;
+                    if (value || questionChoiceId) {
+                        const ruleValue = { id, line };
+                        if (value) {
+                            ruleValue.value = value;
+                        }
+                        if (questionChoiceId) {
+                            const choicesIds = questionIdMap[answerQuestionId].choicesIds;
+                            ruleValue.questionChoiceId = choicesIds[questionChoiceId];
+                        }
+                        r.push(ruleValue);
+                    }
+                    return r;
+                }, []);
+                return { rules, ruleValues };
+            })
+            .then(({ rules, ruleValues }) => {
+                if (!rules.length) {
+                    return null;
+                }
+                return this.transaction((transaction) => {
+                    const ruleIdMap = new Map();
+                    const records = rules.map(rule => _.omit(rule, 'id'));
+                    const fnIdMap = ({ id }, index) => ruleIdMap.set(rules[index].id, id);
+                    return AnswerRule.bulkCreate(records, { transaction, returning: true })
+                        .then(result => result.forEach(fnIdMap))
+                        .then(() => {
+                            const records2 = ruleValues.map((ruleValue) => {
+                                const record = { line: ruleValue.line };
+                                if (ruleValue.value || ruleValue.value === 0) {
+                                    record.value = ruleValue.value;
+                                }
+                                if (ruleValue.questionChoiceId) {
+                                    record.questionChoiceId = ruleValue.questionChoiceId;
+                                }
+                                record.ruleId = ruleIdMap.get(ruleValue.id);
+                                return record;
+                            });
+                            return AnswerRuleValue.bulkCreate(records2, { transaction })
+                                .then(() => {
+                                    const ruleIdObj = {};
+                                    ruleIdMap.forEach((value, key) => { ruleIdObj[key] = value; });
+                                    return ruleIdObj;
+                                });
+                        });
+                });
             });
     }
 };

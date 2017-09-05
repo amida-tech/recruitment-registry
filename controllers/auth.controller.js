@@ -3,31 +3,30 @@
 const passport = require('passport');
 const passportHttp = require('passport-http');
 
-const models = require('../models');
 const tokener = require('../lib/tokener');
-const jsutil = require('../lib/jsutil');
+const shared = require('./shared.js');
 
-const basicStrategy = function (username, password, done) {
-    models.auth.authenticateUser(username, password)
+const basicStrategy = function (req, username, password, done) {
+    req.models.auth.authenticateUser(username, password)
         .then(user => done(null, user))
         .catch(err => done(err));
 };
 
-passport.use(new passportHttp.BasicStrategy(basicStrategy));
+passport.use(new passportHttp.BasicStrategy({ passReqToCallback: true }, basicStrategy));
 
 const authenticate = passport.authenticate('basic', {
     session: false,
-    failWithError: true
+    failWithError: true,
 });
 
-exports.authenticateBasic = function (req, res) {
-    authenticate(req, res, function (err) {
+exports.authenticateBasic = function authenticateBasic(req, res) {
+    authenticate(req, res, (err) => {
         if (err) {
-            err = jsutil.errToJSON(err);
-            return res.status(401).json(err);
+            const json = shared.errToJSON(err, res);
+            return res.status(401).json(json);
         }
         const token = tokener.createJWT(req.user);
-        res.cookie('rr-jwt-token', token);
-        res.status(200).json({});
+        res.cookie('rr-jwt-token', token, { httpOnly: true });
+        return res.status(200).json({});
     });
 };

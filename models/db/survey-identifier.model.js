@@ -1,42 +1,45 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_identifier', {
+module.exports = function surveyIdentifier(sequelize, Sequelize, schema) {
+    const tableName = 'survey_identifier';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         type: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         identifier: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    schema,
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at'
-        }
+            type: Sequelize.DATE,
+            field: 'updated_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-        indexes: [{ fields: ['survey_id'] }]
+        indexes: [{ fields: ['survey_id'] }],
     });
 };

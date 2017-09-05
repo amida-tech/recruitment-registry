@@ -2,71 +2,70 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
 const shared = require('./shared.js');
 
-exports.createConsent = function (req, res) {
+exports.createConsent = function createConsent(req, res) {
     const consent = req.body;
-    models.consent.createConsent(consent)
+    req.models.consent.createConsent(consent)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.deleteConsent = function (req, res) {
+exports.deleteConsent = function deleteConsent(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.consent.deleteConsent(id)
+    req.models.consent.deleteConsent(id)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.getConsent = function (req, res) {
+exports.getConsent = function getConsent(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.consent.getConsent(id)
+    req.models.consent.getConsent(id)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getConsentByName = function (req, res) {
+exports.getConsentByName = function getConsentByName(req, res) {
     const name = _.get(req, 'swagger.params.name.value');
-    models.consent.getConsentByName(name)
+    req.models.consent.getConsentByName(name)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.listConsents = function (req, res) {
-    models.consent.listConsents()
+exports.listConsents = function listConsents(req, res) {
+    req.models.consent.listConsents()
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getConsentDocuments = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    models.consent.getConsentDocuments(id, { language })
-        .then(result => res.status(200).json(result))
-        .catch(shared.handleError(res));
-};
-
-exports.getConsentDocumentsByName = function (req, res) {
-    const name = _.get(req, 'swagger.params.name.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    models.consent.getConsentDocumentsByName(name, { language })
-        .then(result => res.status(200).json(result))
-        .catch(shared.handleError(res));
-};
-
-exports.getUserConsentDocuments = function (req, res) {
+exports.getConsentDocuments = function getConsentDocuments(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    models.consent.getUserConsentDocuments(req.user.id, id, { language })
+    req.models.consent.getConsentDocuments(id, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getUserConsentDocumentsByName = function (req, res) {
+exports.getConsentDocumentsByName = function getConsentDocumentsByName(req, res) {
     const name = _.get(req, 'swagger.params.name.value');
     const language = _.get(req, 'swagger.params.language.value');
-    models.consent.getUserConsentDocumentsByName(req.user.id, name, { language })
+    req.models.consent.getConsentDocumentsByName(name, { language })
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.getUserConsentDocuments = function getUserConsentDocuments(req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    req.models.consent.getUserConsentDocuments(req.user.id, id, { language })
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.getUserConsentDocumentsByName = function getUserConsentDocumentsByName(req, res) {
+    const name = _.get(req, 'swagger.params.name.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    req.models.consent.getUserConsentDocumentsByName(req.user.id, name, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

@@ -1,12 +1,8 @@
 'use strict';
 
-const db = require('../db');
+const Base = require('./base');
 
-const SurveyQuestion = db.SurveyQuestion;
-const SurveySection = db.SurveySection;
-const SurveySectionQuestion = db.SurveySectionQuestion;
-
-const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, id, questionParents, sectionParents) {
+const updateQuestionSectionDependency = function (parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
     parents.push({ sectionId });
     if (parentId) {
@@ -14,34 +10,33 @@ const updateQuestionSectionDependency = function updateQuestionSectionDependency
     }
     if (questionParentId) {
         parents.push({ questionId: questionParentId });
-        const parentId = questionParents.get(questionParentId);
-        if (parentId) {
-            updateQuestionSectionDependency(parents, parentId, questionParents, sectionParents);
+        const parentId2 = questionParents.get(questionParentId);
+        if (parentId2) {
+            updateQuestionSectionDependency(parents, parentId2, questionParents, sectionParents);
         }
     }
 };
 
-const updateQuestionDependency = function updateQuestionDependency(question, questionParents, sectionParents) {
+const updateQuestionDependency = function (question, questionParents, sectionParents) {
     const id = question.questionId;
     const parentId = questionParents.get(id);
     if (parentId) {
-        question.parents = [];
-        updateQuestionSectionDependency(question.parents, parentId, questionParents, sectionParents);
+        const parents = [];
+        question.parents = parents; // eslint-disable-line no-param-reassign
+        updateQuestionSectionDependency(parents, parentId, questionParents, sectionParents);
     }
 };
 
-module.exports = class SurveyQuestionsDAO {
-    constructor() {}
-
+module.exports = class SurveyQuestionsDAO extends Base {
     listSurveyQuestions(surveyId, addDependency) {
         const options = {
             where: { surveyId },
             raw: true,
             attributes: ['questionId', 'required'],
-            order: 'line'
+            order: 'line',
         };
-        return SurveyQuestion.findAll(options)
-            .then(questions => {
+        return this.db.SurveyQuestion.findAll(options)
+            .then((questions) => {
                 if (addDependency) {
                     return this.addDependency(surveyId, questions);
                 }
@@ -50,24 +45,24 @@ module.exports = class SurveyQuestionsDAO {
     }
 
     addDependency(surveyId, questions) {
-        return SurveySection.findAll({
-                where: { surveyId },
-                raw: true,
-                order: 'line',
-                attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId']
-            })
-            .then(sections => {
+        return this.db.SurveySection.findAll({
+            where: { surveyId },
+            raw: true,
+            order: 'line',
+            attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
+        })
+            .then((sections) => {
                 if (!sections.length) {
                     return questions;
                 }
                 const ids = sections.map(({ id }) => id);
-                return SurveySectionQuestion.findAll({
-                        where: { surveySectionId: { $in: ids } },
-                        raw: true,
-                        order: 'line',
-                        attributes: ['surveySectionId', 'questionId']
-                    })
-                    .then(sectionQuestions => {
+                return this.db.SurveySectionQuestion.findAll({
+                    where: { surveySectionId: { $in: ids } },
+                    raw: true,
+                    order: 'line',
+                    attributes: ['surveySectionId', 'questionId'],
+                })
+                    .then((sectionQuestions) => {
                         const sectionParents = sections.reduce((r, section) => {
                             r.set(section.id, section);
                             return r;
@@ -76,11 +71,15 @@ module.exports = class SurveyQuestionsDAO {
                             r.set(sectionQuestion.questionId, sectionQuestion.surveySectionId);
                             return r;
                         }, new Map());
-                        questions.forEach(question => {
+                        questions.forEach((question) => {
                             updateQuestionDependency(question, questionParents, sectionParents);
                         });
                         return questions;
                     });
             });
+    }
+
+    importSurveyQuestionsTx(surveyQuestions, transaction) {
+        return this.db.SurveyQuestion.bulkCreate(surveyQuestions, { transaction });
     }
 };

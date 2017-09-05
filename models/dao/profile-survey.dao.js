@@ -2,86 +2,74 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
+const Base = require('./base');
 
-const sequelize = db.sequelize;
-const ProfileSurvey = db.ProfileSurvey;
-const SurveyConsent = db.SurveyConsent;
-
-module.exports = class ProfileSurveyDAO {
-    constructor(dependencies) {
+module.exports = class ProfileSurveyDAO extends Base {
+    constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
     }
 
     getProfileSurveyId() {
-        return ProfileSurvey.findOne({
-                raw: true,
-                attributes: ['surveyId']
-            })
-            .then(record => {
+        return this.db.ProfileSurvey.findOne({
+            raw: true,
+            attributes: ['surveyId'],
+        })
+            .then((record) => {
                 if (record) {
                     return record.surveyId;
-                } else {
-                    return 0;
                 }
+                return 0;
             });
     }
 
     createProfileSurveyIdTx(surveyId, transaction) {
+        const ProfileSurvey = this.db.ProfileSurvey;
         return ProfileSurvey.destroy({ where: {}, transaction })
-            .then(() => {
-                return ProfileSurvey.create({ surveyId }, { transaction });
-            });
+            .then(() => ProfileSurvey.create({ surveyId }, { transaction }));
     }
 
     createProfileSurveyId(surveyId) {
-        return sequelize.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
+        return this.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
     }
 
     deleteProfileSurveyId() {
-        return ProfileSurvey.destroy({ where: {} });
+        return this.db.ProfileSurvey.destroy({ where: {} });
     }
 
     createProfileSurvey(survey) {
-        return sequelize.transaction(transaction => {
-            return this.survey.createOrReplaceSurvey(survey)
-                .then(surveyId => {
-                    return this.createProfileSurveyIdTx(surveyId, transaction)
-                        .then(() => ({ id: surveyId }));
-                });
-        });
+        return this.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
+                .then(surveyId => this.createProfileSurveyIdTx(surveyId, transaction)
+                        .then(() => ({ id: surveyId }))));
     }
 
     getProfileSurvey(options = {}) {
         return this.getProfileSurveyId()
-            .then(profileSurveyId => {
+            .then((profileSurveyId) => {
                 if (profileSurveyId) {
                     return this.survey.getSurvey(profileSurveyId, options)
-                        .then(survey => {
+                        .then((survey) => {
                             const surveyId = survey.id;
                             const action = 'create';
-                            return SurveyConsent.findAll({
-                                    where: { surveyId, action },
-                                    raw: true,
-                                    attributes: ['consentTypeId']
-                                })
+                            return this.db.SurveyConsent.findAll({
+                                where: { surveyId, action },
+                                raw: true,
+                                attributes: ['consentTypeId'],
+                            })
                                 .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
-                                .then(typeIds => {
+                                .then((typeIds) => {
                                     if (typeIds.length) {
-                                        return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
-                                            .then(consentDocuments => {
-                                                survey.consentDocuments = consentDocuments;
-                                                return survey;
+                                        return this.consentDocument.listConsentDocuments({ summary: true, typeIds }) // eslint-disable-line max-len
+                                            .then((consentDocuments) => {
+                                                survey.consentDocuments = consentDocuments; // eslint-disable-line no-param-reassign, max-len
                                             });
-                                    } else {
-                                        return survey;
                                     }
+                                    return null;
                                 })
-                                .then(survey => ({ exists: true, survey }));
+                                .then(() => ({ exists: true, survey }));
                         });
-                } else {
-                    return { exists: false };
                 }
+                return { exists: false };
             });
     }
 };

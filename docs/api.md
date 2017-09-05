@@ -2,7 +2,7 @@
 
 ### Introduction
 
-This document gives examples for most resources available in Recruitment Registry API.
+This document gives examples for resources available in Recruitment Registry API.
 
 ##### Code Snippets
 
@@ -67,9 +67,9 @@ When server responds with an error status, an error object is always included in
 ### System Administration
 <a name="system-administration"/>
 
-Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.  If use cases involve consent documents and/or profile survey (asurvey that needs to be answered during registration), those artifacts need to be created as well.
+Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.  If use cases involve consent documents and/or profile survey (a survey that needs to be answered during registration), those artifacts need to be created as well.
 
-This section administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
+This section discusses administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
 
 All API requests in this section requires `admin` authorization.
 
@@ -143,30 +143,6 @@ choiceQx = {
 ```
 
 It an error to specify `type` for a `choices` element for a `choice` question.
-
-For each question a client dependent `actions` property can be specified.  This field is designed to store button texts and actions that depend on client ui design but can be used for any other client specific functionality such as sub texts that needs to shown to user
-
-```js
-choicesQx = {
-    type: 'choices',
-    text: 'What kind of exercises do you do?',
-    choices: [
-        { text: 'Walking' },
-        { text: 'Jogging', type: 'bool' },
-        { text: 'Cycling', type: 'bool' },
-        { text: 'Please specify other', type: 'text' }
-    ],
-    actions: [{
-        type: 'true',
-        text: 'Confirm'
-    }, {
-        type: 'false',
-        text: 'I don\'t exercise.'
-    }]
-};
-```
-
-This API just store and retrieve `actions` property for the client.  There are no business logic related to `actions` property.
 
 Questions are created using the `/questions` resource
 
@@ -284,13 +260,6 @@ Questions can be grouped into sections.  Currenly only one level deep sections a
 ```js
 survey = {
     name: 'Example',
-    sections: [{
-        name: 'Demographics',
-        indices: [1, 2]
-    }, {
-        name: 'Health',
-        indices: [0, 3]
-    }],
     questions: [{
         required: false,
         id: textQxId
@@ -314,20 +283,11 @@ survey = {
 };
 ```
 
-Section indices refer to the index of the question inside the survey.  This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
-
 In addition this API supports a client specific `meta` property which can be used to store any settings that relates to user interface or any other client setting
 
 ```js
 survey = {
     name: 'Example',
-    sections: [{
-        name: 'Demographics',
-        indices: [1, 2]
-    }, {
-        name: 'Health',
-        indices: [0, 3]
-    }],
     meta: {
         displayAsWizard: true,
         saveProgress: false
@@ -635,7 +595,7 @@ Based on use-cases clients can require consent documents of certain types to be 
 ```js
 let touDocument;
 agent
-	.get('http://localhost:9005/api/v1.0/consent-documents/type-name/terms-of-use')
+	.get('http://localhost:9005/api/v1.0/consent-documents/type/1')
 	.then(res => {
 		console.log(res.status);  // 200
 		touDocument = res.body;
@@ -1107,18 +1067,6 @@ Server responds with the list in the response body
         "id": 4,
         "type": "choices",
         "text": "What kind of exercises do you do?",
-        "actions": [
-            {
-                "id": 1,
-                "type": "true",
-                "text": "Confirm"
-            },
-            {
-                "id": 2,
-                "type": "false",
-                "text": "I don't exercise."
-            }
-        ],
         "choices": [
             {
                 "id": 5,
@@ -1349,18 +1297,6 @@ Server responds with all the survey details and in particular its questions
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Confirm"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "I don't exercise."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -1384,24 +1320,6 @@ Server responds with all the survey details and in particular its questions
                 }
             ],
             "required": false
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Demographics"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Health"
         }
     ]
 }
@@ -1582,18 +1500,6 @@ Survey responds with the survey details in the response body.  Survey details is
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Confirm"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "I don't exercise."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -1634,24 +1540,6 @@ Survey responds with the survey details in the response body.  Survey details is
                     }
                 ]
             }
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Demographics"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Health"
         }
     ]
 }
@@ -1865,18 +1753,6 @@ Server responds with the answered survey and the status in the body
                 "id": 4,
                 "type": "choices",
                 "text": "What kind of exercises do you do?",
-                "actions": [
-                    {
-                        "id": 1,
-                        "type": "true",
-                        "text": "Confirm"
-                    },
-                    {
-                        "id": 2,
-                        "type": "false",
-                        "text": "I don't exercise."
-                    }
-                ],
                 "choices": [
                     {
                         "id": 5,
@@ -1913,24 +1789,6 @@ Server responds with the answered survey and the status in the body
                         }
                     ]
                 }
-            }
-        ],
-        "sections": [
-            {
-                "id": 1,
-                "indices": [
-                    1,
-                    2
-                ],
-                "name": "Demographics"
-            },
-            {
-                "id": 2,
-                "indices": [
-                    0,
-                    3
-                ],
-                "name": "Health"
             }
         ]
     }
@@ -2022,7 +1880,7 @@ Same information is also available using the type name of the consent document
 
 ```js
 agent
-    .get('http://localhost:9005/api/v1.0/consent-documents/type-name/consent')
+    .get('http://localhost:9005/api/v1.0/consent-documents/type/2')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
@@ -2045,7 +1903,7 @@ Consent documents can be shown with the signature information
 
 ```js
 agent
-    .get('http://localhost:9005/api/v1.0/user-consent-documents/type-name/consent')
+    .get('http://localhost:9005/api/v1.0/user-consent-documents/type/2')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature
@@ -2138,7 +1996,7 @@ const smtpSpec = {
 };
 
 agent
-    .post('http://localhost:9005/api/v1.0/smtp')
+    .post('http://localhost:9005/api/v1.0/smtp/reset-password')
     .send(smtpSpec)
     .then(res => {
         console.log(res.status);  // 204
@@ -2151,7 +2009,7 @@ SMTP specification is available using `/smtp` resource
 
 ```js
 agent
-    .get('http://localhost:9005/api/v1.0/smtp')
+    .get('http://localhost:9005/api/v1.0/smtp/reset-password')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4));
@@ -2379,16 +2237,6 @@ All question text fields are translated by `/questions/text/{language}` resource
 const choicesQxTurkish = {
     'id': 4,
     'text': 'Hangi eksersizleri yapıyorsunuz?',
-    'actions': [
-        {
-            'id': 1,
-            'text': 'Kabul Et'
-        },
-        {
-            'id': 2,
-            'text': 'Eksersiz yapmıyorum.'
-        }
-    ],
     'choices': [
         {
             'id': 5,
@@ -2435,18 +2283,7 @@ server responds with the Turkish translation in the body
 {
     "id": 4,
     "type": "choices",
-    "text": "Hangi eksersizleri yapıyorsunuz?",
-    "actions": [
-        {
-            "id": 1,
-            "type": "true",
-            "text": "Kabul Et"
-        },
-        {
-            "id": 2,
-            "type": "false",
-            "text": "Eksersiz yapmıyorum."
-        }
+    "text": "Hangi eksersizleri yapıyorsunuz?"
     ],
     "choices": [
         {
@@ -2561,18 +2398,6 @@ responds with the Turkish translation in the body
             "id": 4,
             "type": "choices",
             "text": "Hangi eksersizleri yapıyorsunuz?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Kabul Et"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "Eksersiz yapmıyorum."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -2596,24 +2421,6 @@ responds with the Turkish translation in the body
                 }
             ],
             "required": false
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Kişisel Bilgiler"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Sağlık"
         }
     ]
 }

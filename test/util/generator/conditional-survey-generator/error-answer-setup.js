@@ -1,10 +1,12 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 module.exports = [{
     surveyIndex: 0,
     caseIndex: 0,
     noAnswers: [0, 1, 2, 3, 4, 5, 6],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 0,
     caseIndex: 1,
@@ -13,8 +15,8 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 0
-    }]
+        selectionChoice: 0,
+    }],
 }, {
     surveyIndex: 0,
     caseIndex: 2,
@@ -23,12 +25,12 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 0
+        selectionChoice: 0,
     }, {
         type: 'selectchoice',
         questionIndex: 2,
-        selectionChoice: 1
-    }]
+        selectionChoice: 1,
+    }],
 }, {
     surveyIndex: 0,
     caseIndex: 3,
@@ -37,12 +39,12 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 0
+        selectionChoice: 0,
     }, {
         type: 'selectchoice',
         questionIndex: 2,
-        selectionChoice: 1
-    }]
+        selectionChoice: 1,
+    }],
 }, {
     surveyIndex: 0,
     caseIndex: 4,
@@ -51,12 +53,12 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 0
+        selectionChoice: 0,
     }, {
         type: 'selectchoice',
         questionIndex: 2,
-        selectionChoice: 0
-    }]
+        selectionChoice: 0,
+    }],
 }, {
     surveyIndex: 0,
     caseIndex: 5,
@@ -65,8 +67,8 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 1
-    }]
+        selectionChoice: 1,
+    }],
 }, {
     surveyIndex: 0,
     caseIndex: 6,
@@ -75,12 +77,12 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 1
+        selectionChoice: 1,
     }, {
         type: 'selectchoice',
         questionIndex: 1,
-        selectionChoice: 1
-    }]
+        selectionChoice: 1,
+    }],
 }, {
     surveyIndex: 0,
     caseIndex: 7,
@@ -89,142 +91,142 @@ module.exports = [{
     specialAnswers: [{
         type: 'selectchoice',
         questionIndex: 0,
-        selectionChoice: 1
+        selectionChoice: 1,
     }, {
         type: 'selectchoice',
         questionIndex: 1,
-        selectionChoice: 1
+        selectionChoice: 1,
     }, {
         type: 'selectchoice',
         questionIndex: 5,
-        selectionChoice: 1
-    }]
+        selectionChoice: 1,
+    }],
 }, {
     surveyIndex: 1,
     caseIndex: 0,
     specialAnswers: [{
         type: 'differentrule',
         questionIndex: 4,
-        ruleQuestionIndex: 5
+        ruleQuestionIndex: 5,
     }],
     noAnswers: [5],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }, {
     surveyIndex: 1,
     caseIndex: 1,
     specialAnswers: [{
         type: 'samerule',
         questionIndex: 4,
-        ruleQuestionIndex: 5
+        ruleQuestionIndex: 5,
     }],
     noAnswers: [],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 2,
     caseIndex: 0,
     specialAnswers: [{
         type: 'samerule',
         questionIndex: 2,
-        ruleQuestionIndex: 3
+        ruleQuestionIndex: 3,
     }],
     noAnswers: [3],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }, {
     surveyIndex: 2,
     caseIndex: 1,
     specialAnswers: [{
         type: 'differentrule',
         questionIndex: 2,
-        ruleQuestionIndex: 3
+        ruleQuestionIndex: 3,
     }],
     noAnswers: [],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 3,
     caseIndex: 0,
     noAnswers: [3, 6],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 3,
     caseIndex: 1,
     specialAnswers: [{
         type: 'differentrulesection',
-        questionIndex: 3
+        questionIndex: 3,
     }],
     noAnswers: [4],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }, {
     surveyIndex: 3,
     caseIndex: 2,
     specialAnswers: [{
         type: 'samerulesection',
-        questionIndex: 3
+        questionIndex: 3,
     }],
     noAnswers: [4],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 4,
     caseIndex: 0,
     noAnswers: [5],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 4,
     caseIndex: 1,
     specialAnswers: [{
         type: 'samerulesection',
-        questionIndex: 5
+        questionIndex: 5,
     }],
     noAnswers: [6],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }, {
     surveyIndex: 4,
     caseIndex: 2,
     specialAnswers: [{
         type: 'differentrulesection',
-        questionIndex: 5
+        questionIndex: 5,
     }],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 5,
     caseIndex: 0,
     noAnswers: [3, 4],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 5,
     caseIndex: 1,
     specialAnswers: [{
         type: 'samerulesection',
-        questionIndex: 3
+        questionIndex: 3,
     }],
     noAnswers: [5],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }, {
     surveyIndex: 5,
     caseIndex: 2,
     specialAnswers: [{
         type: 'differentrulesection',
-        questionIndex: 3
+        questionIndex: 3,
     }],
     noAnswers: [4],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 6,
     caseIndex: 0,
     noAnswers: [0],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }, {
     surveyIndex: 6,
     caseIndex: 1,
     noAnswers: [],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 7,
     caseIndex: 0,
     noAnswers: [2],
-    error: 'answerToBeSkippedAnswered'
+    error: 'answerToBeSkippedAnswered',
 }, {
     surveyIndex: 7,
     caseIndex: 1,
     noAnswers: [4],
-    error: 'answerRequiredMissing'
+    error: 'answerRequiredMissing',
 }];

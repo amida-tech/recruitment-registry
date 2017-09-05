@@ -1,5 +1,9 @@
 /* global describe,before,it*/
+
 'use strict';
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -16,25 +20,25 @@ const comparator = require('./util/comparator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
-describe('profile integration', function () {
-    const store = new RRSuperTest();
+describe('profile integration', () => {
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
     const hxAnswers = [];
     const hxConsentDoc = new ConsentDocumentHistory(2);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
     const createProfileFn = function () {
-        return function (done) {
+        return function createProfile(done) {
             const user = generator.newUser();
             const input = { user };
-            store.authPost('/profiles', input, 201)
-                .expect(function () {
+            rrSuperTest.authPost('/profiles', input, 201)
+                .expect(() => {
                     hxUser.push(user, {});
                     hxAnswers.push(null);
                 })
@@ -43,9 +47,9 @@ describe('profile integration', function () {
     };
 
     const verifyProfileFn = function (userIndex) {
-        return function (done) {
-            store.get('/profiles', true, 200)
-                .expect(function (res) {
+        return function verifyProfile(done) {
+            rrSuperTest.get('/profiles', true, 200)
+                .expect((res) => {
                     const result = res.body;
                     comparator.user(hxUser.client(userIndex), result.user);
                 })
@@ -54,41 +58,41 @@ describe('profile integration', function () {
     };
 
     const updateProfileFn = function (userIndex) {
-        return function (done) {
+        return function updateProfile(done) {
             const userUpdates = {
-                email: `updated${userIndex}@example.com`
+                email: `updated${userIndex}@example.com`,
             };
             hxUser.client(userIndex).email = userUpdates.email;
             const updateObj = {
-                user: userUpdates
+                user: userUpdates,
             };
-            store.patch('/profiles', updateObj, 204)
+            rrSuperTest.patch('/profiles', updateObj, 204)
                 .end(done);
         };
     };
 
-    _.range(0, 2).forEach(index => {
+    _.range(0, 2).forEach((index) => {
         it(`register user ${index} with profile`, createProfileFn());
         it(`verify user ${index} profile`, verifyProfileFn(index));
         it(`update user ${index} profile`, updateProfileFn(index));
         it(`verify user ${index} profile`, verifyProfileFn(index));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < 2; ++i) {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDoc));
-    }
-    for (let i = 0; i < 2; ++i) {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDoc, i));
-    }
-    it('create profile survey', shared.createProfileSurveyFn(store, hxSurvey));
-    it('logout as super', shared.logoutFn(store));
+    it('login as super', shared.loginFn(config.superUser));
+    _.range(2).forEach((i) => {
+        it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
+    });
+    _.range(2).forEach((i) => {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
+    });
+    it('create profile survey', shared.createProfileSurveyFn(hxSurvey));
+    it('logout as super', shared.logoutFn());
 
-    it(`get/verify profile survey`, shared.verifyProfileSurveyFn(store, hxSurvey, 0));
+    it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures) {
-        return function (done) {
+        return function createProfileWithSurvey(done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
@@ -97,8 +101,8 @@ describe('profile integration', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            store.authPost('/profiles', input, 201)
-                .expect(function () {
+            rrSuperTest.authPost('/profiles', input, 201)
+                .expect(() => {
                     hxUser.push(clientUser, {});
                 })
                 .end(done);
@@ -106,7 +110,7 @@ describe('profile integration', function () {
     };
 
     const createProfileWithSurveyLanguageFn = function (surveyIndex, signatures, language) {
-        return function (done) {
+        return function createProfileWithSurveyLanguage(done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
@@ -118,8 +122,8 @@ describe('profile integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.authPost('/profiles', input, 201)
-                .expect(function () {
+            rrSuperTest.authPost('/profiles', input, 201)
+                .expect(() => {
                     hxUser.push(clientUser, {});
                 })
                 .end(done);
@@ -127,42 +131,41 @@ describe('profile integration', function () {
     };
 
     const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
-        return function (done) {
-            store.get('/profiles', true, 200)
-                .expect(function (res) {
+        return function verifyProfileWithSurvey(done) {
+            rrSuperTest.get('/profiles', true, 200)
+                .expect((res) => {
                     const result = res.body;
                     const survey = hxSurvey.server(surveyIndex);
 
                     comparator.user(hxUser.client(userIndex), result.user);
                     comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
-
                 })
                 .end(done);
         };
     };
 
     const updateProfileWithSurveyFn = function (surveyIndex, userIndex) {
-        return function (done) {
+        return function updateProfileWithSurvey(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const userUpdates = {
-                email: `updated${userIndex}@example.com`
+                email: `updated${userIndex}@example.com`,
             };
             hxUser.client(userIndex).email = userUpdates.email;
             const updateObj = {
                 user: userUpdates,
-                answers
+                answers,
             };
             hxAnswers[userIndex] = answers;
-            store.patch('/profiles', updateObj, 204).end(done);
+            rrSuperTest.patch('/profiles', updateObj, 204).end(done);
         };
     };
 
     const verifySignedDocumentFn = function (expected, language) {
-        return function (done) {
+        return function verifySignedDocument(done) {
             const server = hxConsentDoc.server(0);
-            store.get(`/user-consent-documents/${server.id}`, true, 200)
-                .expect(function (res) {
+            rrSuperTest.get(`/user-consent-documents/${server.id}`, true, 200)
+                .expect((res) => {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
@@ -174,12 +177,12 @@ describe('profile integration', function () {
         };
     };
 
-    const verifySignedDocumentByTypeNameFn = function (expected) {
-        return function (done) {
+    const verifySignedDocumentByTypeIdFn = function (expected) {
+        return function verifySignedDocumentByTypeId(done) {
             const server = hxConsentDoc.server(0);
-            const typeName = hxConsentDoc.type(0).name;
-            store.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
-                .expect(function (res) {
+            const typeId = hxConsentDoc.type(0).id;
+            rrSuperTest.get(`/user-consent-documents/type/${typeId}`, true, 200)
+                .expect((res) => {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
@@ -192,66 +195,65 @@ describe('profile integration', function () {
     };
 
     const patchProfileFn = function (surveyIndex, userIndex, language) {
-        return function (done) {
+        return function patchProfile(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             expect(answers.length).to.be.above(2);
             const userUpdates = {
                 email: `updated${userIndex}@example.com`,
-                password: `newPassword${userIndex}`
+                password: `newPassword${userIndex}`,
             };
             hxUser.client(userIndex).email = userUpdates.email;
             hxUser.client(userIndex).password = userUpdates.password;
             const updateObj = {
                 user: userUpdates,
                 answers: [answers[0], answers[1]],
-                language
+                language,
             };
             const answerQxMap = new Map(updateObj.answers.map(answer => [answer.questionId, answer]));
-            const newAnswers = hxAnswers[userIndex].map(hxAnswer => {
+            const newAnswers = hxAnswers[userIndex].map((hxAnswer) => {
                 if (answerQxMap.has(hxAnswer.questionId)) {
                     const { questionId, answer } = answerQxMap.get(hxAnswer.questionId);
                     return { questionId, answer, language };
-                } else {
-                    return hxAnswer;
                 }
+                return hxAnswer;
             });
             hxAnswers[userIndex] = newAnswers;
-            store.patch('/profiles', updateObj, 204).end(done);
+            rrSuperTest.patch('/profiles', updateObj, 204).end(done);
         };
     };
 
-    _.range(2, 4).forEach(index => {
+    _.range(2, 4).forEach((index) => {
         it(`register user ${index} with profile survey`, createProfileWithSurveyFn(0));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 0 is not signed by user ${index}`, verifySignedDocumentFn(false));
-        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(false));
+        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeIdFn(false));
         it(`update user ${index} profile`, updateProfileWithSurveyFn(0, index));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    _.range(4, 6).forEach(index => {
+    _.range(4, 6).forEach((index) => {
         it(`register user ${index} with profile survey 0 and doc 0 signature`, createProfileWithSurveyFn(0, [0]));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 0 is signed by user ${index}`, verifySignedDocumentFn(true));
-        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(true));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeIdFn(true));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    _.range(6, 8).forEach(index => {
+    _.range(6, 8).forEach((index) => {
         it(`register user ${index} with profile survey 1 and doc 0 signature in spanish`, createProfileWithSurveyLanguageFn(0, [0], 'es'));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index, 'es'));
         it(`verify document 0 is signed by user ${index} in spanish`, verifySignedDocumentFn(true, 'es'));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    _.range(8, 10).forEach(index => {
+    _.range(8, 10).forEach((index) => {
         it(`register user ${index} with profile survey 1 and doc 0 signature in english`, createProfileWithSurveyLanguageFn(0, [0], 'en'));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index, 'en'));
         it(`verify document 0 is signed by user ${index} in english`, verifySignedDocumentFn(true, 'en'));
         it(`update user ${index} profile`, patchProfileFn(0, index, 'es'));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 });

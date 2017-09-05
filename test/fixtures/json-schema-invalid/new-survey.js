@@ -1,17 +1,19 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 module.exports = [{
     name: 'id and other fields together',
     questions: [{
         id: 1,
         required: true,
         text: 'What is this?',
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Is it true?',
         required: false,
-        type: 'bool'
-    }]
+        type: 'bool',
+    }],
 }, {
     name: 'type text has choices',
     questions: [{
@@ -20,107 +22,107 @@ module.exports = [{
         type: 'text',
         choices: [
             { text: 'Black' },
-            { text: 'Brown' }
-        ]
+            { text: 'Brown' },
+        ],
     }, {
         text: 'Is it true?',
         required: false,
-        type: 'bool'
-    }]
+        type: 'bool',
+    }],
 }, {
     name: 'type bool has choices',
     questions: [{
         text: 'What is this?',
         required: true,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Is it true?',
         required: false,
         type: 'bool',
         choices: [
             { text: 'Black' },
-            { text: 'Brown' }
-        ]
-    }]
+            { text: 'Brown' },
+        ],
+    }],
 }, {
     name: 'type text has oneOfChoices',
     questions: [{
         text: 'What is this?',
         required: true,
         type: 'text',
-        oneOfChoices: ['Black', 'Brown']
+        oneOfChoices: ['Black', 'Brown'],
     }, {
         text: 'Is it true?',
         required: false,
-        type: 'bool'
-    }]
+        type: 'bool',
+    }],
 }, {
     name: 'type bool has oneOfChoices',
     questions: [{
         text: 'What is this?',
         required: false,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Is it true?',
         required: true,
         type: 'bool',
-        oneOfChoices: ['Black', 'Brown']
-    }]
+        oneOfChoices: ['Black', 'Brown'],
+    }],
 }, {
     name: 'choices has no choices',
     questions: [{
         text: 'What is this?',
         required: false,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Choice',
         required: true,
-        type: 'choices'
-    }]
+        type: 'choices',
+    }],
 }, {
     name: 'choices has one of choices',
     questions: [{
         text: 'What is this?',
         required: true,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Choice',
         required: false,
         type: 'choices',
-        oneOfChoices: ['Black', 'Brown']
-    }]
+        oneOfChoices: ['Black', 'Brown'],
+    }],
 }, {
     name: 'choice has invalid type',
     questions: [{
         text: 'What is this?',
         required: false,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Choice',
         required: false,
         type: 'choice',
         choices: [
             { text: 'Black', type: 'bool' },
-            { text: 'Brown' }
-        ]
-    }]
+            { text: 'Brown' },
+        ],
+    }],
 }, {
     name: 'choice has no choices',
     questions: [{
         text: 'What is this?',
         required: true,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Choice',
         required: false,
-        type: 'choice'
-    }]
+        type: 'choice',
+    }],
 }, {
     name: 'choice has both oneOfChoice and choices',
     questions: [{
         text: 'What is this?',
         required: true,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Choice',
         required: false,
@@ -128,7 +130,7 @@ module.exports = [{
         oneOfChoices: ['Black', 'Brown'],
         choices: [
             { text: 'Black' },
-            { text: 'Brown' }
-        ]
-    }]
+            { text: 'Brown' },
+        ],
+    }],
 }];

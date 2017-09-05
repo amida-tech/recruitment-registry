@@ -1,50 +1,53 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('consent_document_text', {
+module.exports = function consentDocuemntText(sequelize, Sequelize, schema) {
+    const tableName = 'consent_document_text';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         consentDocumentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent_document'
+                    schema,
+                    tableName: 'consent_document',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         content: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
         },
         updateComment: {
-            type: DataTypes.TEXT,
-            field: 'update_comment'
+            type: Sequelize.TEXT,
+            field: 'update_comment',
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'language'
+                    schema,
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        tableName,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
