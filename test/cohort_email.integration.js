@@ -71,6 +71,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
     it('set up sinon mockup', () => {
         const models = rrSuperTest.getModels();
         sinon.stub(models.cohort, 'createCohort', () => SPromise.resolve(testCSV));
+        sinon.stub(models.cohort, 'patchCohort', () => SPromise.resolve(testCSV));
         if (!awsActive) {
             sinon.stub(aws, 'putObject', (params, callback) => {
                 callback(null, 's3datatest');
@@ -112,6 +113,11 @@ describe('cohort email integration', function cohortEmailIntegration() {
             .then(res => shared.verifyErrorMessage(res, 'smtpNotSpecified'));
     });
 
+    it('resend: error: no smtp settings is specified', function noSmtp() {
+        return rrSuperTest.patch('/cohorts/1', {}, 400)
+            .then(res => shared.verifyErrorMessage(res, 'smtpNotSpecified'));
+    });
+
     it('logout as clinician', shared.logoutFn());
 
     const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
@@ -139,15 +145,9 @@ describe('cohort email integration', function cohortEmailIntegration() {
     it('login as clinician', shared.loginIndexFn(hxUser, 0));
 
     let cohortInfo;
+    let zipfilepath = null;
 
-    it('create cohort', function noSmtp() {
-        return rrSuperTest.post('/cohorts', cohort, 201)
-            .then((res) => {
-                cohortInfo = res.body;
-            });
-    });
-
-    it('check received email and link', function checkEmail() {
+    const checkEmailFn = () => {
         const receivedEmail = server.receivedEmail;
         expect(receivedEmail.auth.username).to.equal(smtpSpec.username);
         expect(receivedEmail.auth.password).to.equal(smtpSpec.password);
@@ -173,35 +173,10 @@ describe('cohort email integration', function cohortEmailIntegration() {
         });
         expect(subjectFound).to.equal(true);
         expect(link).to.equal(cohortInfo.s3Url);
-    });
-
-    it('logout as clinician', shared.logoutFn());
-
-    let zipfilepath = null;
-
-    const formFilepathFromUrl = function (s3Url, prefix = '') {
-        const pieces = s3Url.split('/');
-        const filename = pieces[pieces.length - 1];
-        return path.resolve(config.tmpDirectory, `${prefix}${filename}.zip`);
+        server.reset();
     };
 
-    if (awsActive) {
-        it('get cohort zip file from s3', function unzipContentFromS3(done) {
-            const req = request(cohortInfo.s3Url);
-            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url, 'res_');
-            req.on('response', (res) => {
-                res.pipe(fs.createWriteStream(zipfilepath))
-                    .on('error', done)
-                    .on('finish', () => done());
-            }).on('error', done);
-        });
-    } else {
-        it('set zip file location', function zipFileLocation() {
-            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url);
-        });
-    }
-
-    it('check content of the zip file', function unzipContent() {
+    const unzipContentFn = () => {
         const accumulator = new Accumulator();
         return unzipper.Open.file(zipfilepath)
             .then(dir => new Promise((resolve, reject) => {
@@ -213,11 +188,72 @@ describe('cohort email integration', function cohortEmailIntegration() {
             .then(() => {
                 expect(accumulator.content).to.deep.equal(testCSV);
             });
+    };
+
+    const formFilepathFromUrl = function (s3Url, prefix = '') {
+        const pieces = s3Url.split('/');
+        const filename = pieces[pieces.length - 1];
+        return path.resolve(config.tmpDirectory, `${prefix}${filename}.zip`);
+    };
+
+    const unzipContentFromS3Fn = (done) => {
+        const req = request(cohortInfo.s3Url);
+        zipfilepath = formFilepathFromUrl(cohortInfo.s3Url, 'res_');
+        req.on('response', (res) => {
+            res.pipe(fs.createWriteStream(zipfilepath))
+                    .on('error', done)
+                    .on('finish', () => done());
+        }).on('error', done);
+    };
+
+    it('create cohort', function noSmtp() {
+        return rrSuperTest.post('/cohorts', cohort, 201)
+            .then((res) => {
+                cohortInfo = res.body;
+            });
     });
+
+    it('check received email and link', checkEmailFn);
+
+    it('logout as clinician', shared.logoutFn());
+
+    if (awsActive) {
+        it('get cohort zip file from s3', unzipContentFromS3Fn);
+    } else {
+        it('set zip file location', function zipFileLocation() {
+            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url);
+        });
+    }
+
+    it('check content of the zip file', unzipContentFn);
+
+    it('resend: login as clinician', shared.loginIndexFn(hxUser, 0));
+
+    it('resends cohort', function noSmtp() {
+        return rrSuperTest.patch('/cohorts/1', {}, 200)
+        .then((response) => {
+            cohortInfo = response.body;
+        });
+    });
+
+    it('resend: check received email and link', checkEmailFn);
+
+    it('resend: logout as clinician', shared.logoutFn());
+
+    if (awsActive) {
+        it('resend: get cohort zip file from s3', unzipContentFromS3Fn);
+    } else {
+        it('resend: set zip file location', function zipFileLocation() {
+            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url);
+        });
+    }
+
+    it('resend: check content of the zip file', unzipContentFn);
 
     it('restore mock libraries', function restoreSinonedLibs() {
         const models = rrSuperTest.getModels();
         models.cohort.createCohort.restore();
+        models.cohort.patchCohort.restore();
         if (!awsActive) {
             aws.putObject.restore();
         }
