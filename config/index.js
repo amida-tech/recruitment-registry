@@ -41,7 +41,7 @@ const all = {
         resetExpires: 3600,
         resetExpiresUnit: 'seconds',
     },
-    tmpDirectory: '/tmp',
+    tmpDirectory: 'tmp',
     cohortBucket: 'recreg-dev-cohorts',
     awsSecretAccessKey: null,
     awsAccessKeyId: null,
