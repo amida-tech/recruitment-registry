@@ -955,10 +955,22 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const rrSuperTest = this.rrSuperTest;
         const { limited, userCount } = options;
         return function createCohort() {
+            let csvText = '';
+            sinon.stub(csvEmailUtil, 'uploadCohortCSV', (csv) => {
+                csvText = csv;
+                return SPromise.resolve({});
+            });
+            sinon.stub(smtpHelper, 'sendS3LinkEmail', () => SPromise.resolve({}));
+
             const count = limited ? userCount - 1 : 10000;
             const payload = { count };
             return rrSuperTest.patch(`/cohorts/${id}`, payload, 200)
-                .then(res => fs.writeFileSync(filepath, res.text));
+                .then(res => fs.writeFileSync(filepath, res.text))
+                .then(() => {
+                    fs.writeFileSync(filepath, csvText);
+                    csvEmailUtil.uploadCohortCSV.restore();
+                    smtpHelper.sendS3LinkEmail.restore();
+                });
         };
     }
 

@@ -32,6 +32,11 @@ Recruitment Registry API
 7. Run:
 `npm start`
 
+### Creating and resending cohorts in development
+Storing and emailing links to cohorts requires an Amazon S3 service and a valid smtp mail server. To enable uploading a cohort file, set the AWS_ACCESS_KEY_ID and AWS_SECRET variables in your `.env` file, which are read by the aws SDK.
+
+The `create-smtp.js` script can assist in adding an smtp record for testing email.
+
 ### Installing Python and Visual C++ Build Tools (Windows)
 
 Due to variances between Windows, Linux, and macOS, Windows users will have to add a few steps for
@@ -102,8 +107,8 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
-- RECREG_AWS_ACCESS_KEY: Amazon Web Services access key ID.
-- RECREG_AWS_SECRET: Amazon Web Service secret access key.
+- AWS_ACCESS_KEY_ID: Amazon Web Services access key ID.
+- AWS_SECRET: Amazon Web Service secret access key.
 
 ## Commands
 

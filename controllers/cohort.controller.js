@@ -30,12 +30,16 @@ exports.getCohort = function getCohort(req, res) {
 
 exports.patchCohort = function patchCohort(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
     req.models.cohort.patchCohort(id, req.body)
-        .then((csvContent) => {
-            res.header('Content-disposition', 'attachment; filename=cohort.csv');
-            res.type('text/csv');
-            res.status(200).send(csvContent);
+        .then(csvEmailUtil.uploadCohortCSV)
+        .then((s3Data) => {
+            const models = req.models;
+            const email = req.user.email;
+            const link = s3Data.s3Url;
+            return smtpHelper.sendS3LinkEmail(models, email, language, link).then(() => s3Data);
         })
+        .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 

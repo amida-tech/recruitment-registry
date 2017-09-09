@@ -38,16 +38,18 @@ module.exports = class RRSMTPServer extends smtpServer.SMTPServer {
                 callback();
             },
             onData(dataStream, session, callback) {
-                dataStream.pipe(this.smtpStream);
+                dataStream.pipe(new SMTPStream(this.receivedEmail));
                 dataStream.on('end', callback);
             },
         });
+        this.reset();
+    }
+    reset() {
         this.receivedEmail = {
             auth: null,
             from: null,
             to: null,
             content: '',
         };
-        this.smtpStream = new SMTPStream(this.receivedEmail);
     }
 };
