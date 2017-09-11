@@ -41,7 +41,8 @@ const all = {
         resetExpires: 3600,
         resetExpiresUnit: 'seconds',
     },
-    tmpDirectory: 'tmp',
+    // TODO: Linux vs Windows vs deployed environment pathing needs to be addressed
+    tmpDirectory: '/tmp',
     cohortBucket: 'recreg-dev-cohorts',
     awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
