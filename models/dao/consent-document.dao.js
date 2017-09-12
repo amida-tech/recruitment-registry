@@ -43,19 +43,18 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                                 result.set(consentTypeId, typeSurveys);
                             }
                             if (!typeSurveys.find(({ id }) => (surveyId === id))) {
-                                let survey = surveyMap.get(surveyId);
+                                const survey = surveyMap.get(surveyId);
                                 if (survey) {
                                     typeSurveys.push({ id: surveyId, name: survey.name });
                                 }
                             }
                         });
                         // Remove empty elements ()
-                        const resultKeys = Array.from(result.keys());
-                        for(let index in resultKeys) {
-                            if(result.get(resultKeys[index]).length === 0) {
-                              result.delete(resultKeys[index]);
+                        result.forEach((surveys, key) => {
+                            if (!surveys.length) {
+                                result.delete(key);
                             }
-                        }
+                        });
                         result.forEach(surveys => surveys.sort((r, p) => (r.id - p.id)));
                         return result;
                     });

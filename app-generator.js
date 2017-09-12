@@ -43,7 +43,10 @@ const userAudit = function (req, res, next) {
             });
         }
         if (endpoint !== '/user-audits') {
-            req.models.userAudit.createUserAudit({ userId, endpoint, operation });
+            req.models.userAudit.createUserAudit({ userId, endpoint, operation })
+                .then(() => next())
+                .catch(err => next(err));
+            return;
         }
     }
     next();
