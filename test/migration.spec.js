@@ -44,6 +44,7 @@ describe('migration spec', () => {
         it('sync current schema', () => {
             const queryInterface = db.sequelize.getQueryInterface();
             return queryInterface.dropAllTables()
+                .then(() => queryInterface.dropAllEnums())
                 .then(() => db.sequelize.sync({ force: true }));
         });
 
