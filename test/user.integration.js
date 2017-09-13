@@ -18,7 +18,7 @@ const comparator = require('./util/comparator');
 
 const expect = chai.expect;
 
-describe('user integration', () => {
+describe('user integration', function userIntegration() {
     let userCount = 8;
     const hxUser = new History();
     const rrSuperTest = new RRSuperTest();
@@ -42,7 +42,7 @@ describe('user integration', () => {
     // });
 
     it('get super user', () => rrSuperTest.get('/users/me', true, 200)
-            .expect((res) => {
+            .then((res) => {
                 const user = res.body;
                 expect(!user).to.equal(false);
                 expect(user.username).to.equal(config.superUser.username);
@@ -53,7 +53,7 @@ describe('user integration', () => {
         return function getUser() {
             const id = hxUser.id(index);
             return rrSuperTest.get(`/users/${id}`, true, 200)
-                .expect((res) => {
+                .then((res) => {
                     const client = hxUser.client(index);
                     comparator.user(client, res.body);
                     hxUser.updateServer(index, res.body);
@@ -72,19 +72,21 @@ describe('user integration', () => {
     });
 
     it('list all non admin users', () => rrSuperTest.get('/users', true, 200)
-            .expect((res) => {
-                let expected = hxUser.listServers().slice();
+            .then((res) => {
+                let expected = _.cloneDeep(hxUser.listServers());
                 expected = _.sortBy(expected, 'username');
-                expect(res.body).to.deep.equal(expected);
+                const actual = _.sortBy(res.body, 'username');
+                expect(actual).to.deep.equal(expected);
             }));
 
     const listUsersByRoleFn = function (role, range) {
         return function listUsersByRole() {
             return rrSuperTest.get('/users', true, 200, { role })
-                .expect((res) => {
-                    let expected = hxUser.listServers(undefined, range).slice();
+                .then((res) => {
+                    let expected = _.cloneDeep(hxUser.listServers(undefined, range));
                     expected = _.sortBy(expected, 'username');
-                    expect(res.body).to.deep.equal(expected);
+                    const actual = _.sortBy(res.body, 'username');
+                    expect(actual).to.deep.equal(expected);
                 });
         };
     };
@@ -97,7 +99,7 @@ describe('user integration', () => {
     it('login as new user', shared.loginIndexFn(hxUser, 0));
 
     it('get new user', () => rrSuperTest.get('/users/me', true, 200)
-            .expect((res) => {
+            .then((res) => {
                 const expectedUser = _.cloneDeep(hxUser.client(0));
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
@@ -118,7 +120,7 @@ describe('user integration', () => {
     it('error: create the same user', () => {
         const user = hxUser.client(0);
         return rrSuperTest.post('/users', user, 400)
-            .expect(res => shared.verifyErrorMessage(res, 'genericUnique', 'username', user.username));
+            .then(res => shared.verifyErrorMessage(res, 'genericUnique', 'username', user.username));
     });
 
     it('error: create user with the same email', () => {
@@ -126,7 +128,7 @@ describe('user integration', () => {
         const newUser = Object.assign({}, user);
         newUser.username = 'anotherusername';
         return rrSuperTest.post('/users', newUser, 400)
-            .expect(res => shared.verifyErrorMessage(res, 'uniqueEmail'));
+            .then(res => shared.verifyErrorMessage(res, 'uniqueEmail'));
     });
 
     it('logout as super', shared.logoutFn());
@@ -168,7 +170,7 @@ describe('user integration', () => {
         return function verifyUser() {
             const id = hxUser.id(index);
             return rrSuperTest.get(`/users/${id}`, true, 200)
-                .expect((res) => {
+                .then((res) => {
                     expect(res.body).to.deep.equal(hxUser.server(index));
                 });
         };
@@ -219,7 +221,7 @@ describe('user integration', () => {
     it('login with updated password', shared.loginIndexFn(hxUser, 0));
 
     it('verify updated user fields', () => rrSuperTest.get('/users/me', true, 200)
-            .expect((res) => {
+            .then((res) => {
                 const expected = _.cloneDeep(userUpdate);
                 expected.role = 'participant';
                 expected.id = res.body.id;
@@ -229,7 +231,7 @@ describe('user integration', () => {
             }));
 
     it('verify updated user fields', () => rrSuperTest.get('/users/me', true, 200)
-            .expect((res) => {
+            .then((res) => {
                 const expected = _.pick(userUpdate, ['email']);
                 const actual = _.omit(res.body, ['id', 'role', 'username']);
                 expect(actual).to.deep.equal(expected);

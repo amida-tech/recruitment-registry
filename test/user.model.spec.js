@@ -22,7 +22,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('user unit', () => {
+describe('user unit', function userUnit() {
     let userCount = 8;
 
     const hxUser = new History();
@@ -79,17 +79,19 @@ describe('user unit', () => {
 
     it('list all non admin users', () => models.user.listUsers()
             .then((users) => {
-                let expected = hxUser.listServers().slice();
+                let expected = _.cloneDeep(hxUser.listServers());
                 expected = _.sortBy(expected, 'username');
-                expect(users).to.deep.equal(expected);
+                const actual = _.sortBy(users, 'username');
+                expect(actual).to.deep.equal(expected);
             }));
 
     it('list all participant users', () => models.user.listUsers({ role: 'participant' })
             .then((users) => {
                 const halfNumUsers = hxUser.length() / 2;
-                let expected = hxUser.listServers(undefined, _.range(halfNumUsers)).slice();
+                let expected = _.cloneDeep(hxUser.listServers(undefined, _.range(halfNumUsers)));
                 expected = _.sortBy(expected, 'username');
-                expect(users).to.deep.equal(expected);
+                const actual = _.sortBy(users, 'username');
+                expect(actual).to.deep.equal(expected);
             }));
 
     it('list all clinician users', () => models.user.listUsers({ role: 'clinician' })
@@ -97,8 +99,9 @@ describe('user unit', () => {
                 const numUsers = hxUser.length();
                 const halfNumUsers = numUsers / 2;
                 let expected = hxUser.listServers(undefined, _.range(halfNumUsers, numUsers));
-                expected = _.sortBy(expected.slice(), 'username');
-                expect(users).to.deep.equal(expected);
+                expected = _.sortBy(_.cloneDeep(expected), 'username');
+                const actual = _.sortBy(users, 'username');
+                expect(actual).to.deep.equal(expected);
             }));
 
     it('error: identical specified username and email', () => {
