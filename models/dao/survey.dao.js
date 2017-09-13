@@ -404,7 +404,6 @@ module.exports = class SurveyDAO extends Translatable {
                         return null;
                     })
                     .then(() => {
-                        console.log('>>>>> surveyPatch.questions || surveyPatch.sections');
                         if (!(surveyPatch.questions || surveyPatch.sections)) {
                             return null;
                         }
@@ -660,12 +659,10 @@ module.exports = class SurveyDAO extends Translatable {
                                             const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
                                             return result;
                                         });
-                                        console.log('>>>>> survey.dao > Survey.findOne > answerRuleInfos: ', answerRuleInfos);
                                         answerRuleInfos.forEach(({ questionId, rule }) => {
                                             if (questionId) {
-                                                console.log('>>>>> survey.dao > Survey.findOne > questionId: ', questionId);
                                                 const question = qxMap[questionId];
-                                                if (!question.enableWhen) { // FIXME FIXME FIXME: Problem here
+                                                if (!question.enableWhen) {
                                                     question.enableWhen = [];
                                                 }
                                                 question.enableWhen.push(rule);
