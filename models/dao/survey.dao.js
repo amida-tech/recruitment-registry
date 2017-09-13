@@ -404,6 +404,7 @@ module.exports = class SurveyDAO extends Translatable {
                         return null;
                     })
                     .then(() => {
+                        console.log('>>>>> surveyPatch.questions || surveyPatch.sections');
                         if (!(surveyPatch.questions || surveyPatch.sections)) {
                             return null;
                         }
@@ -435,7 +436,13 @@ module.exports = class SurveyDAO extends Translatable {
                                     const where = {
                                         surveyId, questionId: { $in: removedQuestionIds },
                                     };
-                                    return this.db.Answer.destroy({ where, transaction });
+                                    // NOTE: This is a short-term fix to allow conditions to be updated without persisting
+                                    // an "old version" of it (as we do questions whenever they or the surveys they're attached
+                                    // to are updated)
+                                    return this.db.AnswerRule.destroy({ where, transaction })
+                                        .then(() => {
+                                            return this.db.Answer.destroy({ where, transaction });
+                                        });
                                 }
                                 return null;
                             })
@@ -653,10 +660,12 @@ module.exports = class SurveyDAO extends Translatable {
                                             const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
                                             return result;
                                         });
+                                        console.log('>>>>> survey.dao > Survey.findOne > answerRuleInfos: ', answerRuleInfos);
                                         answerRuleInfos.forEach(({ questionId, rule }) => {
                                             if (questionId) {
+                                                console.log('>>>>> survey.dao > Survey.findOne > questionId: ', questionId);
                                                 const question = qxMap[questionId];
-                                                if (!question.enableWhen) {
+                                                if (!question.enableWhen) { // FIXME FIXME FIXME: Problem here
                                                     question.enableWhen = [];
                                                 }
                                                 question.enableWhen.push(rule);
