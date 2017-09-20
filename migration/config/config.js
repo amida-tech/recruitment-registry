@@ -7,13 +7,25 @@ const filepath = path.join(__dirname, '../../.env');
 
 dotenv.config({ path: filepath });
 
+const user = process.env.RECREG_DB_USER;
+const pass = process.env.RECREG_DB_PASS;
+const host = process.env.RECREG_DB_HOST;
+const db = process.env.RECREG_DB_NAME;
+const port = process.env.RECREG_DB_PORT;
+
 const db = {
-    database: process.env.RECREG_DB_NAME || 'recregtest',
-    username: process.env.RECREG_DB_USER,
-    password: process.env.RECREG_DB_PASS,
-    host: process.env.RECREG_DB_HOST || 'localhost',
+    url: "postgresql://" + user + ":" + pass + "@" + host + ":" + port + "/" + db,
+    database: db || 'recregtest',
+    username: user,
+    password: pass,
+    host: host || 'localhost',
     dialect: process.env.RECREG_DB_DIALECT || 'postgres',
     migrationStorage: 'json',
+    dialectOptions: {
+        ssl: {
+            require: true
+        }
+    }
 };
 
 module.exports = {
