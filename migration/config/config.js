@@ -10,12 +10,12 @@ dotenv.config({ path: filepath });
 const user = process.env.RECREG_DB_USER;
 const pass = process.env.RECREG_DB_PASS;
 const host = process.env.RECREG_DB_HOST;
-const db = process.env.RECREG_DB_NAME;
+const database = process.env.RECREG_DB_NAME;
 const port = process.env.RECREG_DB_PORT;
 
 const db = {
-    url: "postgresql://" + user + ":" + pass + "@" + host + ":" + port + "/" + db,
-    database: db || 'recregtest',
+    url: "postgresql://" + user + ":" + pass + "@" + host + ":" + port + "/" + database,
+    database: database || 'recregtest',
     username: user,
     password: pass,
     host: host || 'localhost',
