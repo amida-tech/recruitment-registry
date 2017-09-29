@@ -435,7 +435,13 @@ module.exports = class SurveyDAO extends Translatable {
                                     const where = {
                                         surveyId, questionId: { $in: removedQuestionIds },
                                     };
-                                    return this.db.Answer.destroy({ where, transaction });
+                                    // NOTE: This is a short-term fix to allow conditions to be updated without persisting
+                                    // an "old version" of it (as we do questions whenever they or the surveys they're attached
+                                    // to are updated)
+                                    return this.db.AnswerRule.destroy({ where, transaction })
+                                        .then(() => {
+                                            return this.db.Answer.destroy({ where, transaction });
+                                        });
                                 }
                                 return null;
                             })
