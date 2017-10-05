@@ -4,38 +4,35 @@ const Base = require('./base');
 
 module.exports = class AssessmentDAO extends Base {
     createAssessmentSurveys(assessmentId, surveys, transaction) {
-        const fn = ({ id, lookback = false }) => ({ assessmentId, surveyId: id, lookback });
+        const fn = ({ id }) => ({ assessmentId, surveyId: id });
         const records = surveys.map(fn);
         return this.db.AssessmentSurvey.bulkCreate(records, { transaction });
     }
 
-    createAssessment({ name, sequenceType = 'ondemand', surveys }) {
+    createAssessment({ name, surveys, stage = 0 }) {
         const Assessment = this.db.Assessment;
-        const record = { name, sequenceType };
+        const record = { name, stage };
         return this.transaction(transaction => Assessment.create(record, { transaction })
-                .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
-                        .then(() => ({ id }))));
+            .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
+                .then(() => ({ id }))));
     }
 
     getAssessment(id) {
         const AssessmentSurvey = this.db.AssessmentSurvey;
         const Assessment = this.db.Assessment;
-        return Assessment.findById(id, { attributes: ['id', 'name', 'sequenceType'], raw: true })
-            .then(assessment => AssessmentSurvey.findAll({
-                where: { assessmentId: id },
-                attributes: [
-                            ['survey_id', 'id'], 'lookback',
-                ],
-                raw: true,
-            })
-                .then((surveys) => {
-                    assessment.surveys = surveys; // eslint-disable-line no-param-reassign
-                    return assessment;
-                }));
+        return Assessment.findById(id, { attributes: ['id', 'name', 'stage'], raw: true })
+            .then((assessment) => {
+                const px = AssessmentSurvey.findAll({
+                    where: { assessmentId: id },
+                    attributes: [['survey_id', 'id']],
+                    raw: true,
+                });
+                return px.then(surveys => Object.assign(assessment, { surveys }));
+            });
     }
 
     listAssessments() {
         const Assessment = this.db.Assessment;
-        return Assessment.findAll({ raw: true, attributes: ['id', 'name'] });
+        return Assessment.findAll({ raw: true, attributes: ['id', 'name', 'stage'] });
     }
 };

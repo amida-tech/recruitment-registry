@@ -28,16 +28,7 @@ module.exports = function assessmentSurvey(sequelize, Sequelize, schema) {
                 key: 'id',
             },
         },
-        lookback: {
-            type: Sequelize.BOOLEAN,
-            allowNull: false,
-            defaultValue: false,
-        },
         createdAt: {
-            type: Sequelize.DATE,
-            field: 'created_at',
-        },
-        updatedAt: {
             type: Sequelize.DATE,
             field: 'created_at',
         },
@@ -50,8 +41,12 @@ module.exports = function assessmentSurvey(sequelize, Sequelize, schema) {
         tableName,
         schema,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
+        indexes: [{
+            fields: ['assessment_id'],
+            where: { deleted_at: { $eq: null } },
+        }],
         paranoid: true,
     });
 };

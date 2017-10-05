@@ -48,7 +48,7 @@ module.exports = class AssessmentDAO extends Base {
         return this.transaction(transaction => UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'sequence', 'deletedAt'],
-            order: 'sequence',
+            order: ['sequence'],
             raw: true,
             paranoid: false,
             transaction,
@@ -88,7 +88,7 @@ module.exports = class AssessmentDAO extends Base {
         return this.db.UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'sequence'],
-            order: 'sequence',
+            order: ['sequence'],
             raw: true,
             paranoid: false,
         });

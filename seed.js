@@ -18,15 +18,15 @@ const gapDemoSurveys = require('./test/fixtures/example/gap-demo-survey');
 const survey = {
     name: 'Alzheimer',
     questions: [
-    {
-        text: 'Zip Code',
-        required: true,
-        type: 'zip',
-    }, {
-        text: 'Year of Birth',
-        required: true,
-        type: 'year',
-    },
+        {
+            text: 'Zip Code',
+            required: true,
+            type: 'zip',
+        }, {
+            text: 'Year of Birth',
+            required: true,
+            type: 'year',
+        },
     ],
 };
 

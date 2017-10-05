@@ -22,6 +22,6 @@ module.exports = class FileDAO extends Base {
 
     listFiles(userId) {
         const attributes = ['id', 'name'];
-        return this.db.File.findAll({ raw: true, where: { userId }, attributes, order: 'id' });
+        return this.db.File.findAll({ raw: true, where: { userId }, attributes, order: ['id'] });
     }
 };

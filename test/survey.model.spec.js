@@ -1,4 +1,4 @@
-/* global describe,before,it*/
+/* global describe,before,it */
 
 'use strict';
 
@@ -316,7 +316,7 @@ describe('survey unit', function surveyUnit() {
                 .then(surveyWithGroupId => models.survey.listSurveys({
                     scope: 'version-only',
                     history: true,
-                    order: 'version',
+                    order: ['version'],
                     groupId: surveyWithGroupId.groupId,
                 })
                         .then(actual => actual.map(({ version, groupId }) => ({ version, groupId })))

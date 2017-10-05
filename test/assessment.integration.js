@@ -1,4 +1,4 @@
-/* global describe,before,it*/
+/* global describe,before,it */
 
 'use strict';
 
@@ -22,7 +22,7 @@ describe('assessment integration', () => {
     const surveyCount = 12;
     const assessmentCount = 3;
     const hxSurvey = new SurveyHistory();
-    const hxAssessment = new History(['id', 'name']);
+    const hxAssessment = new History(['id', 'name', 'stage']);
 
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();

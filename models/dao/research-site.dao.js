@@ -36,7 +36,7 @@ module.exports = class ResearchSiteDAO extends Base {
                 raw: true,
                 where: { zip },
                 attributes: [],
-                order: 'research_site_id',
+                order: ['research_site_id'],
                 include: [{ model: this.db.ResearchSite, as: 'vicinity', attributes }],
             })
                 .then(sites => sites.map(site => attributes.reduce((r, attribute) => {
@@ -45,7 +45,7 @@ module.exports = class ResearchSiteDAO extends Base {
                     return Object.assign({}, patch, r);
                 }, {})));
         }
-        return this.db.ResearchSite.findAll({ raw: true, attributes, order: 'id' });
+        return this.db.ResearchSite.findAll({ raw: true, attributes, order: ['id'] });
     }
 
     listResearchSites(options = {}) {

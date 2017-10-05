@@ -12,7 +12,7 @@ module.exports = class LanguageDAO extends Base {
         return this.db.Language.findAll({
             raw: true,
             attributes: ['code', 'name', 'nativeName'],
-            order: 'code',
+            order: ['code'],
         });
     }
 

@@ -1,4 +1,4 @@
-/* global describe,before,it*/
+/* global describe,before,it */
 
 'use strict';
 
@@ -23,7 +23,7 @@ describe('assessment unit', () => {
     const surveyCount = 12;
     const assessmentCount = 3;
     const hxSurvey = new SurveyHistory();
-    const hxAssessment = new History(['id', 'name']);
+    const hxAssessment = new History(['id', 'name', 'stage']);
 
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
     const assessmentTests = new assessmentCommon.SpecTests(generator, hxSurvey, hxAssessment);

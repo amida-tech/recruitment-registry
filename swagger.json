@@ -6207,9 +6207,6 @@
                     "id": {
                         "type": "integer",
                         "minimum": 1
-                    },
-                    "lookback": {
-                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false
@@ -6223,8 +6220,8 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "sequenceType": {
-                    "type": "string"
+                "stage": {
+                    "type": "integer"
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
@@ -6244,8 +6241,8 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "sequenceType": {
-                    "type": "string"
+                "stage": {
+                    "type": "integer"
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
@@ -6266,6 +6263,9 @@
                     "name": {
                         "type": "string",
                         "minLength": 1
+                    },
+                    "stage": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false

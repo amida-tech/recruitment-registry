@@ -13,9 +13,9 @@ WITH
 	),
 	assessment_id AS (
 		INSERT INTO
-			assessment (name, sequence_type, created_at, updated_at)
+			assessment (name, created_at)
 		SELECT
-			:identifier || '-' || assessment_name, 'ondemand'::"enum_assessment_sequence_type", NOW(), NOW()
+			:identifier || '-' || assessment_name, NOW()
 		FROM
 			assesment_row
 		RETURNING id

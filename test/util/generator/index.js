@@ -145,10 +145,12 @@ class Generator {
         this.assessmentIndex += 1;
         const index = this.assessmentIndex;
         const name = `name_${index}`;
-        const sequenceType = (index % 2 === 0) ? 'ondemand' : 'biyearly';
-        const lookback = (index % 2 === 1);
-        const surveys = surveyIds.map(id => ({ id, lookback }));
-        return { name, sequenceType, surveys };
+        const surveys = surveyIds.map(id => ({ id }));
+        const record = { name, surveys };
+        if (index % 3 !== 0) {
+            record.stage = index;
+        }
+        return record;
     }
 
     newChoiceSet() {

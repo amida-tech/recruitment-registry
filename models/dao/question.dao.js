@@ -102,7 +102,9 @@ module.exports = class QuestionDAO extends Translatable {
                                         choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' })); // eslint-disable-line max-len
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
-                                        .then(chs => (result.choices = chs)); // eslint-disable-line no-param-reassign, max-len
+                                        .then((chs) => {
+                                            result.choices = chs; // eslint-disable-line no-param-reassign, max-len
+                                        });
                                 }
                                 return null;
                             })
@@ -309,7 +311,7 @@ module.exports = class QuestionDAO extends Translatable {
             Object.assign(options, { model: Question, as: 'question' });
             const include = [options];
             const where = { surveyId };
-            const sqOptions = { raw: true, where, include, attributes: [], order: 'question_id' };
+            const sqOptions = { raw: true, where, include, attributes: [], order: ['question_id'] };
             return this.db.SurveyQuestion.findAll(sqOptions)
                 .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {  // eslint-disable-line no-param-reassign, max-len
                     const newKey = key.split('.')[1];
@@ -317,7 +319,7 @@ module.exports = class QuestionDAO extends Translatable {
                     return r;
                 }, {})));
         }
-        Object.assign(options, { raw: true, order: 'id' });
+        Object.assign(options, { raw: true, order: ['id'] });
         return Question.findAll(options);
     }
 

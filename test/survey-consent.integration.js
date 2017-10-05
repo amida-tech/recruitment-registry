@@ -1,4 +1,4 @@
-/* global describe,before,it,xit*/
+/* global describe,before,it,xit */
 
 'use strict';
 

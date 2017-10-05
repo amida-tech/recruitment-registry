@@ -11,7 +11,7 @@ module.exports = class UserAuditDAO extends Base {
         return this.db.UserAudit.findAll({
             raw: true,
             attributes: ['userId', 'endpoint', 'operation'],
-            order: 'created_at',
+            order: ['created_at'],
         });
     }
 };
