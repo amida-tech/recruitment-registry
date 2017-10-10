@@ -120,7 +120,7 @@ describe('user assessment unit', () => {
                 .then((actual) => {
                     const expected = _.range(3).map((index) => {
                         const id = hxUserAssessment.id([userIndex, assessmentIndex, index]);
-                        return Object.assign({ sequence: index }, { id });
+                        return Object.assign({ version: index }, { id });
                     });
                     expect(actual).to.deep.equal(expected);
                 });

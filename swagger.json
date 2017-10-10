@@ -6290,13 +6290,13 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["id", "sequence"],
+                "required": ["id", "version"],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "minimum": 1
                     },
-                     "sequence": {
+                     "version": {
                         "type": "integer"
                     }
                 },

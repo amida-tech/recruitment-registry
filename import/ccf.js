@@ -497,7 +497,7 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         const record = {
                             userId: userIdMap.get(assessment.hb_user_id),
                             assessmentId: 1,
-                            sequence: index,
+                            version: index,
                             status: 'collected',
                             meta: {
                                 key: assessment.assessment_id,

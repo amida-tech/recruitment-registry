@@ -126,11 +126,9 @@ describe('migration spec', () => {
             const pxs = tables.map(tableName => db.sequelize.getQueryInterface().showIndex(tableName)
                 .then(indexes => dbMigrate.sequelize.getQueryInterface().showIndex(tableName)
                     .then((migrateIndexes) => {
-                        if (tableName === 'assessment') {
-                            normalizeIndexes(migrateIndexes);
-                            normalizeIndexes(indexes);
-                            expect(migrateIndexes).to.deep.equal(indexes);
-                        }
+                        normalizeIndexes(migrateIndexes);
+                        normalizeIndexes(indexes);
+                        expect(migrateIndexes).to.deep.equal(indexes);
                     })));
             return db.sequelize.Promise.all(pxs);
         });
