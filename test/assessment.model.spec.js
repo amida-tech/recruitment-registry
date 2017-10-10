@@ -2,8 +2,6 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -15,31 +13,45 @@ const History = require('./util/history');
 const surveyCommon = require('./util/survey-common');
 const assessmentCommon = require('./util/assessment-common');
 
-const generator = new Generator();
-
-const shared = new SharedSpec(generator);
-
 describe('assessment unit', () => {
-    const surveyCount = 12;
-    const assessmentCount = 3;
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
+
     const hxSurvey = new SurveyHistory();
     const hxAssessment = new History(['id', 'name', 'stage']);
 
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
-    const assessmentTests = new assessmentCommon.SpecTests(generator, hxSurvey, hxAssessment);
+    const tests = new assessmentCommon.SpecTests(generator, hxSurvey, hxAssessment);
 
     before(shared.setUpFn());
 
+    const surveyCount = 15;
     _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn());
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 
-    _.range(assessmentCount).forEach((index) => {
-        const indices = _.range(index * 4, (index + 1) * 4);
-        it(`create assessment ${index}`, assessmentTests.createAssessmentFn(indices));
-        it(`get assessment ${index}`, assessmentTests.getAssessmentFn(index));
+    let count = 0;
+    _.range(3).forEach((index) => {
+        const surveyIndices = _.range(index * 4, (index + 1) * 4);
+        it(`create assessment ${index}`, tests.createAssessmentFn(surveyIndices));
+        it(`get assessment ${index}`, tests.getAssessmentFn(index));
+    });
+    count += 3;
+
+    _.range(3).forEach((index) => {
+        const surveyIndices = [12 + index];
+        const assmentIndex = index + count;
+        it(`create assessment ${assmentIndex}`, tests.createAssessmentFn(surveyIndices));
+        it(`get assessment ${assmentIndex}`, tests.getAssessmentFn(assmentIndex));
+    });
+    count += 3;
+
+    it('list assessments', tests.listAssessmentFn());
+
+    [2, 5].forEach((index) => {
+        it(`delete assessment ${index}`, tests.deleteAssessmentFn(index));
     });
 
-    it('list assessments', assessmentTests.listAssessmentFn());
+    it('list assessments', tests.listAssessmentFn());
 });

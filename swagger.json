@@ -2737,6 +2737,21 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "delete": {
+                "summary": "Deletes assessment",
+                "operationId": "deleteAssessment",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/user-assessments": {

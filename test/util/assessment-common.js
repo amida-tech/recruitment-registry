@@ -43,6 +43,17 @@ const SpecTests = class AssessmentSpecTests {
         };
     }
 
+    deleteAssessmentFn(index) {
+        const hxAssessment = this.hxAssessment;
+        return function getAssessment() {
+            const id = hxAssessment.id(index);
+            return models.assessment.deleteAssessment(id)
+                .then(() => {
+                    hxAssessment.remove(index);
+                });
+        };
+    }
+
     listAssessmentFn() {
         const hxAssessment = this.hxAssessment;
         return function listAssessment() {
@@ -88,6 +99,18 @@ const IntegrationTests = class AssessmentSpecTests {
             return rrSuperTest.get(`/assessments/${id}`, true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.server(index));
+                });
+        };
+    }
+
+    deleteAssessmentFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAssessment = this.hxAssessment;
+        return function getAssessment() {
+            const id = hxAssessment.id(index);
+            return rrSuperTest.delete(`/assessments/${id}`, 204)
+                .then(() => {
+                    hxAssessment.remove(index);
                 });
         };
     }

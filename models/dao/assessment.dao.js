@@ -31,6 +31,17 @@ module.exports = class AssessmentDAO extends Base {
             });
     }
 
+    deleteAssessmentTx(id, transaction) {
+        const AssessmentSurvey = this.db.AssessmentSurvey;
+        const Assessment = this.db.Assessment;
+        return AssessmentSurvey.destroy({ where: { assessmentId: id }, transaction })
+            .then(() => Assessment.destroy({ where: { id }, transaction }));
+    }
+
+    deleteAssessment(id) {
+        return this.transaction(tx => this.deleteAssessmentTx(id, tx));
+    }
+
     listAssessments() {
         const Assessment = this.db.Assessment;
         return Assessment.findAll({ raw: true, attributes: ['id', 'name', 'stage'] });
