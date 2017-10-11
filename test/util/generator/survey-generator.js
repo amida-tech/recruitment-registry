@@ -124,12 +124,19 @@ module.exports = class SurveyGenerator {
         return result;
     }
 
-    newSurveyQuestionIds(questionIds) {
+    newSurveyQuestionIds(questionIds, options = {}) {
         this.surveyIndex += 1;
         const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
-        result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));
+
+        result.questions = questionIds.map((id) => {
+            let required = Boolean(surveyIndex % 2);
+            if (options.noneRequired) {
+                required = false;
+            }
+            return { id, required };
+        });
         return result;
     }
 };

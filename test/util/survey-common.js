@@ -205,13 +205,13 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
-    createSurveyQxHxFn(questionIndices) {
+    createSurveyQxHxFn(questionIndices, options = {}) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
-            const survey = generator.newSurveyQuestionIds(questionIds);
+            const survey = generator.newSurveyQuestionIds(questionIds, options);
             return models.survey.createSurvey(survey)
                 .then((id) => {
                     const fullSurvey = _.cloneDeep(survey);
@@ -287,14 +287,14 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
-    createSurveyQxHxFn(questionIndices) {
+    createSurveyQxHxFn(questionIndices, options = {}) {
         const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         return function createSurveyQxHx() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
-            const survey = generator.newSurveyQuestionIds(questionIds);
+            const survey = generator.newSurveyQuestionIds(questionIds, options);
             return rrSuperTest.post('/surveys', survey, 201)
                 .then((res) => {
                     const fullSurvey = _.cloneDeep(survey);
