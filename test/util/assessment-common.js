@@ -15,13 +15,13 @@ const SpecTests = class AssessmentSpecTests {
         this.hxAssessment = hxAssessment;
     }
 
-    createAssessmentFn(indices) {
+    createAssessmentFn(indices, override = {}) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
         return function createAssessment() {
             const surveyIds = indices.map(index => hxSurvey.id(index));
-            const assessment = generator.newAssessment(surveyIds);
+            const assessment = Object.assign(generator.newAssessment(surveyIds), override);
             return models.assessment.createAssessment(assessment)
                 .then(({ id }) => {
                     if (assessment.stage === undefined) {

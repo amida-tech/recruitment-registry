@@ -70,5 +70,7 @@
 	"filterMalformedNoAnswers": "Filter is malformed: No answers for some questions.",
 	"fileNoSuchFile": "No such file is found.",
 	"cohortZipFileNotGenerated": "Cohort csv file cannot be zipped.",
-	"cohortS3NoZipUpload": "S3 Upload error ({{$0}})"
+	"cohortS3NoZipUpload": "S3 Upload error ({{$0}})",
+	"answerInvalidAssesSurveys": "Survey assigned to assessment is not unique.",
+	"answerInvalidSurveyInAsses": "Survey does not belong to assessment."
 }

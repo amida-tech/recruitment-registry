@@ -180,7 +180,7 @@ module.exports = class AnswerDAO extends Base {
     }
 
 
-    fileAnswer({ userId, surveyId, language, answers }, transaction) {
+    fileAnswer({ userId, surveyId, assessmentId, language, answers }, transaction) {
         const Answer = this.db.Answer;
         const records = answers.reduce((r, p) => {
             const questionId = p.questionId;
@@ -190,6 +190,7 @@ module.exports = class AnswerDAO extends Base {
                 const value = {
                     userId,
                     surveyId,
+                    assessmentId,
                     language,
                     questionId,
                     questionChoiceId: v.questionChoiceId || null,
@@ -204,7 +205,7 @@ module.exports = class AnswerDAO extends Base {
         return Answer.bulkCreate(records, { transaction });
     }
 
-    updateStatus(userId, surveyId, status, transaction) {
+    updateStatus({ userId, surveyId }, status, transaction) {
         const UserSurvey = this.db.UserSurvey;
         return UserSurvey.findOne({
             where: { userId, surveyId },
@@ -213,7 +214,7 @@ module.exports = class AnswerDAO extends Base {
             transaction,
         })
             .then((userSurvey) => {
-                const record = { userId, surveyId, status };
+                const record = Object.assign({ status }, { userId, surveyId });
                 if (!userSurvey) {
                     return UserSurvey.create(record, { transaction });
                 } else if (userSurvey.status !== status) {
@@ -224,7 +225,7 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateConsent(userId, surveyId, action, transaction) {
+    validateConsent({ userId, surveyId }, action, transaction) {
         return this.surveyConsentDocument.listSurveyConsentDocuments({
             userId,
             surveyId,
@@ -240,8 +241,9 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateAnswers(userId, surveyId, answers, status) {
+    validateAnswers(masterIndex, answers, status) {
         const Answer = this.db.Answer;
+        const surveyId = masterIndex.surveyId;
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
             .then((surveyQuestions) => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
@@ -296,9 +298,10 @@ module.exports = class AnswerDAO extends Base {
                     });
                     if (remainingRequired.size) {
                         const ids = [...remainingRequired];
+                        const where = Object.assign({ questionId: { $in: ids } }, masterIndex);
                         return Answer.findAll({
                             raw: true,
-                            where: { userId, surveyId, questionId: { $in: ids } },
+                            where,
                             attributes: ['questionId'],
                         })
                             .then((records) => {
@@ -314,42 +317,76 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    validateCreate(userId, surveyId, answers, status, transaction) {
-        return this.validateAnswers(userId, surveyId, answers, status)
-            .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
+    validateCreate(masterIndex, answers, status, transaction) {
+        return this.validateAnswers(masterIndex, answers, status)
+            .then(() => this.validateConsent(masterIndex, 'create', transaction));
+    }
+
+    getMasterIndex(inputRecord, transaction) {
+        const { userId, surveyId, assessmentId } = inputRecord;
+        if (!assessmentId) {
+            return SPromise.resolve({ userId, surveyId, assessmentId: null });
+        }
+        const where = { assessmentId };
+        const attributes = ['surveyId'];
+        return this.db.AssessmentSurvey.findAll({ where, raw: true, attributes, transaction })
+            .then(result => result.map(r => r.surveyId))
+            .then((surveyIds) => {
+                if (surveyId === null) {
+                    if (surveyIds.length === 1) {
+                        return surveyIds[0];
+                    }
+                    return RRError.reject('answerInvalidAssesSurveys');
+                }
+                if (surveyIds.indexOf(surveyId) >= 0) {
+                    return surveyId;
+                }
+                return RRError.reject('answerInvalidSurveyInAsses');
+            })
+            .then(validSurveyId => ({ userId, surveyId: validSurveyId, assessmentId }));
     }
 
     createAnswersTx(inputRecord, transaction) {
-        const { userId, surveyId } = inputRecord;
         const answers = _.cloneDeep(inputRecord.answers);
         const status = inputRecord.status || 'completed';
-        return this.validateCreate(userId, surveyId, answers, status, transaction)
-            .then(() => this.updateStatus(userId, surveyId, status, transaction))
-            .then(() => {
-                const ids = _.map(answers, 'questionId');
-                const where = { questionId: { $in: ids }, surveyId, userId };
-                return this.db.Answer.destroy({ where, transaction });
-            })
-            .then(() => {
-                const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
-                return filteredAnswers;
-            })
-            .then(filteredAnswers => this.saveFiles(userId, filteredAnswers, transaction))
-            .then((filteredAnswers) => {
-                if (filteredAnswers.length) {
-                    const language = inputRecord.language || 'en';
-                    const record = { userId, surveyId, language, answers: filteredAnswers };
-                    return this.fileAnswer(record, transaction);
-                }
-                return null;
-            });
+        return this.getMasterIndex(inputRecord, transaction)
+            .then(masterIndex => this.validateCreate(masterIndex, answers, status, transaction)
+                .then(() => this.updateStatus(masterIndex, status, transaction))
+                .then(() => {
+                    const ids = _.map(answers, 'questionId');
+                    const where = { questionId: { $in: ids } };
+                    if (masterIndex.assessmentId) {
+                        where.assessmentId = masterIndex.assessmentId;
+                    } else {
+                        where.userId = masterIndex.userId;
+                        where.surveyId = masterIndex.surveyId;
+                    }
+                    return this.db.Answer.destroy({ where, transaction });
+                })
+                .then(() => {
+                    const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
+                    return filteredAnswers;
+                })
+                .then((filteredAnswers) => {
+                    const userId = masterIndex.userId;
+                    return this.saveFiles(userId, filteredAnswers, transaction);
+                })
+                .then((filteredAnswers) => {
+                    if (filteredAnswers.length) {
+                        const language = inputRecord.language || 'en';
+                        const record = { language, answers: filteredAnswers };
+                        Object.assign(record, masterIndex);
+                        return this.fileAnswer(record, transaction);
+                    }
+                    return null;
+                }));
     }
 
     createAnswers(input) {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, history, ids, userIds }) {
+    listAnswers({ userId, surveyId, assessmentId, scope, history, ids, userIds }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -367,6 +404,9 @@ module.exports = class AnswerDAO extends Base {
         if (surveyId) {
             where.surveyId = surveyId;
         }
+        if (assessmentId) {
+            where.assessmentId = assessmentId;
+        }
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
@@ -377,7 +417,7 @@ module.exports = class AnswerDAO extends Base {
         if (scope === 'history-only') {
             attributes.push(this.timestampColumn('answer', 'deleted', 'SSSS.MS'));
         }
-        if (userIds) {
+        if (userIds || assessmentId) {
             attributes.push('userId');
         }
         const include = [
@@ -447,9 +487,9 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    getAnswers({ userId, surveyId }) {
-        return this.validateConsent(userId, surveyId, 'read')
-            .then(() => this.listAnswers({ userId, surveyId }));
+    getAnswers(masterIndex) {
+        return this.validateConsent(masterIndex, 'read')
+            .then(() => this.listAnswers(masterIndex));
     }
 
     exportForUser(userId) {

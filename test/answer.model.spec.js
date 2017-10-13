@@ -23,12 +23,12 @@ const choiceSetCommon = require('./util/choice-set-common');
 const surveyCommon = require('./util/survey-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedSpec(generator);
 
 describe('answer unit', () => {
     const testQuestions = answerCommon.testQuestions;
 
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
