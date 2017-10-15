@@ -21,12 +21,11 @@ const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
 const choiceSetCommon = require('./util/choice-set-common');
 const surveyCommon = require('./util/survey-common');
+const answerSession = require('./fixtures/answer-session/survey-0');
 
 const expect = chai.expect;
 
 describe('answer unit', () => {
-    const testQuestions = answerCommon.testQuestions;
-
     const generator = new Generator();
     const shared = new SharedSpec(generator);
     const hxUser = new History();
@@ -54,7 +53,7 @@ describe('answer unit', () => {
     });
 
     const surveyOpts = { noneRequired: true };
-    _.map(testQuestions, 'survey').forEach((qxIndices, index) => {
+    _.map(answerSession, 'survey').forEach((qxIndices, index) => {
         it(`create survey ${index}`, surveyTests.createSurveyQxHxFn(qxIndices, surveyOpts));
     });
 
@@ -122,7 +121,7 @@ describe('answer unit', () => {
 
     _.range(cases.length).forEach((i) => {
         const { userIndex, surveyIndex, seqIndex } = cases[i];
-        const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][0];
+        const questionIndices = answerSession[surveyIndex].answerSequences[seqIndex][0];
         it(`user ${userIndex} answers survey ${surveyIndex} (step 0)`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
         it(`user ${userIndex} gets answers to survey ${surveyIndex} (step 0)`, tests.getAnswersFn(userIndex, surveyIndex));
     });
@@ -130,7 +129,7 @@ describe('answer unit', () => {
     _.range(3).forEach((j) => {
         _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
+            const questionIndices = answerSession[surveyIndex].answerSequences[seqIndex][j];
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
             it(`list user ${userIndex} survey ${surveyIndex} answer history (step ${j})`, listAnswersFn(userIndex, surveyIndex));
@@ -140,7 +139,7 @@ describe('answer unit', () => {
     [0, 1].forEach((index) => {
         it(`create question ${20 + index}`, questionTests.createQuestionFn());
         it(`get question ${20 + index}`, questionTests.getQuestionFn());
-        it(`create survey ${testQuestions.length + 1}`, surveyTests.createSurveyQxHxFn([20 + index], surveyOpts));
+        it(`create survey ${answerSession.length + 1}`, surveyTests.createSurveyQxHxFn([20 + index], surveyOpts));
         it(`user 3 answers survey ${5 + index}`, tests.answerSurveyFn(3, 5 + index, [20 + index]));
         it(`user 3 gets answers to survey ${5 + index}`, tests.getAnswersFn(3, 5 + index));
     });

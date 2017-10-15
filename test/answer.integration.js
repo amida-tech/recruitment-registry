@@ -23,6 +23,7 @@ const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
 const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
+const answerSession = require('./fixtures/answer-session/survey-0');
 
 const expect = chai.expect;
 
@@ -30,8 +31,6 @@ describe('answer integration', () => {
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);
-
-    const testQuestions = answerCommon.testQuestions;
 
     const hxUser = new History();
     const hxClinician = new History();
@@ -62,7 +61,7 @@ describe('answer integration', () => {
     });
 
     const surveyOpts = { noneRequired: true };
-    _.map(testQuestions, 'survey').forEach((qxIndices, index) => {
+    _.map(answerSession, 'survey').forEach((qxIndices, index) => {
         it(`create survey ${index}`, surveyTests.createSurveyQxHxFn(qxIndices, surveyOpts));
     });
 
@@ -80,7 +79,7 @@ describe('answer integration', () => {
     _.range(3).forEach((j) => {
         _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
+            const questionIndices = answerSession[surveyIndex].answerSequences[seqIndex][j];
             it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
@@ -93,7 +92,7 @@ describe('answer integration', () => {
 
         it(`create question ${20 + index}`, questionTests.createQuestionFn());
         it(`get question ${20 + index}`, questionTests.getQuestionFn(20 + index));
-        it(`create survey ${testQuestions.length + 1 + index}`, surveyTests.createSurveyQxHxFn([20 + index], surveyOpts));
+        it(`create survey ${answerSession.length + 1 + index}`, surveyTests.createSurveyQxHxFn([20 + index], surveyOpts));
         it('logout as super', shared.logoutFn());
         it('login as user 3', shared.loginIndexFn(hxUser, 3));
 

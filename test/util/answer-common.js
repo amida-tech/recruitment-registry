@@ -10,58 +10,6 @@ const modelsAnswerCommon = require('../../models/dao/answer-common');
 
 const expect = chai.expect;
 
-const testQuestions = [{
-    survey: [0, 1, 2, 3, 4],
-    answerSequences: [
-        [
-            [0, 1, 2, 3, 4],
-            [0, 1, 2, 3, 4],
-            [-1, -2],
-        ],
-    ],
-}, {
-    survey: [4, 5, 6, 0],
-    answerSequences: [
-        [
-            [4, 5, 6, 0],
-            [4, -6],
-            [6, 0],
-        ],
-    ],
-}, {
-    survey: [7, 8, 9, 10, 11, 12],
-    answerSequences: [
-        [
-            [8, 10, 11, 12],
-            [7, 10, -12],
-            [9, 10, 11, -8],
-        ],
-    ],
-}, {
-    survey: [9, 11, 13, 6],
-    answerSequences: [
-        [
-            [9, 13],
-            [6, 11],
-            [-9, 11],
-        ],
-        [
-            [9, 11, 13, 6],
-            [9, 11, -6],
-            [11, 13],
-        ],
-    ],
-}, {
-    survey: [14, 15, 16, 17, 18, 19],
-    answerSequences: [
-        [
-            [14, 15, 16, 17, 18, 19],
-            [-15, 16, -17, -19],
-            [14, 17, 19],
-        ],
-    ],
-}];
-
 const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
     if (qxIndices) {
         return qxIndices.map((questionIndex) => {
@@ -203,7 +151,7 @@ const SpecTests = class AnswerSpecTests {
                     const masterIndex = assessmentIndex === null ? userIndex : assessmentIndex;
                     const expected = hxAnswer.expectedAnswers(masterIndex, surveyIndex);
                     const options = assessmentIndex === null ? {} : { surveyId };
-                    comparator.answers(expected, result, null, options);
+                    comparator.answers(expected, result, options);
                     hxAnswer.pushServer(masterIndex, surveyIndex, result);
                 });
         };
@@ -372,7 +320,6 @@ const IntegrationTests = class AnswerIntegrationTests {
 };
 
 module.exports = {
-    testQuestions,
     answersToSearchQuery,
     generateAnswers,
     compareImportedAnswers,

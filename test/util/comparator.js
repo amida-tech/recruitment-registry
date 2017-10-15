@@ -210,11 +210,11 @@ const comparator = {
         });
         expect(serverAnsweredSurvey).to.deep.equal(expected);
     },
-    answers(answers, serverAnswers, language, options = {}) {
+    answers(answers, serverAnswers, options = {}) {
         const expected = _.sortBy(_.cloneDeep(answers), 'questionId');
         const actual = _.sortBy(serverAnswers, 'questionId');
         expected.forEach((answer, index) => {
-            answer.language = answer.language || language || 'en';
+            answer.language = answer.language || 'en';
             if (options.surveyId) {
                 answer.surveyId = options.surveyId;
             }
