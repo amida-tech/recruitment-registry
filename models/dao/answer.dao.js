@@ -15,6 +15,7 @@ const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const fedQxChoiceQuery = queryrize.readQuerySync('federated-question-choice-select.sql');
+const copySqlQuery = queryrize.readQuerySync('copy-answers.sql');
 
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     if (logic === 'exists') {
@@ -332,7 +333,7 @@ module.exports = class AnswerDAO extends Base {
         return this.db.AssessmentSurvey.findAll({ where, raw: true, attributes, transaction })
             .then(result => result.map(r => r.surveyId))
             .then((surveyIds) => {
-                if (surveyId === null) {
+                if (!surveyId) {
                     if (surveyIds.length === 1) {
                         return surveyIds[0];
                     }
@@ -382,8 +383,38 @@ module.exports = class AnswerDAO extends Base {
                 }));
     }
 
+    copyAnswersTx(inputRecord, transaction) {
+        const status = inputRecord.status || 'completed';
+        return this.getMasterIndex(inputRecord, transaction)
+            .then(masterIndex => this.validateConsent(masterIndex, 'create', transaction)
+                .then(() => this.updateStatus(masterIndex, status, transaction))
+                .then(() => {
+                    const where = {};
+                    if (masterIndex.assessmentId) {
+                        where.assessmentId = masterIndex.assessmentId;
+                    } else {
+                        where.userId = masterIndex.userId;
+                        where.surveyId = masterIndex.surveyId;
+                    }
+                    return this.db.Answer.destroy({ where, transaction });
+                })
+                .then(() => {
+                    const { userId, assessmentId, prevAssessmentId } = inputRecord;
+                    const params = {
+                        user_id: userId,
+                        assessment_id: assessmentId,
+                        prev_assessment_id: prevAssessmentId,
+                    };
+                    return this.query(copySqlQuery, params, transaction);
+                }));
+    }
+
     createAnswers(input) {
         return this.transaction(tx => this.createAnswersTx(input, tx));
+    }
+
+    copyAnswers(input) {
+        return this.transaction(tx => this.copyAnswersTx(input, tx));
     }
 
     listAnswers({ userId, surveyId, assessmentId, scope, history, ids, userIds }) {

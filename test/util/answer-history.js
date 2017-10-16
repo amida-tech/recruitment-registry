@@ -13,8 +13,10 @@ const toAnswerRecord = function (answers, language) {
     }, {});
     language = language || 'en';
     answers = answers.map((answer) => {
-        const r = Object.assign({ language }, answer);
-        return r;
+        if (answer.language) {
+            return answer;
+        }
+        return Object.assign({ language }, answer);
     });
     return { remaining, answers, removed: {} };
 };
@@ -148,5 +150,10 @@ module.exports = class AnswerHistory {
             return r;
         }, {});
         return result;
+    }
+
+    copyAssessmentAnswers(userIndex, surveyIndex, prevAssessmentIndex) {
+        const answers = this.expectedAnswers(prevAssessmentIndex, surveyIndex);
+        this.push(userIndex, surveyIndex, answers);
     }
 };

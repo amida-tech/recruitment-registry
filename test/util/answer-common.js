@@ -98,6 +98,25 @@ const SpecTests = class AnswerSpecTests {
         this.hxAnswer = new AnswerHistory();
     }
 
+    copyAnswerSurveyFn(userIndex, surveyIndex, assessmentIndex, prevIndex) {
+        const hxUser = this.hxUser;
+        const hxAnswer = this.hxAnswer;
+        const hxAssessment = this.hxAssessment;
+        return function answerSurvey() {
+            const userId = hxUser.id(userIndex);
+            const assessmentId = hxAssessment.id(assessmentIndex);
+            const prevAssessmentId = hxAssessment.id(prevIndex);
+            const input = { userId, assessmentId, prevAssessmentId };
+            return models.answer.copyAnswers(input)
+                .then(() => {
+                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
+                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
+                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
+                    expect(expected).to.deep.equal(prevExpected);
+                });
+        };
+    }
+
     answerSurveyFn(userIndex, surveyIndex, qxIndices, assessmentIndex = null) {
         const generator = this.generator;
         const hxUser = this.hxUser;

@@ -83,11 +83,19 @@ describe('answer assessment unit', function answerAssessmentUnit() {
         });
     });
 
+    const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
         const { name, stage, user, questions } = answersSpec;
         const userIndex = user;
         const questionIndices = questions;
         const assessmentIndex = (name * stageCount) + stage;
+        if (!assessmentIndexSet.has(assessmentIndex)) {
+            assessmentIndexSet.add(assessmentIndex);
+            if (stage > 0) {
+                const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`, tests.copyAnswerSurveyFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
+            }
+        }
         it(`user ${userIndex} creates assessesment ${name} ${stage}`, tests.answerSurveyFn(userIndex, 0, questionIndices, assessmentIndex));
         it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`, tests.getAnswersFn(userIndex, 0, assessmentIndex));
     });
