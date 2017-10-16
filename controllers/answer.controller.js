@@ -15,8 +15,18 @@ exports.createAnswers = function createAnswers(req, res) {
 
 exports.getAnswers = function getAnswers(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
+    const assessmentId = _.get(req, 'swagger.params.assessment-id.value');
     const userId = req.user.id;
-    req.models.answer.getAnswers({ userId, surveyId })
+    const masterId = {};
+    if (assessmentId) {
+        masterId.assessmentId = assessmentId;
+    } else {
+        masterId.userId = userId;
+    }
+    if (surveyId) {
+        masterId.surveyId = surveyId;
+    }
+    req.models.answer.getAnswers(masterId)
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };

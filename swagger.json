@@ -532,7 +532,13 @@
                     "name": "survey-id",
                     "in": "query",
                     "description": "Survey id",
-                    "required": true,
+                    "required": false,
+                    "type": "integer"
+                }, {
+                    "name": "assessment-id",
+                    "in": "query",
+                    "description": "Assessment id",
+                    "required": false,
                     "type": "integer"
                 }],
                 "responses": {
@@ -5409,6 +5415,10 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "language": {
                     "type": "string",
                     "minLength": 2
@@ -5483,11 +5493,14 @@
         "surveyAnswers": {
             "type": "object",
             "required": [
-                "surveyId",
                 "answers"
             ],
             "properties": {
                 "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "assessmentId": {
                     "type": "integer",
                     "minimum": 1
                 },
