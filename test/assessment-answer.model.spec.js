@@ -9,14 +9,11 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const config = require('../config');
-
-const SharedIntegration = require('./util/shared-integration');
-const RRSuperTest = require('./util/rr-super-test');
+const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
-const answerCommon = require('./util/answer-common');
+const assessmentAnswerCommon = require('./util/assessment-answer-common');
 const questionCommon = require('./util/question-common');
 const surveyCommon = require('./util/survey-common');
 const assessmentCommon = require('./util/assessment-common');
@@ -34,17 +31,16 @@ const findMax = function findMax(property) {
 
 describe('answer assessment unit', function answerAssessmentUnit() {
     const generator = new Generator();
-    const rrSuperTest = new RRSuperTest();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+    const shared = new SharedSpec(generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
     const hxAssessment = new History();
 
-    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
-    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
-    const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
-    const tests = new answerCommon.IntegrationTests(rrSuperTest, {
+    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
+    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
+    const assessmentTests = new assessmentCommon.SpecTests(generator, hxSurvey, hxAssessment);
+    const tests = new assessmentAnswerCommon.SpecTests({
         generator, hxUser, hxSurvey, hxQuestion, hxAssessment,
     });
 
@@ -67,12 +63,6 @@ describe('answer assessment unit', function answerAssessmentUnit() {
         expect(stageCount).to.be.above(0);
     });
 
-    it('login as super', shared.loginFn(config.superUser));
-
-    _.range(4).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(hxUser));
-    });
-
     _.range(userCount).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
     });
@@ -93,16 +83,20 @@ describe('answer assessment unit', function answerAssessmentUnit() {
         });
     });
 
-    it('logout as super', shared.logoutFn());
-
+    const assessmentIndexSet = new Set();
     answerSession.forEach((answersSpec) => {
         const { name, stage, user, questions } = answersSpec;
         const userIndex = user;
         const questionIndices = questions;
         const assessmentIndex = (name * stageCount) + stage;
-        it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
-        it(`user ${userIndex} creates assessesment ${name} ${stage}`, tests.answerSurveyFn(userIndex, 0, questionIndices, assessmentIndex));
-        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`, tests.getAnswersFn(userIndex, 0, assessmentIndex));
-        it(`logout as  user ${userIndex}`, shared.logoutFn());
+        if (!assessmentIndexSet.has(assessmentIndex)) {
+            assessmentIndexSet.add(assessmentIndex);
+            if (stage > 0) {
+                const prevAssessmentIndex = (name * stageCount) + (stage - 1);
+                it(`user ${userIndex} copies assessesment ${name} ${stage}`, tests.copyAssessmentAnswersFn(userIndex, 0, assessmentIndex, prevAssessmentIndex));
+            }
+        }
+        it(`user ${userIndex} creates assessesment ${name} ${stage}`, tests.createAssessmentAnswersFn(userIndex, 0, questionIndices, assessmentIndex));
+        it(`user ${userIndex} gets answers  assessesment ${name} ${stage}`, tests.getAssessmentAnswersFn(userIndex, 0, assessmentIndex));
     });
 });

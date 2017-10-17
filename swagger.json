@@ -1006,6 +1006,59 @@
                 }
             }
         },
+        "/assessment-answers": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "post": {
+                "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Creates assessment answers",
+                "operationId": "createAssessmentAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "surveyAnswers",
+                    "in": "body",
+                    "description": "Answers to the survey",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/surveyAnswers"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets assessment answers",
+                "operationId": "getAssessmentAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "assessment-id",
+                    "in": "query",
+                    "description": "Assessment id",
+                    "required": false,
+                    "type": "integer"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/linkedAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey-id": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {

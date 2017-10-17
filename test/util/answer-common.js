@@ -7,22 +7,9 @@ const models = require('../../models');
 const comparator = require('./comparator');
 const AnswerHistory = require('./answer-history');
 const modelsAnswerCommon = require('../../models/dao/answer-common');
+const shared = require('./shared-answer');
 
 const expect = chai.expect;
-
-const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
-    if (qxIndices) {
-        return qxIndices.map((questionIndex) => {
-            if (questionIndex < 0) {
-                const questionId = hxQuestion.id(-questionIndex);
-                return { questionId };
-            }
-            const question = hxQuestion.server(questionIndex);
-            return generator.answerQuestion(question);
-        });
-    }
-    return generator.answerQuestions(survey.questions);
-};
 
 const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     const expectedRaw = hxAnswer.listFlatForUser(userIndex);
@@ -98,25 +85,6 @@ const SpecTests = class AnswerSpecTests {
         this.hxAnswer = new AnswerHistory();
     }
 
-    copyAnswerSurveyFn(userIndex, surveyIndex, assessmentIndex, prevIndex) {
-        const hxUser = this.hxUser;
-        const hxAnswer = this.hxAnswer;
-        const hxAssessment = this.hxAssessment;
-        return function answerSurvey() {
-            const userId = hxUser.id(userIndex);
-            const assessmentId = hxAssessment.id(assessmentIndex);
-            const prevAssessmentId = hxAssessment.id(prevIndex);
-            const input = { userId, assessmentId, prevAssessmentId };
-            return models.answer.copyAnswers(input)
-                .then(() => {
-                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
-                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
-                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
-                    expect(expected).to.deep.equal(prevExpected);
-                });
-        };
-    }
-
     answerSurveyFn(userIndex, surveyIndex, qxIndices, assessmentIndex = null) {
         const generator = this.generator;
         const hxUser = this.hxUser;
@@ -127,7 +95,7 @@ const SpecTests = class AnswerSpecTests {
         return function answerSurvey() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const answers = shared.generateAnswers(generator, survey, hxQuestion, qxIndices);
             const surveyId = survey.id;
             const input = { userId, surveyId, answers };
             if (assessmentIndex !== null) {
@@ -227,6 +195,65 @@ const SpecTests = class AnswerSpecTests {
                 });
         };
     }
+
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex = null) {
+        const generator = this.generator;
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        const hxAnswer = this.hxAnswer;
+        const hxAssessment = this.hxAssessment;
+        return function createAssessmentAnswer() {
+            const userId = hxUser.id(userIndex);
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = shared.generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const surveyId = survey.id;
+            const input = { userId, surveyId, answers };
+            if (assessmentIndex !== null) {
+                const assessmentId = hxAssessment.id(assessmentIndex);
+                input.assessmentId = assessmentId;
+            }
+            const language = generator.nextLanguage();
+            if (language) {
+                input.language = language;
+            }
+            return models.assessmentAnswer.createAssessmentAnswers(input)
+                .then(() => {
+                    if (assessmentIndex === null) {
+                        hxAnswer.push(userIndex, surveyIndex, answers, language);
+                    } else {
+                        hxAnswer.push(assessmentIndex, surveyIndex, answers, language);
+                    }
+                })
+                .then(() => answers);
+        };
+    }
+
+    getAssessmentAnswersFn(userIndex, surveyIndex, assessmentIndex = null) {
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        const hxAssessment = this.hxAssessment;
+        return function getAssessmentAnswers() {
+            const masterId = {};
+            const surveyId = hxSurvey.id(surveyIndex);
+            if (assessmentIndex === null) {
+                const userId = hxUser.id(userIndex);
+                Object.assign(masterId, { userId, surveyId });
+            } else {
+                const assessmentId = hxAssessment.id(assessmentIndex);
+                Object.assign(masterId, { assessmentId });
+            }
+            return models.assessmentAnswer.getAssessmentAnswers(masterId)
+                .then((result) => {
+                    const masterIndex = assessmentIndex === null ? userIndex : assessmentIndex;
+                    const expected = hxAnswer.expectedAnswers(masterIndex, surveyIndex);
+                    const options = assessmentIndex === null ? {} : { surveyId };
+                    comparator.answers(expected, result, options);
+                    hxAnswer.pushServer(masterIndex, surveyIndex, result);
+                });
+        };
+    }
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
@@ -249,7 +276,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxAssessment = this.hxAssessment;
         return function answerSurvey() {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const answers = shared.generateAnswers(generator, survey, hxQuestion, qxIndices);
             const input = {
                 surveyId: survey.id,
                 answers,
@@ -356,11 +383,70 @@ const IntegrationTests = class AnswerIntegrationTests {
                 });
         };
     }
+
+    createAssessmentAnswersFn(userIndex, surveyIndex, qxIndices, assessmentIndex = null) {
+        const rrSuperTest = this.rrSuperTest;
+        const generator = this.generator;
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        const hxAnswer = this.hxAnswer;
+        const hxAssessment = this.hxAssessment;
+        return function answerSurvey() {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = shared.generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const input = {
+                surveyId: survey.id,
+                answers,
+            };
+            if (assessmentIndex !== null) {
+                const assessmentId = hxAssessment.id(assessmentIndex);
+                input.assessmentId = assessmentId;
+            }
+            const language = generator.nextLanguage();
+            if (language) {
+                input.language = language;
+            }
+            return rrSuperTest.post('/assessment-answers', input, 204)
+                .expect(() => {
+                    if (assessmentIndex === null) {
+                        hxAnswer.push(userIndex, surveyIndex, answers, language);
+                    } else {
+                        hxAnswer.push(assessmentIndex, surveyIndex, answers, language);
+                    }
+                })
+                .then(() => answers);
+        };
+    }
+
+    getAssessmentAnswersFn(userIndex, surveyIndex, assessmentIndex = null) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        const hxAssessment = this.hxAssessment;
+        return function getAnswers(done) {
+            const query = {};
+            const surveyId = hxSurvey.id(surveyIndex);
+            if (assessmentIndex === null) {
+                Object.assign(query, { 'survey-id': surveyId });
+            } else {
+                const assessmentId = hxAssessment.id(assessmentIndex);
+                Object.assign(query, { 'assessment-id': assessmentId });
+            }
+            rrSuperTest.get('/assessment-answers', true, 200, query)
+                .expect((res) => {
+                    const masterIndex = assessmentIndex === null ? userIndex : assessmentIndex;
+                    const expected = hxAnswer.expectedAnswers(masterIndex, surveyIndex);
+                    const options = assessmentIndex === null ? {} : { surveyId };
+                    comparator.answers(expected, res.body, options);
+                    hxAnswer.pushServer(masterIndex, surveyIndex, res.body);
+                })
+                .end(done);
+        };
+    }
 };
 
 module.exports = {
     answersToSearchQuery,
-    generateAnswers,
     compareImportedAnswers,
     SpecTests,
     IntegrationTests,
