@@ -32,7 +32,7 @@ const findMax = function findMax(property) {
     }, 0);
 };
 
-describe('answer assessment unit', function answerAssessmentUnit() {
+describe('assessment answer integration', function answerAssessmentUnit() {
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);

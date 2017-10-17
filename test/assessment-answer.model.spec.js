@@ -29,7 +29,7 @@ const findMax = function findMax(property) {
     }, 0);
 };
 
-describe('answer assessment unit', function answerAssessmentUnit() {
+describe('assessment answer unit', function answerAssessmentUnit() {
     const generator = new Generator();
     const shared = new SharedSpec(generator);
     const hxUser = new History();
