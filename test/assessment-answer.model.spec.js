@@ -79,7 +79,7 @@ describe('assessment answer unit', function answerAssessmentUnit() {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
             const override = { name, stage };
-            it(`create assessment dd ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
+            it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
 

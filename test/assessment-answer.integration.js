@@ -32,7 +32,7 @@ const findMax = function findMax(property) {
     }, 0);
 };
 
-describe('assessment answer integration', function answerAssessmentUnit() {
+describe('assessment answer integration', function answerAssessmentIntegration() {
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);
@@ -89,7 +89,7 @@ describe('assessment answer integration', function answerAssessmentUnit() {
         _.range(stageCount).forEach((stage) => {
             const name = `name_${nameIndex}`;
             const override = { name, stage };
-            it(`create assessment dd ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
+            it(`create assessment ${name} ${stage}`, assessmentTests.createAssessmentFn([0], override));
         });
     });
 

@@ -1008,6 +1008,44 @@
         },
         "/assessment-answers": {
             "x-swagger-router-controller": "assessment-answer.controller",
+            "get": {
+                "summary": "Lists assessment answers",
+                "description": "Do not return attached surveys.",
+                "operationId": "getAssessmentAnswersList",
+                "security": [{
+                    "participant": []
+                },{
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "group",
+                    "in": "query",
+                    "description": "Group for assessments",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswersDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
             "post": {
                 "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
                 "summary": "Creates assessment answers",
@@ -1016,12 +1054,12 @@
                     "participant": []
                 }],
                 "parameters": [{
-                    "name": "surveyAnswers",
+                    "name": "newAssessmentAnswers",
                     "in": "body",
                     "description": "Answers to the survey",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/surveyAnswers"
+                        "$ref": "#/definitions/newAssessmentAnswers"
                     }
                 }],
                 "responses": {
@@ -1039,18 +1077,73 @@
                 "security": [{
                     "participant": []
                 }],
-                "parameters": [{
-                    "name": "assessment-id",
-                    "in": "query",
-                    "description": "Assessment id",
-                    "required": false,
-                    "type": "integer"
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/answers": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment answers only",
+                "operationId": "getAssessmentAnswersOnly",
+                "security": [{
+                    "participant": []
                 }],
                 "responses": {
                     "200": {
                         "description": "Successful response.",
                         "schema": {
                             "$ref": "#/definitions/linkedAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/status": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment answers Status",
+                "operationId": "getAssessmentAnswersStatus",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object",
+                            "required": ["status"],
+                            "properties": {
+                                "status": {
+                                    "$ref": "#/definitions/answerStatus"
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     },
                     "default": {
@@ -2530,7 +2623,7 @@
                             "required": ["status"],
                             "properties": {
                                 "status": {
-                                    "$ref": "#/definitions/userSurveyStatus"
+                                    "$ref": "#/definitions/answerStatus"
                                 }
                             },
                             "additionalProperties": false
@@ -4785,7 +4878,7 @@
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 }
             },
             "additionalProperties": false
@@ -6132,7 +6225,7 @@
             },
             "additionalProperties": false
         },
-        "userSurveyStatus": {
+        "answerStatus": {
             "type": "string",
             "enum": ["new", "in-progress", "completed"]
         },
@@ -6141,7 +6234,7 @@
             "required": ["status", "survey"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "survey": {
                     "$ref": "#/definitions/survey"
@@ -6154,7 +6247,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -6171,7 +6264,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -6179,6 +6272,68 @@
                 "survey": {
                     "$ref": "#/definitions/survey"
                 }
+            },
+            "additionalProperties": false
+        },
+        "newAssessmentAnswers": {
+            "type": "object",
+            "required": ["answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswersInfo": {
+            "type": "object",
+            "required": ["id", "name", "status"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "stage": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswersDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentAnswersInfo"
             },
             "additionalProperties": false
         },
