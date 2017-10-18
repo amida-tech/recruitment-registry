@@ -67,12 +67,11 @@ const SpecTests = class AnswerSpecTests {
                 const assessmentId = hxAssessment.id(assessmentIndex);
                 Object.assign(masterId, { assessmentId });
             }
-            return models.assessmentAnswer.getAssessmentAnswers(masterId)
+            return models.assessmentAnswer.getAssessmentAnswersOnly(masterId)
                 .then((result) => {
                     const masterIndex = assessmentIndex === null ? userIndex : assessmentIndex;
                     const expected = hxAnswer.expectedAnswers(masterIndex, surveyIndex);
-                    const options = assessmentIndex === null ? {} : { surveyId };
-                    comparator.answers(expected, result, options);
+                    comparator.answers(expected, result);
                     hxAnswer.pushServer(masterIndex, surveyIndex, result);
                 });
         };
@@ -161,8 +160,7 @@ const IntegrationTests = class AnswerIntegrationTests {
                 .expect((res) => {
                     const masterIndex = assessmentIndex === null ? userIndex : assessmentIndex;
                     const expected = hxAnswer.expectedAnswers(masterIndex, surveyIndex);
-                    const options = assessmentIndex === null ? {} : { surveyId };
-                    comparator.answers(expected, res.body, options);
+                    comparator.answers(expected, res.body);
                     hxAnswer.pushServer(masterIndex, surveyIndex, res.body);
                 })
                 .end(done);

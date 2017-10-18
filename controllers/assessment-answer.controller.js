@@ -15,7 +15,7 @@ exports.createAssessmentAnswers = function createAssessmentAnswers(req, res) {
 exports.getAssessmentAnswers = function getAssessmentAnswers(req, res) {
     const assessmentId = _.get(req, 'swagger.params.assessment-id.value');
     const userId = req.user.id;
-    req.models.assessmentAnswer.getAssessmentAnswers({ userId, assessmentId })
+    req.models.assessmentAnswer.getAssessmentAnswersOnly({ userId, assessmentId })
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };

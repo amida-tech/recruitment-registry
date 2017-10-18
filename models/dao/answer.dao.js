@@ -321,30 +321,6 @@ module.exports = class AnswerDAO extends Base {
             .then(() => this.validateConsent(masterId, 'create', transaction));
     }
 
-    getMasterIndex(inputRecord, transaction) {
-        const { userId, surveyId, assessmentId } = inputRecord;
-        if (!assessmentId) {
-            return SPromise.resolve({ userId, surveyId, assessmentId: null });
-        }
-        const where = { assessmentId };
-        const attributes = ['surveyId'];
-        return this.db.AssessmentSurvey.findAll({ where, raw: true, attributes, transaction })
-            .then(result => result.map(r => r.surveyId))
-            .then((surveyIds) => {
-                if (!surveyId) {
-                    if (surveyIds.length === 1) {
-                        return surveyIds[0];
-                    }
-                    return RRError.reject('answerInvalidAssesSurveys');
-                }
-                if (surveyIds.indexOf(surveyId) >= 0) {
-                    return surveyId;
-                }
-                return RRError.reject('answerInvalidSurveyInAsses');
-            })
-            .then(validSurveyId => ({ userId, surveyId: validSurveyId, assessmentId }));
-    }
-
     prepareAndFileAnswer({ masterId, answers, language }, transaction) {
         const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
         const userId = masterId.userId;
@@ -405,7 +381,7 @@ module.exports = class AnswerDAO extends Base {
             where.deletedAt = { $ne: null };
         }
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
-        if (scope === 'export' || !surveyId) {
+        if (scope === 'export' || ((scope !== 'assessment' && !surveyId))) {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {

@@ -20,6 +20,46 @@ const answerAssessmentIdColumn = function (queryInterface, Sequelize) {
     });
 };
 
+const assessmentAnswer = function (queryInterface, Sequelize) {
+    return queryInterface.createTable('assessment_answer', {
+        id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        assessmentId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'assessment_id',
+            references: {
+                model: {
+                    tableName: 'assessment',
+                },
+                key: 'id',
+            },
+        },
+        status: {
+            type: Sequelize.ENUM('new', 'in-progress', 'completed'),
+            allowNull: false,
+        },
+        createdAt: {
+            type: Sequelize.DATE,
+            field: 'created_at',
+        },
+        deletedAt: {
+            type: Sequelize.DATE,
+            field: 'deleted_at',
+        },
+    }, {
+        freezeTableName: true,
+        createdAt: 'createdAt',
+        updatedAt: false,
+        deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { $eq: null } } }],
+    });
+};
+
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.sequelize.query('ALTER TABLE assessment DROP CONSTRAINT assessment_name_key')
@@ -43,6 +83,12 @@ module.exports = {
           }))
           .then(() => queryInterface.addIndex('answer', ['user_id'], {
               indexName: 'answer_user_id',
+              where: { deleted_at: { $eq: null } },
+          }))
+          .then(() => assessmentAnswer(queryInterface, Sequelize))
+          .then(() => queryInterface.addIndex('assessment_answer', ['assessment_id'], {
+              indexName: 'assessment_answer_assessment_id',
+              unique: true,
               where: { deleted_at: { $eq: null } },
           }));
     },
