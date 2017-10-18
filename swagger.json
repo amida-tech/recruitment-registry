@@ -2758,6 +2758,14 @@
                 "security": [{
                     "admin": []
                 }],
+                "parameters": [{
+                    "name": "group",
+                    "in": "query",
+                    "description": "Group key",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -6306,6 +6314,10 @@
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -6327,6 +6339,10 @@
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -6347,6 +6363,10 @@
                     },
                     "stage": {
                         "type": "integer"
+                    },
+                    "group": {
+                        "type": "string",
+                        "minLength": 1
                     }
                 },
                 "additionalProperties": false

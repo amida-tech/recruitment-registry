@@ -63,6 +63,18 @@ const SpecTests = class AssessmentSpecTests {
                 });
         };
     }
+
+    listAssessmentGroupFn(group, indices) {
+        const hxAssessment = this.hxAssessment;
+        return function listAssessmentGroup() {
+            return models.assessment.listAssessments({ group })
+                .then((list) => {
+                    let expected = hxAssessment.listServers();
+                    expected = indices.map(index => expected[index]);
+                    expect(list).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const IntegrationTests = class AssessmentSpecTests {
@@ -73,14 +85,14 @@ const IntegrationTests = class AssessmentSpecTests {
         this.hxAssessment = hxAssessment;
     }
 
-    createAssessmentFn(indices) {
+    createAssessmentFn(indices, override = {}) {
         const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
         return function createAssessment() {
             const surveyIds = indices.map(index => hxSurvey.id(index));
-            const assessment = generator.newAssessment(surveyIds);
+            const assessment = Object.assign(generator.newAssessment(surveyIds), override);
             return rrSuperTest.post('/assessments', assessment, 201)
                 .expect((res) => {
                     if (assessment.stage === undefined) {
@@ -122,6 +134,19 @@ const IntegrationTests = class AssessmentSpecTests {
             return rrSuperTest.get('/assessments', true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.listServers());
+                });
+        };
+    }
+
+    listAssessmentGroupFn(group, indices) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAssessment = this.hxAssessment;
+        return function listAssessmentGroup() {
+            return rrSuperTest.get('/assessments', true, 200, { group })
+                .then((res) => {
+                    let expected = hxAssessment.listServers();
+                    expected = indices.map(index => expected[index]);
+                    expect(res.body).to.deep.equal(expected);
                 });
         };
     }

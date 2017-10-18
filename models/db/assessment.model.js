@@ -21,6 +21,10 @@ module.exports = function assessment(sequelize, Sequelize, schema) {
             allowNull: false,
             defaultValue: 0,
         },
+        group: {
+            type: Sequelize.TEXT,
+            field: 'group',
+        },
     }, {
         freezeTableName: true,
         tableName,
@@ -29,7 +33,7 @@ module.exports = function assessment(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         indexes: [{
-            fields: ['name', 'stage'],
+            fields: ['group'],
             where: { deleted_at: { $eq: null } },
         }],
         paranoid: true,

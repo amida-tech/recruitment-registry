@@ -8,6 +8,12 @@ const assessmentStageColumn = function (queryInterface, Sequelize) {
     });
 };
 
+const assessmentGroupColumn = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('assessment', 'group', {
+        type: Sequelize.TEXT,
+    });
+};
+
 const answerAssessmentIdColumn = function (queryInterface, Sequelize) {
     return queryInterface.addColumn('answer', 'assessment_id', {
         type: Sequelize.INTEGER,
@@ -67,10 +73,11 @@ module.exports = {
           .then(() => queryInterface.removeColumn('assessment', 'updated_at'))
           .then(() => queryInterface.removeColumn('assessment_survey', 'lookback'))
           .then(() => assessmentStageColumn(queryInterface, Sequelize))
+          .then(() => assessmentGroupColumn(queryInterface, Sequelize))
           .then(() => answerAssessmentIdColumn(queryInterface, Sequelize))
           .then(() => queryInterface.renameColumn('user_assessment', 'sequence', 'version'))
-          .then(() => queryInterface.addIndex('assessment', ['name', 'stage'], {
-              indexName: 'assessment_name_stage',
+          .then(() => queryInterface.addIndex('assessment', ['group'], {
+              indexName: 'assessment_group',
               where: { deleted_at: { $eq: null } },
           }))
           .then(() => queryInterface.addIndex('assessment_survey', ['assessment_id'], {

@@ -129,4 +129,27 @@ module.exports = class AnswerAssessmentDAO extends Base {
         return this.db.AssessmentAnswer.findOne({ where, raw: true, attributes: ['status'] })
             .then(record => (record ? record.status : 'new'));
     }
+
+    getAssessmentAnswersList(options = {}) {
+        return this.assessment.listAssessments(options)
+            .then((assessments) => {
+                if (assessments.length) {
+                    const ids = assessments.map(r => r.id);
+                    return this.db.AssessmentAnswer.findAll({
+                        where: { assessmentId: { $in: ids } },
+                        raw: true,
+                        attributes: ['assessmentId', 'status'],
+                    })
+                        .then((answers) => {
+                            const mapInput = answers.map(r => [r.assessmentId, r.status]);
+                            const map = new Map(mapInput);
+                            assessments.forEach((r) => {
+                                r.status = map.get(r.id) || 'new';
+                            });
+                            return assessments;
+                        });
+                }
+                return assessments;
+            });
+    }
 };

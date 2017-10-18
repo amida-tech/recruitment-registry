@@ -25,7 +25,9 @@ exports.deleteAssessment = function deleteAssessment(req, res) {
 };
 
 exports.listAssessments = function listAssessments(req, res) {
-    req.models.assessment.listAssessments()
+    const group = _.get(req, 'swagger.params.group.value');
+    const options = group ? { group } : {};
+    req.models.assessment.listAssessments(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

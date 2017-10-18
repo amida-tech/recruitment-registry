@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const Base = require('./base');
 
 module.exports = class AssessmentDAO extends Base {
@@ -9,9 +11,12 @@ module.exports = class AssessmentDAO extends Base {
         return this.db.AssessmentSurvey.bulkCreate(records, { transaction });
     }
 
-    createAssessment({ name, surveys, stage = 0 }) {
+    createAssessment({ name, surveys, group, stage = 0 }) {
         const Assessment = this.db.Assessment;
         const record = { name, stage };
+        if (group) {
+            record.group = group;
+        }
         return this.transaction(transaction => Assessment.create(record, { transaction })
             .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
                 .then(() => ({ id }))));
@@ -20,7 +25,8 @@ module.exports = class AssessmentDAO extends Base {
     getAssessment(id) {
         const AssessmentSurvey = this.db.AssessmentSurvey;
         const Assessment = this.db.Assessment;
-        return Assessment.findById(id, { attributes: ['id', 'name', 'stage'], raw: true })
+        return Assessment.findById(id, { attributes: ['id', 'name', 'stage', 'group'], raw: true })
+            .then(assessment => _.omitBy(assessment, _.isNil))
             .then((assessment) => {
                 const px = AssessmentSurvey.findAll({
                     where: { assessmentId: id },
@@ -42,8 +48,14 @@ module.exports = class AssessmentDAO extends Base {
         return this.transaction(tx => this.deleteAssessmentTx(id, tx));
     }
 
-    listAssessments() {
+    listAssessments(options = {}) {
         const Assessment = this.db.Assessment;
-        return Assessment.findAll({ raw: true, attributes: ['id', 'name', 'stage'] });
+        const attributes = ['id', 'name', 'stage', 'group'];
+        const findOptions = { raw: true, attributes };
+        if (options.group) {
+            findOptions.where = { group: options.group };
+        }
+        return Assessment.findAll(findOptions)
+            .then(assessments => assessments.map(assessment => _.omitBy(assessment, _.isNil)));
     }
 };
