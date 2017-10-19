@@ -1084,6 +1084,40 @@
                 }
             }
         },
+        "/assessment-answers/{id}/as-copy": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Copies assessment answers",
+                "operationId": "copyAssessmentAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "prevAssessment",
+                    "in": "body",
+                    "description": "Assessment id to copy from",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/prevAssessment"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/assessment-answers/{id}/answers": {
             "x-swagger-router-controller": "assessment-answer.controller",
             "parameters": [{
@@ -6258,6 +6292,17 @@
                 },
                 "survey": {
                     "$ref": "#/definitions/survey"
+                }
+            },
+            "additionalProperties": false
+        },
+        "prevAssessment": {
+            "type": "object",
+            "required": ["prevAssessmentId"],
+            "properties": {
+                "prevAssessmentId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false

@@ -275,6 +275,24 @@ const IntegrationTests = class AnswerIntegrationTests {
         };
     }
 
+    copyAssessmentAnswersFn(userIndex, surveyIndex, assessmentIndex, prevIndex) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAnswer = this.hxAnswer;
+        const hxAssessment = this.hxAssessment;
+        return function answerSurvey() {
+            const assessmentId = hxAssessment.id(assessmentIndex);
+            const prevAssessmentId = hxAssessment.id(prevIndex);
+            const input = { prevAssessmentId };
+            return rrSuperTest.post(`/assessment-answers/${assessmentId}/as-copy`, input, 204)
+                .then(() => {
+                    const prevExpected = hxAnswer.expectedAnswers(prevIndex, surveyIndex);
+                    hxAnswer.copyAssessmentAnswers(assessmentIndex, surveyIndex, prevIndex);
+                    const expected = hxAnswer.expectedAnswers(assessmentIndex, surveyIndex);
+                    expect(expected).to.deep.equal(prevExpected);
+                });
+        };
+    }
+
     verifyStatusFn(userIndex, assessmentIndex, expectedStatus) {
         const self = this;
         return function verifyStatus() {

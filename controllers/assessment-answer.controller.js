@@ -44,3 +44,13 @@ exports.getAssessmentAnswersList = function getAssessmentAnswersStatus(req, res)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
+
+exports.copyAssessmentAnswers = function copyAssessmentAnswers(req, res) {
+    const input = req.body;
+    const assessmentId = _.get(req, 'swagger.params.id.value');
+    input.userId = req.user.id;
+    input.assessmentId = assessmentId;
+    req.models.assessmentAnswer.copyAssessmentAnswers(input)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
