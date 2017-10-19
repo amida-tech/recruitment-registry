@@ -210,14 +210,11 @@ const comparator = {
         });
         expect(serverAnsweredSurvey).to.deep.equal(expected);
     },
-    answers(answers, serverAnswers, options = {}) {
+    answers(answers, serverAnswers) {
         const expected = _.sortBy(_.cloneDeep(answers), 'questionId');
         const actual = _.sortBy(serverAnswers, 'questionId');
         expected.forEach((answer, index) => {
             answer.language = answer.language || 'en';
-            if (options.surveyId) {
-                answer.surveyId = options.surveyId;
-            }
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
