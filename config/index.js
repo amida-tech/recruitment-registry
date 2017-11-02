@@ -113,6 +113,9 @@ const main = {
         apiKey: process.env.RECREG_ZIP_API_KEY,
         distance: process.env.RECREG_ZIP_DISTANCE,
     },
+    fileServiceApi: {
+        baseUrl: process.env.FILE_SERVICE_BASE_URL,
+    },
     awsApi: {
         baseUrl: '',
         apiKey: '',

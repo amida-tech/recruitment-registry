@@ -55,7 +55,7 @@ Use `export NODE_ENV=development` (or `production` or `test`) to set node enviro
 
 Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres `bin` file to your `$PATH` variable.
 
-A minimal sample `.env` file is below.  Change according to your database
+A minimal development sample `.env` file is below.  Change according to your database
 ```
 RECREG_DB_NAME=recreg
 RECREG_DB_USER=postgres
@@ -73,6 +73,7 @@ RECREG_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
 RECREG_ZIP_API_KEY=xxx
 RECREG_ZIP_DISTANCE=50
 RECREG_ZIP_UNITS=mile
+FILE_SERVICE_BASE_URL=http://localhost:8080
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
@@ -107,6 +108,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
+- FILE_SERVICE_BASE_URL: The url to the file service instance handling cohort zip files and s3 uploads.
 - AWS_ACCESS_KEY_ID: Amazon Web Services access key ID.
 - AWS_SECRET: Amazon Web Service secret access key.
 
