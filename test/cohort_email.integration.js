@@ -71,7 +71,10 @@ describe('cohort email integration', function cohortEmailIntegration() {
         sinon.stub(models.cohort, 'createCohort', () => SPromise.resolve(testCSV));
         sinon.stub(models.cohort, 'patchCohort', () => SPromise.resolve(testCSV));
         if (!fileServiceActive) {
-            sinon.stub(fileService, 'zipAndUploadCsv', () => SPromise.resolve('s3datatest'));
+            sinon.stub(fileService, 'zipAndUploadCsv', () => SPromise.resolve({
+                s3Url: 'https://s3.amazonaws.com/bucket/id.zip',
+                zipPassword: 'password',
+            }));
         }
     });
 
@@ -215,9 +218,8 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     if (fileServiceActive) {
         it('get cohort zip file from s3', unzipContentFromS3Fn);
+        it('check content of the zip file', unzipContentFn);
     }
-
-    it('check content of the zip file', unzipContentFn);
 
     it('resend: login as clinician', shared.loginIndexFn(hxUser, 0));
 
@@ -234,9 +236,8 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     if (fileServiceActive) {
         it('resend: get cohort zip file from s3', unzipContentFromS3Fn);
+        it('resend: check content of the zip file', unzipContentFn);
     }
-
-    it('resend: check content of the zip file', unzipContentFn);
 
     it('restore mock libraries', function restoreSinonedLibs() {
         const models = rrSuperTest.getModels();
