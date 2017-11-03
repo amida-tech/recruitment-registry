@@ -72,7 +72,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
         sinon.stub(models.cohort, 'patchCohort', () => SPromise.resolve(testCSV));
         if (!fileServiceActive) {
             sinon.stub(fileService, 'zipAndUploadCsv', () => SPromise.resolve({
-                s3Url: 'https://s3.amazonaws.com/bucket/id.zip',
+                s3Url: 'https://s3.amazonaws.com/bucket/cohorts/id.zip',
                 zipPassword: 'password',
             }));
         }
