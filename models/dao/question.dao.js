@@ -285,7 +285,7 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    findQuestions({ scope, ids, surveyId, commonOnly }) {
+    findQuestions({ scope, ids, surveyId, commonOnly, isIdentifying }) {
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
@@ -317,8 +317,9 @@ module.exports = class QuestionDAO extends Translatable {
                     return r;
                 }, {})));
         }
-        Object.assign(options, { raw: true, order: 'id' });
-        return Question.findAll(options);
+        const where = { isIdentifying };
+        const sqOptions = { raw: true, where, attributes:options.attributes};
+        return Question.findAll(sqOptions);
     }
 
     findFederatedQuestions(options = {}) {
@@ -352,6 +353,7 @@ module.exports = class QuestionDAO extends Translatable {
     listQuestions(options = {}) {
         const { ids, language } = options;
         const scope = options.scope || 'summary';
+        options.isIdentifying = false;
         return this.findQuestionsForList(options)
             .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
