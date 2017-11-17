@@ -1211,6 +1211,12 @@
                     "description": "Federated flag",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "description": "identifying flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -5223,6 +5229,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "isIdentifying": {
+                    "type": "boolean"
                 },
                 "common": {
                     "type": "boolean"

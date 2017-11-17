@@ -177,7 +177,7 @@ module.exports = class QuestionDAO extends Translatable {
     getQuestion(qid, options = {}) {
         const Question = this.db.Question;
         const language = options.language;
-        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common'];
+        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common', 'isIdentifying'];
         return Question.findById(qid, { raw: true, attributes })
             .then((question) => {
                 if (!question) {
@@ -286,7 +286,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     findQuestions({ scope, ids, surveyId, commonOnly, isIdentifying }) {
-        const attributes = ['id', 'type'];
+        const attributes = ['id', 'type','isIdentifying'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
@@ -317,9 +317,14 @@ module.exports = class QuestionDAO extends Translatable {
                     return r;
                 }, {})));
         }
-        const where = { isIdentifying };
-        const sqOptions = { raw: true, where, attributes:options.attributes};
-        return Question.findAll(sqOptions);
+        if(isIdentifying !== null && isIdentifying !== undefined){
+          const where = { isIdentifying };
+          const sqOptions = { raw: true, where, attributes:options.attributes};
+          return Question.findAll(sqOptions);
+        }else{
+          Object.assign(options, { raw: true, order: 'id' });
+          return Question.findAll(options);
+        }
     }
 
     findFederatedQuestions(options = {}) {
@@ -353,7 +358,6 @@ module.exports = class QuestionDAO extends Translatable {
     listQuestions(options = {}) {
         const { ids, language } = options;
         const scope = options.scope || 'summary';
-        options.isIdentifying = false;
         return this.findQuestionsForList(options)
             .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {

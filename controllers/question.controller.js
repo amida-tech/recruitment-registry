@@ -56,7 +56,8 @@ exports.listQuestions = function listQuestions(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const commonOnly = _.get(req, 'swagger.params.common-only.value');
     const federated = _.get(req, 'swagger.params.federated.value');
-    const options = { scope, language, surveyId, commonOnly, federated };
+    const isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
+    const options = { scope, language, surveyId, commonOnly, federated, isIdentifying };
     req.models.question.listQuestions(options)
         .then(questions => res.status(200).json(questions))
         .catch(shared.handleError(res));
