@@ -60,6 +60,7 @@ module.exports = function question(sequelize, Sequelize, schema) {
         },
         isIdentifying: {
             type: Sequelize.BOOLEAN,
+            field: 'is_identifying',
             allowNull: false,
             defaultValue: false
         },
