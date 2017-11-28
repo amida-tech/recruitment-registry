@@ -8,35 +8,11 @@ const models = require('../../../../models');
 const SurveyGenerator = require('../survey-generator');
 const Answerer = require('../answerer');
 
-const conditionalQuestions = require('./conditional-questions');
+const conditionalSetup = require('./conditional-setup');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
 const choiceSets = require('./choice-sets');
-
-const counts = [0, 8, 8, 8, 8, 8, 8, 8];
-
-const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => {
-    const surveyIndex = questionInfo.surveyIndex;
-    if (surveyIndex === undefined) {
-        throw new Error('No survey index specified');
-    }
-    if (questionInfo.purpose === 'completeSurvey') {
-        r[surveyIndex] = questionInfo;
-        return r;
-    }
-    let survey = r[surveyIndex];
-    if (!survey) {
-        survey = {};
-        r[surveyIndex] = survey;
-    }
-    const questionIndex = questionInfo.questionIndex;
-    if (questionIndex === undefined) {
-        throw new Error('No survey question index specified.');
-    }
-    survey[questionIndex] = questionInfo;
-    return r;
-}, {});
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -130,18 +106,46 @@ const surveyManipulator = {
 };
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
-    constructor({ questionGenerator, answerer } = {}) {
+    constructor({ questionGenerator, answerer, hxSurvey } = {}) {
         super(questionGenerator);
         this.answerer = answerer || new Answerer();
+        this.hxSurvey = hxSurvey;
+        this.conditionalMap = conditionalSetup.reduce((r, questionInfo) => {
+            const { surveyIndex, purpose, questionIndex } = questionInfo;
+            if (surveyIndex === undefined) {
+                throw new Error('No survey index specified');
+            }
+            if ((purpose === 'completeSurvey') || (purpose === 'surveyEnableWhen')) {
+                r[surveyIndex] = questionInfo;
+                r.surveyLevel = true;
+                return r;
+            }
+            let survey = r[surveyIndex];
+            if (!survey) {
+                survey = {};
+                r[surveyIndex] = survey;
+            }
+            if (questionIndex === undefined) {
+                throw new Error('No survey question index specified.');
+            }
+            survey[questionIndex] = questionInfo;
+            return r;
+        }, {});
+        this.counts = [0, 8, 8, 8, 8, 8, 8, 8];
     }
 
     count() {
         const surveyIndex = this.currentIndex();
-        return counts[surveyIndex];
+        return this.counts[surveyIndex];
     }
 
-    numOfCases() { // eslint-disable-line class-methods-use-this
-        return counts.length;
+    versionWithIdsNeeded(surveyIndex) {
+        const { surveyLevel, purpose } = this.conditionalMap[surveyIndex];
+        return !(surveyLevel && purpose === 'surveyEnableWhen');
+    }
+
+    numOfCases() {
+        return this.counts.length;
     }
 
     addAnswer(rule, questionInfo, question) {
@@ -157,7 +161,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
-        const questionInfo = conditionalQuestionMap[surveyIndex][index];
+        const questionInfo = this.conditionalMap[surveyIndex][index];
         let question;
         if (questionInfo) {
             const purpose = questionInfo.purpose;
@@ -216,13 +220,14 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     newSurvey() {
         const surveyIndex = this.currentIndex();
-        const surveyQuestionInfos = conditionalQuestionMap[surveyIndex + 1];
-        if (surveyQuestionInfos.surveyIndex !== undefined) {
+        const conditionalInfo = this.conditionalMap[surveyIndex + 1];
+        const { surveyLevel, purpose: surveyLevelPurpose } = conditionalInfo;
+        if (surveyLevel && surveyLevelPurpose === 'completeSurvey') {
             this.incrementIndex();
-            return surveyQuestionInfos.survey;
+            return conditionalInfo.survey;
         }
         const survey = super.newSurvey({ noSection: true });
-        _.forOwn(surveyQuestionInfos, (questionInfo) => {
+        _.forOwn(conditionalInfo, (questionInfo) => {
             const purpose = questionInfo.purpose;
             const manipulator = surveyManipulator[purpose];
             if (manipulator) {

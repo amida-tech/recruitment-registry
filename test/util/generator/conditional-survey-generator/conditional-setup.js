@@ -1,12 +1,11 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 const surveys = require('./surveys');
 
 module.exports = [{
     surveyIndex: 0,
     survey: surveys.travelSurvey,
+    surveyLevel: true,
     purpose: 'completeSurvey',
 }, {
     surveyIndex: 1,
