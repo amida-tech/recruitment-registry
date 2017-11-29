@@ -61,4 +61,11 @@ module.exports = [{
     logic: 'exists',
     count: 2,
     purpose: 'questionSection',
+}, {
+    surveyIndex: 8,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'equals',
+    answerSurveyIndex: 2,
+    answerQuestionIndex: 2,
 }];

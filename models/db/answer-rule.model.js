@@ -63,6 +63,18 @@ module.exports = function answerRule(sequelize, Sequelize, schema) {
                 key: 'id',
             },
         },
+        answerSurveyId: {
+            type: Sequelize.INTEGER,
+            field: 'answer_survey_id',
+            allowNull: true,
+            references: {
+                model: {
+                    schema,
+                    tableName: 'survey',
+                },
+                key: 'id',
+            },
+        },
         line: {
             type: Sequelize.INTEGER,
         },

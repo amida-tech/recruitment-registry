@@ -86,6 +86,20 @@ const specialAnswerer = {
 };
 
 const surveyManipulator = {
+    surveyEnableWhen(survey, conditionalInfo, generator) {
+        const { hxSurvey, answerer } = generator;
+        const { answerSurveyIndex, answerQuestionIndex, logic } = conditionalInfo;
+        const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
+        const question = questions[answerQuestionIndex];
+        const rule = answerer.answerQuestion(question);
+        Object.assign(rule, { surveyId, logic });
+        const enableWhen = [rule];
+        survey.enableWhen = enableWhen;
+        return question;
+    },
+};
+
+const questionSurveyManipulator = {
     enableWhen(survey, questionInfo, generator) {
         const questionIndex = questionInfo.questionIndex;
         const question = survey.questions[questionIndex];
@@ -131,7 +145,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             survey[questionIndex] = questionInfo;
             return r;
         }, {});
-        this.counts = [0, 8, 8, 8, 8, 8, 8, 8];
+        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8];
     }
 
     count() {
@@ -227,9 +241,13 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             return conditionalInfo.survey;
         }
         const survey = super.newSurvey({ noSection: true });
+        if (surveyLevel) {
+            const manipulator = surveyManipulator[surveyLevelPurpose];
+            manipulator(survey, conditionalInfo, this);
+        }
         _.forOwn(conditionalInfo, (questionInfo) => {
             const purpose = questionInfo.purpose;
-            const manipulator = surveyManipulator[purpose];
+            const manipulator = questionSurveyManipulator[purpose];
             if (manipulator) {
                 manipulator(survey, questionInfo, this);
             }
