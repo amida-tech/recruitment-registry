@@ -16,7 +16,7 @@ module.exports = class ConsentDAO extends Base {
             where: { consentId: result.id },
             attributes: ['typeId'],
             raw: true,
-            order: 'line',
+            order: ['line'],
         })
             .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
             .then((typeIds) => {
@@ -52,7 +52,7 @@ module.exports = class ConsentDAO extends Base {
     listConsents() {
         const Consent = this.db.Consent;
         const ConsentSection = this.db.ConsentSection;
-        return Consent.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' })
+        return Consent.findAll({ raw: true, attributes: ['id', 'name'], order: ['id'] })
             .then(consents => ConsentSection.findAll({ raw: true, attributes: ['consentId', 'typeId', 'line'] })
                     .then(allSections => _.groupBy(allSections, 'consentId'))
                     .then(allSections => consents.map((r) => {
@@ -73,7 +73,7 @@ module.exports = class ConsentDAO extends Base {
         const ConsentSection = this.db.ConsentSection;
         const consentDocument = this.consentDocument;
         return function fnFillConsentDocuments(result) {
-            return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
+            return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: ['line'] })
                 .then((sections) => {
                     const typeIds = _.map(sections, 'typeId');
                     const opt = { typeIds, typeOrder: true };

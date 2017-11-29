@@ -13,9 +13,9 @@ WITH
 	),
 	assessment_id AS (
 		INSERT INTO
-			assessment (name, sequence_type, created_at, updated_at)
+			assessment (name, created_at)
 		SELECT
-			:identifier || '-' || assessment_name, 'ondemand'::"enum_assessment_sequence_type", NOW(), NOW()
+			:identifier || '-' || assessment_name, NOW()
 		FROM
 			assesment_row
 		RETURNING id
@@ -36,7 +36,7 @@ WITH
 	),
 	user_assessment_row AS (
 		SELECT
-			username, :identifier || '-' || assessment_name as assessment_name, status, line_index, last_answer, days_after_baseline, ROW_NUMBER() OVER (PARTITION BY username, assessment_name ORDER BY id) as sequence
+			username, :identifier || '-' || assessment_name as assessment_name, status, line_index, last_answer, days_after_baseline, ROW_NUMBER() OVER (PARTITION BY username, assessment_name ORDER BY id) as version
 		FROM
 			staging_bhr_gap
 		WHERE
@@ -44,11 +44,11 @@ WITH
 	),
 	user_assessment_result AS (
 		INSERT INTO
-			user_assessment (user_id, assessment_id, sequence, status, meta, created_at)
+			user_assessment (user_id, assessment_id, version, status, meta, created_at)
 		SELECT
 			registry_user.id as user_id,
 			assessment.id as assessment_id,
-			user_assessment_row.sequence AS sequence,
+			user_assessment_row.version AS version,
 			user_assessment_row.status::enum_user_assessment_status,
 			('{"bhr_source_line_index":' || line_index::text || COALESCE(', "bhr_days_after_baseline":' || days_after_baseline, '') || '}')::json,
 			NOW()

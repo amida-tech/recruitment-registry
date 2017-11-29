@@ -34,7 +34,7 @@ module.exports = class ConsentSignatureDAO extends Base {
             where: { userId },
             raw: true,
             attributes: ['consentDocumentId', 'language'],
-            order: 'consent_document_id',
+            order: ['consent_document_id'],
         })
             .then(signatures => signatures.map(sign => ({
                 id: sign.consentDocumentId,

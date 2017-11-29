@@ -43,7 +43,7 @@ module.exports = class ChoiceSetDAO extends Base {
         return ChoiceSet.findAll({
             raw: true,
             attributes: ['id', 'reference'],
-            order: 'id',
+            order: ['id'],
         });
     }
 

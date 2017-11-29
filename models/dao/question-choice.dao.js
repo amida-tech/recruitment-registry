@@ -122,7 +122,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             raw: true,
             where: { questionId },
             attributes: ['id', 'type', 'meta', 'code'],
-            order: 'line',
+            order: ['line'],
         })
             .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
@@ -132,7 +132,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         const options = {
             raw: true,
             attributes: ['id', 'type', 'questionId', 'meta', 'code'],
-            order: 'line',
+            order: ['line'],
         };
         if (questionIds) {
             options.where = { questionId: { $in: questionIds } };
@@ -164,7 +164,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
 
     listQuestionChoices(choiceSetId, language) {
         const QuestionChoice = this.db.QuestionChoice;
-        return QuestionChoice.findAll({ where: { choiceSetId }, raw: true, attributes: ['id', 'code'], order: 'line' })
+        return QuestionChoice.findAll({ where: { choiceSetId }, raw: true, attributes: ['id', 'code'], order: ['line'] })
             .then(choices => this.updateAllTexts(choices, language));
     }
 

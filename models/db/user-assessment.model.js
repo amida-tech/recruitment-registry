@@ -31,7 +31,7 @@ module.exports = function userAssessment(sequelize, Sequelize, schema) {
         meta: {
             type: Sequelize.JSON,
         },
-        sequence: {
+        version: {
             type: Sequelize.INTEGER,
             allowNull: false,
         },

@@ -27,7 +27,7 @@ module.exports = class ConsentTypeDAO extends Translatable {
         const query = {
             raw: true,
             attributes: ['id', 'name', 'type'],
-            order: 'id',
+            order: ['id'],
         };
         if (options.ids) {
             query.where = { id: { $in: options.ids } };

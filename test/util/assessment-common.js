@@ -15,15 +15,20 @@ const SpecTests = class AssessmentSpecTests {
         this.hxAssessment = hxAssessment;
     }
 
-    createAssessmentFn(indices) {
+    createAssessmentFn(indices, override = {}) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
-        return function createAssessmen() {
+        return function createAssessment() {
             const surveyIds = indices.map(index => hxSurvey.id(index));
-            const assessment = generator.newAssessment(surveyIds);
+            const assessment = Object.assign(generator.newAssessment(surveyIds), override);
             return models.assessment.createAssessment(assessment)
-                .then(({ id }) => hxAssessment.pushWithId(assessment, id));
+                .then(({ id }) => {
+                    if (assessment.stage === undefined) {
+                        assessment.stage = 0;
+                    }
+                    hxAssessment.pushWithId(assessment, id);
+                });
         };
     }
 
@@ -38,12 +43,35 @@ const SpecTests = class AssessmentSpecTests {
         };
     }
 
+    deleteAssessmentFn(index) {
+        const hxAssessment = this.hxAssessment;
+        return function getAssessment() {
+            const id = hxAssessment.id(index);
+            return models.assessment.deleteAssessment(id)
+                .then(() => {
+                    hxAssessment.remove(index);
+                });
+        };
+    }
+
     listAssessmentFn() {
         const hxAssessment = this.hxAssessment;
         return function listAssessment() {
             return models.assessment.listAssessments()
                 .then((list) => {
                     expect(list).to.deep.equal(hxAssessment.listServers());
+                });
+        };
+    }
+
+    listAssessmentGroupFn(group, indices) {
+        const hxAssessment = this.hxAssessment;
+        return function listAssessmentGroup() {
+            return models.assessment.listAssessments({ group })
+                .then((list) => {
+                    let expected = hxAssessment.listServers();
+                    expected = indices.map(index => expected[index]);
+                    expect(list).to.deep.equal(expected);
                 });
         };
     }
@@ -57,44 +85,69 @@ const IntegrationTests = class AssessmentSpecTests {
         this.hxAssessment = hxAssessment;
     }
 
-    createAssessmentFn(indices) {
+    createAssessmentFn(indices, override = {}) {
         const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         const hxAssessment = this.hxAssessment;
-        return function createAssessment(done) {
+        return function createAssessment() {
             const surveyIds = indices.map(index => hxSurvey.id(index));
-            const assessment = generator.newAssessment(surveyIds);
-            rrSuperTest.post('/assessments', assessment, 201)
+            const assessment = Object.assign(generator.newAssessment(surveyIds), override);
+            return rrSuperTest.post('/assessments', assessment, 201)
                 .expect((res) => {
+                    if (assessment.stage === undefined) {
+                        assessment.stage = 0;
+                    }
                     hxAssessment.pushWithId(assessment, res.body.id);
-                })
-                .end(done);
+                });
         };
     }
 
     getAssessmentFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxAssessment = this.hxAssessment;
-        return function getAssessment(done) {
+        return function getAssessment() {
             const id = hxAssessment.id(index);
-            rrSuperTest.get(`/assessments/${id}`, true, 200)
+            return rrSuperTest.get(`/assessments/${id}`, true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.server(index));
-                })
-                .end(done);
+                });
+        };
+    }
+
+    deleteAssessmentFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAssessment = this.hxAssessment;
+        return function getAssessment() {
+            const id = hxAssessment.id(index);
+            return rrSuperTest.delete(`/assessments/${id}`, 204)
+                .then(() => {
+                    hxAssessment.remove(index);
+                });
         };
     }
 
     listAssessmentFn() {
         const rrSuperTest = this.rrSuperTest;
         const hxAssessment = this.hxAssessment;
-        return function listAssessment(done) {
-            rrSuperTest.get('/assessments', true, 200)
+        return function listAssessment() {
+            return rrSuperTest.get('/assessments', true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.listServers());
-                })
-                .end(done);
+                });
+        };
+    }
+
+    listAssessmentGroupFn(group, indices) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAssessment = this.hxAssessment;
+        return function listAssessmentGroup() {
+            return rrSuperTest.get('/assessments', true, 200, { group })
+                .then((res) => {
+                    let expected = hxAssessment.listServers();
+                    expected = indices.map(index => expected[index]);
+                    expect(res.body).to.deep.equal(expected);
+                });
         };
     }
 };

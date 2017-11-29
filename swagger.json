@@ -1000,6 +1000,186 @@
                 }
             }
         },
+        "/assessment-answers": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "get": {
+                "summary": "Lists assessment answers",
+                "description": "Do not return attached surveys.",
+                "operationId": "getAssessmentAnswersList",
+                "security": [{
+                    "participant": []
+                },{
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "group",
+                    "in": "query",
+                    "description": "Group for assessments",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswersDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Creates assessment answers",
+                "operationId": "createAssessmentAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "newAssessmentAnswers",
+                    "in": "body",
+                    "description": "Answers to the survey",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newAssessmentAnswers"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets assessment answers",
+                "operationId": "getAssessmentAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/as-copy": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "description": "This persists assessment answers.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Copies assessment answers",
+                "operationId": "copyAssessmentAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "prevAssessment",
+                    "in": "body",
+                    "description": "Assessment id to copy from",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/prevAssessment"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/answers": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment answers only",
+                "operationId": "getAssessmentAnswersOnly",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/linkedAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessment-answers/{id}/status": {
+            "x-swagger-router-controller": "assessment-answer.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment answers Status",
+                "operationId": "getAssessmentAnswersStatus",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object",
+                            "required": ["status"],
+                            "properties": {
+                                "status": {
+                                    "$ref": "#/definitions/answerStatus"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey-id": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
@@ -2471,7 +2651,7 @@
                             "required": ["status"],
                             "properties": {
                                 "status": {
-                                    "$ref": "#/definitions/userSurveyStatus"
+                                    "$ref": "#/definitions/answerStatus"
                                 }
                             },
                             "additionalProperties": false
@@ -2699,6 +2879,14 @@
                 "security": [{
                     "admin": []
                 }],
+                "parameters": [{
+                    "name": "group",
+                    "in": "query",
+                    "description": "Group key",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -2732,6 +2920,21 @@
                         "schema": {
                             "$ref": "#/definitions/assessment"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes assessment",
+                "operationId": "deleteAssessment",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4703,7 +4906,7 @@
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 }
             },
             "additionalProperties": false
@@ -6043,7 +6246,7 @@
             },
             "additionalProperties": false
         },
-        "userSurveyStatus": {
+        "answerStatus": {
             "type": "string",
             "enum": ["new", "in-progress", "completed"]
         },
@@ -6052,7 +6255,7 @@
             "required": ["status", "survey"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "survey": {
                     "$ref": "#/definitions/survey"
@@ -6065,7 +6268,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -6082,7 +6285,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/userSurveyStatus"
+                    "$ref": "#/definitions/answerStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -6090,6 +6293,79 @@
                 "survey": {
                     "$ref": "#/definitions/survey"
                 }
+            },
+            "additionalProperties": false
+        },
+        "prevAssessment": {
+            "type": "object",
+            "required": ["prevAssessmentId"],
+            "properties": {
+                "prevAssessmentId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "newAssessmentAnswers": {
+            "type": "object",
+            "required": ["answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswersInfo": {
+            "type": "object",
+            "required": ["id", "name", "status"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "stage": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "$ref": "#/definitions/answerStatus"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentAnswersDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/assessmentAnswersInfo"
             },
             "additionalProperties": false
         },
@@ -6207,9 +6483,6 @@
                     "id": {
                         "type": "integer",
                         "minimum": 1
-                    },
-                    "lookback": {
-                        "type": "boolean"
                     }
                 },
                 "additionalProperties": false
@@ -6223,11 +6496,15 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "sequenceType": {
-                    "type": "string"
+                "stage": {
+                    "type": "integer"
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -6244,11 +6521,15 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "sequenceType": {
-                    "type": "string"
+                "stage": {
+                    "type": "integer"
                 },
                 "surveys": {
                     "$ref": "#/definitions/assessmentSurveys"
+                },
+                "group": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -6264,6 +6545,13 @@
                         "minimum": 1
                     },
                     "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "stage": {
+                        "type": "integer"
+                    },
+                    "group": {
                         "type": "string",
                         "minLength": 1
                     }
@@ -6290,13 +6578,13 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["id", "sequence"],
+                "required": ["id", "version"],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "minimum": 1
                     },
-                     "sequence": {
+                     "version": {
                         "type": "integer"
                     }
                 },

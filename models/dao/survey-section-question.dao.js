@@ -8,7 +8,7 @@ module.exports = class SectionDAO extends Base {
             where: { surveySectionId: { $in: surveySectionIds } },
             attributes: ['surveySectionId', 'questionId'],
             raw: true,
-            order: 'line',
+            order: ['line'],
         });
     }
 

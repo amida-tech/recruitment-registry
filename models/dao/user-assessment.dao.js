@@ -47,8 +47,8 @@ module.exports = class AssessmentDAO extends Base {
         const UserAssessment = this.db.UserAssessment;
         return this.transaction(transaction => UserAssessment.findAll({
             where: { userId, assessmentId },
-            attributes: ['id', 'sequence', 'deletedAt'],
-            order: 'sequence',
+            attributes: ['id', 'version', 'deletedAt'],
+            order: ['version'],
             raw: true,
             paranoid: false,
             transaction,
@@ -59,17 +59,17 @@ module.exports = class AssessmentDAO extends Base {
                         return 0;
                     }
                     const lastUserAssessment = userAssessments[length - 1];
-                    const sequence = lastUserAssessment.sequence + 1;
+                    const version = lastUserAssessment.version + 1;
                     if (lastUserAssessment.deletedAt) {
-                        return sequence;
+                        return version;
                     }
                     const lastId = lastUserAssessment.id;
                     const record = { assessmentId, userId };
                     return this.closeUserAssessmentById(lastId, record, transaction)
-                        .then(() => sequence);
+                        .then(() => version);
                 })
-                .then((sequence) => {
-                    const record = { userId, assessmentId, sequence, status: 'scheduled' };
+                .then((version) => {
+                    const record = { userId, assessmentId, version, status: 'scheduled' };
                     return UserAssessment.create(record, { transaction })
                         .then(({ id }) => ({ id }));
                 }));
@@ -87,8 +87,8 @@ module.exports = class AssessmentDAO extends Base {
     listUserAssessments(userId, assessmentId) {
         return this.db.UserAssessment.findAll({
             where: { userId, assessmentId },
-            attributes: ['id', 'sequence'],
-            order: 'sequence',
+            attributes: ['id', 'version'],
+            order: ['version'],
             raw: true,
             paranoid: false,
         });
@@ -129,7 +129,7 @@ module.exports = class AssessmentDAO extends Base {
         return UserAssessment.findAll({
             attributes,
             include: [{ model: Assessment, as: 'assessment', attributes: ['id', 'name'] }],
-            order: ['userId', 'assessmentId', 'sequence'],
+            order: ['userId', 'assessmentId', 'version'],
             raw: true,
             paranoid: false,
         });

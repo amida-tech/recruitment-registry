@@ -435,13 +435,12 @@ module.exports = class SurveyDAO extends Translatable {
                                     const where = {
                                         surveyId, questionId: { $in: removedQuestionIds },
                                     };
-                                    // NOTE: This is a short-term fix to allow conditions to be updated without persisting
-                                    // an "old version" of it (as we do questions whenever they or the surveys they're attached
+                                    // NOTE: This is a short-term fix to allow conditions to be
+                                    // updated without persisting an "old version" of it (as we
+                                    // do questions whenever they or the surveys they're attached
                                     // to are updated)
                                     return this.db.AnswerRule.destroy({ where, transaction })
-                                        .then(() => {
-                                            return this.db.Answer.destroy({ where, transaction });
-                                        });
+                                        .then(() => this.db.Answer.destroy({ where, transaction }));
                                 }
                                 return null;
                             })
@@ -577,7 +576,7 @@ module.exports = class SurveyDAO extends Translatable {
                     where: { surveyId: { $in: surveyIds } },
                     raw: true,
                     attributes: ['surveyId', 'consentTypeId'],
-                    order: 'consent_type_id',
+                    order: ['consent_type_id'],
                 })
                     .then(records => records.reduce((r, record) => {
                         const id = record.surveyId;
@@ -607,7 +606,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.db.SurveyQuestion.findAll({
             raw: true,
             attributes: ['surveyId', 'questionId', 'required'],
-            order: 'line',
+            order: ['line'],
         })
             .then((surveyQuestions) => {
                 surveyQuestions.forEach(({ surveyId, questionId, required }) => {
@@ -694,7 +693,7 @@ module.exports = class SurveyDAO extends Translatable {
                     where: { surveyId: survey.id },
                     raw: true,
                     attributes: ['consentTypeId'],
-                    order: 'consent_type_id',
+                    order: ['consent_type_id'],
                 })
                     .then(records => records.map(r => r.consentTypeId))
                     .then((consentTypeIds) => {

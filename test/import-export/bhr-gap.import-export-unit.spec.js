@@ -1,4 +1,4 @@
-/* global before,describe,it,it*/
+/* global before,describe,it,it */
 
 'use strict';
 
@@ -83,7 +83,7 @@ describe('bhr gap import-export unit', () => {
     it('export user profiles', () => {
         const filepath = path.join(outputDir, 'users-exported.csv');
         return bhrGapExport.writeSubjectsData(filepath, {
-            order: 'UserCode',
+            order: ['UserCode'],
             surveyIdentifier: {
                 type: 'bhr-unit-test',
                 value: 'users',
