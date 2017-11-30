@@ -15,7 +15,7 @@ const unzipper = require('unzipper');
 const mkdirp = require('mkdirp');
 const request = require('request');
 
-const aws = require('../lib/aws');
+const fileService = require('../lib/file-service');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
@@ -41,8 +41,7 @@ const Accumulator = class extends stream.Writable {
     }
 };
 
-// Set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to turn on actual bucket testing
-// Otherwise s3 (putObject) calls are mocked
+// Start a file service instance and set FILE_SERVICE_BASE_URL to turn on s3 testing
 describe('cohort email integration', function cohortEmailIntegration() {
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
@@ -55,8 +54,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
     const server = new SMTPServer();
     const testCSV = 'a,b,c,d\n1,2,3,4';
 
-    // set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to turn on actual bucket testing
-    const awsActive = config.awsSecretAccessKey && config.awsAccessKeyId;
+    const fileServiceActive = !!config.fileServiceApi.baseUrl;
 
     before(shared.setUpFn());
 
@@ -72,10 +70,11 @@ describe('cohort email integration', function cohortEmailIntegration() {
         const models = rrSuperTest.getModels();
         sinon.stub(models.cohort, 'createCohort', () => SPromise.resolve(testCSV));
         sinon.stub(models.cohort, 'patchCohort', () => SPromise.resolve(testCSV));
-        if (!awsActive) {
-            sinon.stub(aws, 'putObject', (params, callback) => {
-                callback(null, 's3datatest');
-            });
+        if (!fileServiceActive) {
+            sinon.stub(fileService, 'zipAndUploadCsv', () => SPromise.resolve({
+                s3Url: 'https://s3.amazonaws.com/bucket/cohorts/id.zip',
+                zipPassword: 'password',
+            }));
         }
     });
 
@@ -217,15 +216,10 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     it('logout as clinician', shared.logoutFn());
 
-    if (awsActive) {
+    if (fileServiceActive) {
         it('get cohort zip file from s3', unzipContentFromS3Fn);
-    } else {
-        it('set zip file location', function zipFileLocation() {
-            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url);
-        });
+        it('check content of the zip file', unzipContentFn);
     }
-
-    it('check content of the zip file', unzipContentFn);
 
     it('resend: login as clinician', shared.loginIndexFn(hxUser, 0));
 
@@ -240,22 +234,17 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     it('resend: logout as clinician', shared.logoutFn());
 
-    if (awsActive) {
+    if (fileServiceActive) {
         it('resend: get cohort zip file from s3', unzipContentFromS3Fn);
-    } else {
-        it('resend: set zip file location', function zipFileLocation() {
-            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url);
-        });
+        it('resend: check content of the zip file', unzipContentFn);
     }
-
-    it('resend: check content of the zip file', unzipContentFn);
 
     it('restore mock libraries', function restoreSinonedLibs() {
         const models = rrSuperTest.getModels();
         models.cohort.createCohort.restore();
         models.cohort.patchCohort.restore();
-        if (!awsActive) {
-            aws.putObject.restore();
+        if (!fileServiceActive) {
+            fileService.zipAndUploadCsv.restore();
         }
     });
 
