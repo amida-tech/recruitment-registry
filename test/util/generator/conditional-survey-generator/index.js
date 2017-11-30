@@ -12,6 +12,7 @@ const conditionalSetup = require('./conditional-setup');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
+const userSurveysSetup = require('./user-surveys-setup');
 const choiceSets = require('./choice-sets');
 
 const specialQuestionGenerator = {
@@ -60,6 +61,24 @@ const specialAnswerer = {
         }
         return answer;
     },
+    samerulesurvey(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        return { questionId: question.id, answer: enableWhenAnswer };
+    },
+    differentrulesurvey(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        let answer = generator.answerer.answerQuestion(question);
+        if (_.isEqual(answer.answer, enableWhenAnswer)) {
+            answer = generator.answerer.answerQuestion(question);
+        }
+        return answer;
+    },
     samerulesection(generator, questions, question) {
         const enableWhen = question.sections[0].enableWhen;
         const enableWhenAnswer = enableWhen[0].answer;
@@ -91,7 +110,12 @@ const surveyManipulator = {
         const { answerSurveyIndex, answerQuestionIndex, logic } = conditionalInfo;
         const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
         const question = questions[answerQuestionIndex];
-        const rule = answerer.answerQuestion(question);
+        let rule;
+        if (logic === 'equals' || logic === 'not-equals') {
+            rule = answerer.answerQuestion(question);
+        } else {
+            rule = { questionId: question.id };
+        }
         Object.assign(rule, { surveyId, logic });
         const enableWhen = [rule];
         survey.enableWhen = enableWhen;
@@ -145,7 +169,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             survey[questionIndex] = questionInfo;
             return r;
         }, {});
-        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8];
+        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
     }
 
     count() {
@@ -199,11 +223,19 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return passAnswerSetup;
     }
 
+    static conditionalUserSurveysSetup() {
+        return userSurveysSetup;
+    }
+
     static getChoiceSets() {
         return choiceSets;
     }
 
-    answersWithConditions(survey, { questionIndex, multipleIndices, noAnswers = [], specialAnswers = [] }) {
+    answersWithConditions({
+            surveyIndex, questionIndex, multipleIndices,
+            noAnswers = [], specialAnswers = [],
+    }) {
+        const survey = this.hxSurvey.server(surveyIndex);
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
         const doAnswer = new Map(specialAnswers.map(r => [r.questionIndex, r]));
@@ -213,8 +245,13 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             }
             const specialAnswer = doAnswer.get(index);
             if (specialAnswer) {
-                const type = specialAnswer.type;
-                const answer = specialAnswerer[type](this, questions, question, specialAnswer);
+                const { type, ruleSurveyIndex } = specialAnswer;
+                let enableWhen = null;
+                if (ruleSurveyIndex !== undefined) {
+                    const ruleSurvey = this.hxSurvey.server(ruleSurveyIndex);
+                    enableWhen = ruleSurvey.enableWhen;
+                }
+                const answer = specialAnswerer[type](this, questions, question, specialAnswer, enableWhen);
                 r.push(answer);
                 return r;
             }

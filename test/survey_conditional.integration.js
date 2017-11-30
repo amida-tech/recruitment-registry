@@ -5,6 +5,7 @@
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
+const chai = require('chai');
 
 const config = require('../config');
 
@@ -19,6 +20,8 @@ const History = require('./util/history');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
+
+const expect = chai.expect;
 
 describe('conditional survey integration', function surveyConditionalIntegration() {
     const hxUser = new History();
@@ -102,7 +105,7 @@ describe('conditional survey integration', function surveyConditionalIntegration
         it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, () => {
             const { surveyIndex, error } = errorSetup;
             const survey = hxSurvey.server(surveyIndex);
-            const answers = surveyGenerator.answersWithConditions(survey, errorSetup);
+            const answers = surveyGenerator.answersWithConditions(errorSetup);
             const input = {
                 surveyId: survey.id,
                 answers,
@@ -112,7 +115,77 @@ describe('conditional survey integration', function surveyConditionalIntegration
         });
     });
 
+    CSG.conditionalPassSetup().forEach((passSetup) => {
+        let answers;
+
+        it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
+            const survey = hxSurvey.server(passSetup.surveyIndex);
+            answers = surveyGenerator.answersWithConditions(passSetup);
+            const input = {
+                surveyId: survey.id,
+                answers,
+            };
+            return rrSuperTest.post('/answers', input, 204);
+        });
+
+        it(`verify survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
+            const { surveyIndex } = passSetup;
+            const survey = hxSurvey.server(surveyIndex);
+            return rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
+                .then((res) => {
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete survey.authorId;
+                    }
+                    comparator.answeredSurvey(survey, answers, res.body);
+                });
+        });
+    });
+
     it('logout as user 0', shared.logoutFn());
+
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+
+    const verifyUserSurveyListFn = function (userIndex, statusMap, missingSurveys) {
+        return function verifyUserSurveyList() {
+            return rrSuperTest.get('/user-surveys', true, 200)
+                .then((res) => {
+                    const userSurveys = res.body;
+                    const expectedAll = _.cloneDeep(hxSurvey.listServers());
+                    expectedAll.forEach((r, index) => {
+                        r.status = statusMap[index] || 'new';
+                        if (r.description === undefined) {
+                            delete r.description;
+                        }
+                    });
+                    const missingSet = new Set(missingSurveys);
+                    const expected = expectedAll.filter((r, index) => !missingSet.has(index));
+                    expect(userSurveys).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const statusMap = {};
+    CSG.conditionalUserSurveysSetup().forEach((userSurveySetup, stepIndex) => {
+        const { skipAnswering, surveyIndex, missingSurveys, status } = userSurveySetup;
+        if (!skipAnswering) {
+            let answers;
+
+            it(`answer survey ${surveyIndex} step ${stepIndex}`, () => {
+                const survey = hxSurvey.server(surveyIndex);
+                answers = surveyGenerator.answersWithConditions(userSurveySetup);
+                statusMap[surveyIndex] = status;
+                const input = {
+                    answers,
+                    status,
+                };
+                return rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204);
+            });
+        }
+
+        it(`list user surveys step ${stepIndex}`, verifyUserSurveyListFn(2, statusMap, missingSurveys));
+    });
+
+    it('logout as user 2', shared.logoutFn());
 
     shared.verifyUserAudit();
 });

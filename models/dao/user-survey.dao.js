@@ -1,6 +1,31 @@
 'use strict';
 
+const _ = require('lodash');
+
 const Base = require('./base');
+
+const comparators = {
+    exists(answers) {
+        return answers && answers.length;
+    },
+    'not-exists': function (answers) {
+        return !(answers && answers.length);
+    },
+    equals(answers, ruleAnswers) {
+        return _.isEqual(answers, ruleAnswers);
+    },
+    'not-equals': function (answers, ruleAnswers) {
+        return !_.isEqual(answers, ruleAnswers);
+    },
+};
+
+const compareAnswersToRuleAnswers = function (logic, answers, ruleAnswers) {
+    const comparator = comparators[logic];
+    if (comparator) {
+        return comparator(answers, ruleAnswers);
+    }
+    return false;
+};
 
 module.exports = class UserSurveyDAO extends Base {
     constructor(db, dependencies) {
@@ -41,7 +66,93 @@ module.exports = class UserSurveyDAO extends Base {
     getUserSurvey(userId, surveyId, options) {
         return this.getUserSurveyStatus(userId, surveyId)
             .then(status => this.survey.getAnsweredSurvey(userId, surveyId, options)
-                    .then(survey => ({ status, survey })));
+                .then(survey => ({ status, survey })));
+    }
+
+    disabledSurveysOnAnswers(surveyAnswerRules, userId) {
+        const $or = _.values(surveyAnswerRules).map((r) => {
+            const { answerSurveyId: surveyId, answerQuestionId: questionId } = r[0];
+            return { surveyId, questionId };
+        });
+        const where = { userId, $or };
+        const attributes = ['surveyId', 'questionId', 'questionChoiceId', 'value'];
+        return this.db.Answer.findAll({ where, attributes, raw: true })
+            .then(records => records.reduce((r, record) => {
+                const { surveyId, questionId, questionChoiceId, value } = record;
+                const key = `${surveyId}-${questionId}`;
+                const mapValue = { questionChoiceId, value };
+                if (r[key]) {
+                    r[key].push(mapValue);
+                } else {
+                    r[key] = [mapValue];
+                }
+                return r;
+            }, {}))
+            .then((answerMap) => {
+                const surveyIds = Object.keys(surveyAnswerRules);
+                return surveyIds.reduce((r, surveyId) => {
+                    const {
+                        logic, answerQuestionId, answerSurveyId, values,
+                    } = surveyAnswerRules[surveyId][0];
+                    const key = `${answerSurveyId}-${answerQuestionId}`;
+                    const answers = answerMap[key];
+                    const enabled = compareAnswersToRuleAnswers(logic, answers, values);
+                    if (!enabled) {
+                        r.push(parseInt(surveyId, 10));
+                    }
+                    return r;
+                }, []);
+            });
+    }
+
+    disabledSurveysOnRules(statusMap, userId) {
+        const where = {
+            questionId: null,
+            sectionId: null,
+            answerSurveyId: { $ne: null },
+        };
+        const result = new Set();
+        const attributes = ['id', 'logic', 'surveyId', 'answerQuestionId', 'answerSurveyId'];
+        return this.db.AnswerRule.findAll({ raw: true, where, attributes, order: ['line'] })
+            .then(answerRules => answerRules.filter(({ surveyId, answerSurveyId }) => {
+                const status = statusMap.get(answerSurveyId);
+                if (status !== 'completed') {
+                    result.add(surveyId);
+                    return false;
+                }
+                return true;
+            }))
+            .then((answerRules) => {
+                if (!answerRules.length) {
+                    return answerRules;
+                }
+                const ruleIds = answerRules.map(r => r.id);
+                return this.db.AnswerRuleValue.findAll({
+                    where: { ruleId: { $in: ruleIds } },
+                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    raw: true,
+                })
+                    .then((answerRuleValues) => {
+                        if (answerRuleValues.length) {
+                            const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
+                            answerRules.forEach((r) => {
+                                const values = groupedResult[r.id];
+                                if (values) {
+                                    r.values = values.map(v => _.omit(v, 'ruleId'));
+                                }
+                            });
+                        }
+                        return answerRules;
+                    });
+            })
+            .then((answerRules) => {
+                if (answerRules.length) {
+                    const surveyAnswerRules = _.groupBy(answerRules, 'surveyId');
+                    return this.disabledSurveysOnAnswers(surveyAnswerRules, userId)
+                        .then(additionalDisabled => new Set([...result, ...additionalDisabled]));
+                }
+                return result;
+            });
     }
 
     listUserSurveys(userId, options) {
@@ -56,14 +167,21 @@ module.exports = class UserSurveyDAO extends Base {
                     })
                         .then((userSurveys) => {
                             const mapInput = userSurveys.map(r => [r.surveyId, r.status]);
-                            const map = new Map(mapInput);
+                            const statusMap = new Map(mapInput);
                             surveys.forEach((r) => {
-                                r.status = map.get(r.id) || 'new';
+                                r.status = statusMap.get(r.id) || 'new';
                             });
-                            return surveys;
+                            return { surveys, statusMap };
                         });
                 }
-                return surveys;
+                return { surveys };
+            })
+            .then(({ surveys, statusMap }) => {
+                if (!statusMap) {
+                    return surveys;
+                }
+                return this.disabledSurveysOnRules(statusMap, userId)
+                    .then(disabledSurveys => surveys.filter(({ id }) => !disabledSurveys.has(id)));
             });
     }
 };

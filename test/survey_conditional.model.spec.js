@@ -5,6 +5,7 @@
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
+const chai = require('chai');
 
 const models = require('../models');
 const Answerer = require('./util/generator/answerer');
@@ -17,6 +18,8 @@ const History = require('./util/history');
 const SharedSpec = require('./util/shared-spec');
 const choiceSetCommon = require('./util/choice-set-common');
 const surveyCommon = require('./util/survey-common');
+
+const expect = chai.expect;
 
 describe('conditional survey unit', function surveyConditionalUnit() {
     const hxUser = new History();
@@ -92,7 +95,7 @@ describe('conditional survey unit', function surveyConditionalUnit() {
         it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, () => {
             const { surveyIndex, error } = errorSetup;
             const survey = hxSurvey.server(surveyIndex);
-            const answers = surveyGenerator.answersWithConditions(survey, errorSetup);
+            const answers = surveyGenerator.answersWithConditions(errorSetup);
             const input = {
                 userId: hxUser.id(0),
                 surveyId: survey.id,
@@ -108,15 +111,13 @@ describe('conditional survey unit', function surveyConditionalUnit() {
         let answers;
 
         it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
-            const { surveyIndex } = passSetup;
-            const survey = hxSurvey.server(surveyIndex);
-            answers = surveyGenerator.answersWithConditions(survey, passSetup);
+            const survey = hxSurvey.server(passSetup.surveyIndex);
+            answers = surveyGenerator.answersWithConditions(passSetup);
             const input = {
                 userId: hxUser.id(0),
                 surveyId: survey.id,
                 answers,
             };
-
             return models.answer.createAnswers(input);
         });
 
@@ -129,5 +130,46 @@ describe('conditional survey unit', function surveyConditionalUnit() {
                     comparator.answeredSurvey(survey, answers, answeredSurvey);
                 });
         });
+    });
+
+    const verifyUserSurveyListFn = function (userIndex, statusMap, missingSurveys) {
+        return function verifyUserSurveyList() {
+            const userId = hxUser.id(userIndex);
+            return models.userSurvey.listUserSurveys(userId)
+                .then((userSurveys) => {
+                    const expectedAll = _.cloneDeep(hxSurvey.listServers());
+                    expectedAll.forEach((r, index) => {
+                        r.status = statusMap[index] || 'new';
+                        if (r.description === undefined) {
+                            delete r.description;
+                        }
+                    });
+                    const missingSet = new Set(missingSurveys);
+                    const expected = expectedAll.filter((r, index) => !missingSet.has(index));
+                    expect(userSurveys).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const statusMap = {};
+    CSG.conditionalUserSurveysSetup().forEach((userSurveySetup, stepIndex) => {
+        const { skipAnswering, surveyIndex, missingSurveys, status } = userSurveySetup;
+        if (!skipAnswering) {
+            let answers;
+
+            it(`answer survey ${surveyIndex} step ${stepIndex}`, () => {
+                const survey = hxSurvey.server(surveyIndex);
+                const userId = hxUser.id(2);
+                answers = surveyGenerator.answersWithConditions(userSurveySetup);
+                statusMap[surveyIndex] = status;
+                const input = {
+                    answers,
+                    status,
+                };
+                return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input);
+            });
+        }
+
+        it(`list user surveys step ${stepIndex}`, verifyUserSurveyListFn(2, statusMap, missingSurveys));
     });
 });

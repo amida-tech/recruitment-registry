@@ -21,6 +21,11 @@ module.exports = [{
     purpose: 'type',
 }, {
     surveyIndex: 2,
+    questionIndex: 4,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 2,
     questionIndex: 3,
     type: 'choice',
     purpose: 'enableWhen',
@@ -67,5 +72,31 @@ module.exports = [{
     purpose: 'surveyEnableWhen',
     logic: 'equals',
     answerSurveyIndex: 2,
-    answerQuestionIndex: 2,
+    answerQuestionIndex: 4,
+}, {
+    surveyIndex: 9,
+    questionIndex: 3,
+    type: 'text',
+    purpose: 'type',
+}, {
+    surveyIndex: 10,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'not-equals',
+    answerSurveyIndex: 9,
+    answerQuestionIndex: 3,
+}, {
+    surveyIndex: 11,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'not-exists',
+    answerSurveyIndex: 9,
+    answerQuestionIndex: 4,
+}, {
+    surveyIndex: 12,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'exists',
+    answerSurveyIndex: 9,
+    answerQuestionIndex: 4,
 }];
