@@ -72,6 +72,7 @@ module.exports = class SurveyGenerator {
         if (!question) {
             question = this.questionGenerator.newQuestion();
         }
+        question.isIdentifying = false;
         question.required = Boolean(index % 2);
         return question;
     }
@@ -129,7 +130,7 @@ module.exports = class SurveyGenerator {
         const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
-        result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));
+        result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2), isIdentifying:false }));
         return result;
     }
 };
