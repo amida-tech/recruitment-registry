@@ -99,4 +99,27 @@ module.exports = [{
     logic: 'exists',
     answerSurveyIndex: 9,
     answerQuestionIndex: 4,
+}, {
+    surveyIndex: 13,
+    questionIndex: 1,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 13,
+    questionIndex: 6,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 14,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhenMulti',
+    multiInfos: [{
+        logic: 'equals',
+        answerSurveyIndex: 13,
+        answerQuestionIndex: 1,
+    }, {
+        logic: 'not-equals',
+        answerSurveyIndex: 13,
+        answerQuestionIndex: 6,
+    }],
 }];

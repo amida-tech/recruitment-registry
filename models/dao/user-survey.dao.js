@@ -12,9 +12,17 @@ const comparators = {
         return !(answers && answers.length);
     },
     equals(answers, ruleAnswers) {
+        if (!(answers && answers.length)) {
+            return false;
+        }
+
         return _.isEqual(answers, ruleAnswers);
     },
     'not-equals': function (answers, ruleAnswers) {
+        if (!(answers && answers.length)) {
+            return false;
+        }
+
         return !_.isEqual(answers, ruleAnswers);
     },
 };
@@ -70,10 +78,18 @@ module.exports = class UserSurveyDAO extends Base {
     }
 
     disabledSurveysOnAnswers(surveyAnswerRules, userId) {
-        const $or = _.values(surveyAnswerRules).map((r) => {
-            const { answerSurveyId: surveyId, answerQuestionId: questionId } = r[0];
-            return { surveyId, questionId };
-        });
+        const ruleSourceSet = new Set();
+        const $or = _.values(surveyAnswerRules).reduce((r, rules) => {
+            rules.forEach((rule) => {
+                const { answerSurveyId: surveyId, answerQuestionId: questionId } = rule;
+                const key = `${surveyId}-${questionId}`;
+                if (!ruleSourceSet.has(key)) {
+                    ruleSourceSet.add(key);
+                    r.push({ surveyId, questionId });
+                }
+            });
+            return r;
+        }, []);
         const where = { userId, $or };
         const attributes = ['surveyId', 'questionId', 'questionChoiceId', 'value'];
         return this.db.Answer.findAll({ where, attributes, raw: true })
@@ -91,12 +107,13 @@ module.exports = class UserSurveyDAO extends Base {
             .then((answerMap) => {
                 const surveyIds = Object.keys(surveyAnswerRules);
                 return surveyIds.reduce((r, surveyId) => {
-                    const {
-                        logic, answerQuestionId, answerSurveyId, values,
-                    } = surveyAnswerRules[surveyId][0];
-                    const key = `${answerSurveyId}-${answerQuestionId}`;
-                    const answers = answerMap[key];
-                    const enabled = compareAnswersToRuleAnswers(logic, answers, values);
+                    const rules = surveyAnswerRules[surveyId];
+                    const enabled = rules.some((rule) => {
+                        const { logic, answerQuestionId, answerSurveyId, values } = rule;
+                        const key = `${answerSurveyId}-${answerQuestionId}`;
+                        const answers = answerMap[key];
+                        return compareAnswersToRuleAnswers(logic, answers, values);
+                    });
                     if (!enabled) {
                         r.push(parseInt(surveyId, 10));
                     }

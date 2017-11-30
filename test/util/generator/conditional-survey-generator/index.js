@@ -79,6 +79,24 @@ const specialAnswerer = {
         }
         return answer;
     },
+    samerulesurveymulti(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[answerInfo.ruleIndex].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        return { questionId: question.id, answer: enableWhenAnswer };
+    },
+    differentrulesurveymulti(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[answerInfo.ruleIndex].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        let answer = generator.answerer.answerQuestion(question);
+        if (_.isEqual(answer.answer, enableWhenAnswer)) {
+            answer = generator.answerer.answerQuestion(question);
+        }
+        return answer;
+    },
     samerulesection(generator, questions, question) {
         const enableWhen = question.sections[0].enableWhen;
         const enableWhenAnswer = enableWhen[0].answer;
@@ -117,9 +135,17 @@ const surveyManipulator = {
             rule = { questionId: question.id };
         }
         Object.assign(rule, { surveyId, logic });
-        const enableWhen = [rule];
-        survey.enableWhen = enableWhen;
+        if (survey.enableWhen) {
+            survey.enableWhen.push(rule);
+        } else {
+            survey.enableWhen = [rule];
+        }
         return question;
+    },
+    surveyEnableWhenMulti(survey, conditionalInfo, generator) {
+        conditionalInfo.multiInfos.forEach((info) => {
+            surveyManipulator.surveyEnableWhen(survey, info, generator);
+        });
     },
 };
 
@@ -153,7 +179,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             if (surveyIndex === undefined) {
                 throw new Error('No survey index specified');
             }
-            if ((purpose === 'completeSurvey') || (purpose === 'surveyEnableWhen')) {
+            if ((purpose === 'completeSurvey') || (purpose.startsWith('surveyEnableWhen'))) {
                 r[surveyIndex] = questionInfo;
                 r.surveyLevel = true;
                 return r;
@@ -169,7 +195,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             survey[questionIndex] = questionInfo;
             return r;
         }, {});
-        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
     }
 
     count() {
@@ -179,7 +205,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     versionWithIdsNeeded(surveyIndex) {
         const { surveyLevel, purpose } = this.conditionalMap[surveyIndex];
-        return !(surveyLevel && purpose === 'surveyEnableWhen');
+        return !(surveyLevel && purpose.startsWith('surveyEnableWhen'));
     }
 
     numOfCases() {
