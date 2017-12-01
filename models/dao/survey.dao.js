@@ -144,15 +144,13 @@ module.exports = class SurveyDAO extends Translatable {
         return result;
     }
 
-    createRuleAnswerValue(ruleParent, transaction) {
+    createRuleAnswerValue(ruleId, ruleAnswer, transaction) {
         const AnswerRuleValue = this.db.AnswerRuleValue;
-        if (!ruleParent) {
+        if (!(ruleId && ruleAnswer)) {
             return null;
         }
-        const rule = ruleParent;
-        const ruleId = ruleParent.ruleId;
-        if (rule.answer) {
-            const dbAnswers = answerCommon.prepareAnswerForDB(rule.answer);
+        if (ruleAnswer) {
+            const dbAnswers = answerCommon.prepareAnswerForDB(ruleAnswer);
             const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
                 const record = {
                     ruleId,
@@ -191,38 +189,40 @@ module.exports = class SurveyDAO extends Translatable {
         return SPromise.resolve({ questions });
     }
 
+    createRulesForEnableWhen(baseObject, enableWhen, transaction) {
+        const promises = enableWhen.map((p, line) => {
+            const answerRule = Object.assign({
+                logic: p.logic,
+                line,
+                answerQuestionId: p.questionId,
+                answerSurveyId: p.surveyId || null,
+            }, baseObject);
+            return this.db.AnswerRule.create(answerRule, { transaction })
+                .then(({ id }) => {
+                    const code = p.answer && p.answer.code;
+                    if ((code !== null) && (code !== undefined)) {
+                        return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction) // eslint-disable-line max-len
+                            .then((choiceId) => {
+                                p.answer.choice = choiceId;
+                                delete p.answer.code;
+                                return { id };
+                            });
+                    }
+                    return ({ id });
+                })
+                .then(({ id }) => this.createRuleAnswerValue(id, p.answer, transaction));
+        });
+        return SPromise.all(promises);
+    }
+
     createRulesForQuestions(surveyId, questions, transaction) {
-        const AnswerRule = this.db.AnswerRule;
         const questionsWithRule = questions.filter(question => question.enableWhen);
         if (questionsWithRule.length) {
             const promises = questionsWithRule.reduce((r, question) => {
-                question.enableWhen.forEach((p, line) => {
-                    const answerRule = {
-                        surveyId,
-                        questionId: question.id,
-                        logic: p.logic,
-                        line,
-                    };
-                    answerRule.answerQuestionId = p.questionId;
-                    const promise = AnswerRule.create(answerRule, { transaction })
-                        .then(({ id }) => {
-                            const code = p.answer && p.answer.code;
-                            if ((code !== null) && (code !== undefined)) {
-                                return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction) // eslint-disable-line max-len
-                                    .then((choiceId) => {
-                                        p.answer.choice = choiceId;
-                                        delete p.answer.code;
-                                        return { id };
-                                    });
-                            }
-                            return ({ id });
-                        })
-                        .then(({ id }) => {
-                            p.ruleId = id;
-                            return this.createRuleAnswerValue(p, transaction);
-                        });
-                    r.push(promise);
-                });
+                const baseObject = { surveyId, questionId: question.id };
+                const enableWhen = question.enableWhen;
+                const px = this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
+                r.push(px);
                 return r;
             }, []);
             return SPromise.all(promises).then(() => questions);
@@ -237,28 +237,10 @@ module.exports = class SurveyDAO extends Translatable {
             const promises = sectionsWithRule.reduce((r, index) => {
                 const section = sections[index];
                 const sectionId = sectionIds[index];
-                section.enableWhen.forEach((p, line) => {
-                    const answerRule = { surveyId, sectionId, logic: p.logic, line };
-                    answerRule.answerQuestionId = p.questionId;
-                    const promise = this.db.AnswerRule.create(answerRule, { transaction })
-                        .then(({ id }) => {
-                            const code = p.answer && p.answer.code;
-                            if ((code !== null) && (code !== undefined)) {
-                                return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction) // eslint-disable-line max-len
-                                    .then((choiceId) => {
-                                        p.answer.choice = choiceId;
-                                        delete p.answer.code;
-                                        return { id };
-                                    });
-                            }
-                            return ({ id });
-                        })
-                        .then(({ id }) => {
-                            p.ruleId = id;
-                            return this.createRuleAnswerValue(p, transaction);
-                        });
-                    r.push(promise);
-                });
+                const baseObject = { surveyId, sectionId };
+                const enableWhen = section.enableWhen;
+                const px = this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
+                r.push(px);
                 return r;
             }, []);
             return SPromise.all(promises).then(() => sections);
@@ -281,7 +263,7 @@ module.exports = class SurveyDAO extends Translatable {
                 const record = { questionId: qx.id, surveyId, line, required };
                 return this.db.SurveyQuestion.create(record, { transaction });
             }))
-                    .then(() => questions));
+                .then(() => questions));
     }
 
     updateSurveyTx(inputId, survey, transaction) {
@@ -291,6 +273,15 @@ module.exports = class SurveyDAO extends Translatable {
         }
         const record = { id: inputId, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
+            .then(({ id }) => {
+                if (survey.enableWhen) {
+                    const baseObject = { surveyId: id };
+                    const enableWhen = survey.enableWhen;
+                    return this.createRulesForEnableWhen(baseObject, enableWhen, transaction)
+                        .then(() => ({ id }));
+                }
+                return ({ id });
+            })
             .then(({ id }) => this.createSurveyQuestionsTx(questions, sections, id, transaction)
                 .then((qxs) => {
                     const questionIds = qxs.map(question => question.id);
@@ -315,7 +306,9 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyTx(survey, userId, transaction) {
-        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
+        const fields = _.omit(survey, [
+            'name', 'description', 'sections', 'questions', 'identifier', 'enableWhen',
+        ]);
         fields.authorId = userId;
         return this.db.Survey.create(fields, { transaction })
             .then(({ id }) => this.updateSurveyTx(id, survey, transaction));
@@ -647,43 +640,55 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 return this.answerRule.getSurveyAnswerRules({ surveyId: survey.id })
                     .then(answerRuleInfos => this.updateText(survey, options.language)
-                            .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
-                            .then((surveyQuestions) => {
-                                const ids = _.map(surveyQuestions, 'questionId');
-                                const language = options.language;
-                                return this.question.listQuestions({ scope: 'complete', ids, language })
-                                    .then((questions) => {
-                                        const qxMap = _.keyBy(questions, 'id');
-                                        const qxs = surveyQuestions.map((surveyQuestion) => {
-                                            const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
-                                            return result;
-                                        });
-                                        answerRuleInfos.forEach(({ questionId, rule }) => {
-                                            if (questionId) {
-                                                const question = qxMap[questionId];
-                                                if (!question.enableWhen) {
-                                                    question.enableWhen = [];
-                                                }
-                                                question.enableWhen.push(rule);
-                                            }
-                                        });
-                                        return qxs;
+                        .then(() => {
+                            const enableWhen = answerRuleInfos.reduce((r, p) => {
+                                const { questionId, sectionId, rule } = p;
+                                if (!(questionId || sectionId)) {
+                                    r.push(rule);
+                                }
+                                return r;
+                            }, []);
+                            if (enableWhen.length) {
+                                survey.enableWhen = enableWhen; // eslint-disable-line no-param-reassign, max-len
+                            }
+                        })
+                        .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
+                        .then((surveyQuestions) => {
+                            const ids = _.map(surveyQuestions, 'questionId');
+                            const language = options.language;
+                            return this.question.listQuestions({ scope: 'complete', ids, language })
+                                .then((questions) => {
+                                    const qxMap = _.keyBy(questions, 'id');
+                                    const qxs = surveyQuestions.map((surveyQuestion) => {
+                                        const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
+                                        return result;
                                     });
-                            })
-                            .then(questions => this.surveySection.getSectionsForSurveyTx(survey.id, questions, answerRuleInfos, options.language) // eslint-disable-line max-len
-                                    .then((result) => {
-                                        if (!result) {
-                                            survey.questions = questions; // eslint-disable-line no-param-reassign, max-len
-                                            return survey;
+                                    answerRuleInfos.forEach(({ questionId, rule }) => {
+                                        if (questionId) {
+                                            const question = qxMap[questionId];
+                                            if (!question.enableWhen) {
+                                                question.enableWhen = [];
+                                            }
+                                            question.enableWhen.push(rule);
                                         }
-                                        const { sections, innerQuestionSet } = result;
-                                        if (sections && sections.length) {
-                                            survey.sections = sections; // eslint-disable-line no-param-reassign, max-len
-                                        } else {
-                                            survey.questions = questions.filter(qx => !innerQuestionSet.has(qx.id)); // eslint-disable-line max-len, no-param-reassign
-                                        }
-                                        return survey;
-                                    })));
+                                    });
+                                    return qxs;
+                                });
+                        })
+                        .then(questions => this.surveySection.getSectionsForSurveyTx(survey.id, questions, answerRuleInfos, options.language) // eslint-disable-line max-len
+                            .then((result) => {
+                                if (!result) {
+                                    survey.questions = questions; // eslint-disable-line no-param-reassign, max-len
+                                    return survey;
+                                }
+                                const { sections, innerQuestionSet } = result;
+                                if (sections && sections.length) {
+                                    survey.sections = sections; // eslint-disable-line no-param-reassign, max-len
+                                } else {
+                                    survey.questions = questions.filter(qx => !innerQuestionSet.has(qx.id)); // eslint-disable-line max-len, no-param-reassign
+                                }
+                                return survey;
+                            })));
             })
             .then((survey) => {
                 if (!options.admin) {

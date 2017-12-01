@@ -4147,6 +4147,10 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/newRuleAnswer"
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "minProperties": 2,
@@ -4329,6 +4333,9 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhen"
+                },
                 "sections": {
                     "type": "array",
                     "items": {
@@ -4369,6 +4376,10 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false
@@ -4506,6 +4517,9 @@
                 },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhen"
                 },
                 "sections": {
                     "type": "array",
