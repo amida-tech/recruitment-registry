@@ -26,6 +26,7 @@ exports.getUserSurveyAnswers = function getUserSurveyAnswers(req, res) {
     const options = {
         language: _.get(req, 'swagger.params.language.value'),
         includeSurvey: _.get(req, 'swagger.params.include-survey.value'),
+        isIdentifying: _.get(req, 'swagger.params.isIdentifying.value'),
     };
     req.models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
         .then(result => res.status(200).json(result))

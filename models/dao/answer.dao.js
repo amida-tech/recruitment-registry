@@ -454,7 +454,6 @@ module.exports = class AnswerDAO extends Base {
     }
 
     getAnswers({ userId, surveyId, isIdentifying }) {
-       console.log(isIdentifying);
         return this.validateConsent(userId, surveyId, 'read')
             .then(() => this.listAnswers({ userId, surveyId, isIdentifying }));
     }

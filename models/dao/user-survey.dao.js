@@ -24,9 +24,10 @@ module.exports = class UserSurveyDAO extends Base {
 
     getUserSurveyAnswers(userId, surveyId, options) {
         const result = {};
+        const isIdentifying = options.isIdentifying;
         return this.getUserSurveyStatus(userId, surveyId)
             .then((status) => { result.status = status; })
-            .then(() => this.answer.getAnswers({ userId, surveyId }))
+            .then(() => this.answer.getAnswers({ userId, surveyId, isIdentifying }))
             .then((answers) => { result.answers = answers; })
             .then(() => {
                 if (options.includeSurvey) {
