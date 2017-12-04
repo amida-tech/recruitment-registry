@@ -10,6 +10,7 @@ exports.getSurvey = function getSurvey(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
+    options.isIdentifying = true;
     options.admin = (req.user.role === 'admin');
     req.models.survey.getSurvey(id, options)
         .then(survey => res.status(200).json(survey))
