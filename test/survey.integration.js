@@ -462,4 +462,69 @@ describe('survey integration', function surveyIntegration() {
     });
 
     it('logout as user', shared.logoutFn());
+
+
+    it('login as super', shared.loginFn(config.superUser));
+    it('create survey with identifying', (done) => {
+        const postData = {
+          name: 'Identifying Test',
+          description: 'test',
+          status: 'published',
+          questions: [{
+            isIdentifying: true,
+            text: 'Identifying Question',
+            type: 'bool',
+            required: false
+          }]
+        };
+        rrSuperTest.post('/surveys', postData, 201).end(done);
+    });
+    it('logout as super', shared.logoutFn());
+
+
+    it('login as user', shared.loginIndexFn(hxUser, 0));
+
+    let identifyingSurveyQuestionid = null;
+
+    it('get survey with identifying', (done) => {
+        rrSuperTest.get(`/surveys/${surveyCount}`, true, 200)
+            .expect((res) => {
+                identifyingSurveyQuestionid = res.body.questions[0].id;
+                expect(res.body.questions.length).to.equal(1);
+            })
+            .end(done);
+    });
+
+
+
+    it('answer survey with identifying', (done) => {
+      const postData = {
+        status: 'completed',
+        answers: [{
+          questionId:identifyingSurveyQuestionid,
+          language:'en',
+          answer:{boolValue:true}
+        }]
+      };
+      rrSuperTest.post(`/user-surveys/${surveyCount}/answers`, postData, 204).end(done);
+    });
+
+    it('get answered survey with identifying', (done) => {
+        rrSuperTest.get(`/user-surveys/${surveyCount}/answers?isIdentifying=true`, true, 200)
+            .expect((res) => {
+              expect(res.body.answers.length).to.equal(1);
+            })
+            .end(done);
+    });
+    it('get answered survey without identifying', (done) => {
+        rrSuperTest.get(`/user-surveys/${surveyCount}/answers`, true, 200)
+            .expect((res) => {
+                expect(res.body.answers.length).to.equal(0);
+            })
+            .end(done);
+    });
+    it('logout as user', shared.logoutFn());
+
+    surveyCount += 1;
+
 });
