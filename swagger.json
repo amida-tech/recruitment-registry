@@ -474,6 +474,11 @@
                     "in": "path",
                     "required": true,
                     "type": "integer"
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }, {
                     "name": "language",
                     "in": "query",
@@ -623,6 +628,11 @@
                         "type": "integer",
                         "minimum": 1
                     }
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -719,6 +729,11 @@
                         "type": "integer",
                         "minimum": 1
                     }
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {

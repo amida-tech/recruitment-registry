@@ -317,7 +317,7 @@ module.exports = class QuestionDAO extends Translatable {
                     return r;
                 }, {})));
         }
-        if(isIdentifying !== null && isIdentifying !== undefined){
+        if(!isIdentifying){
           const where = { isIdentifying };
           const sqOptions = { raw: true, where, attributes:options.attributes};
           return Question.findAll(sqOptions);
@@ -361,15 +361,13 @@ module.exports = class QuestionDAO extends Translatable {
         return this.findQuestionsForList(options)
             .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
-                if (ids && (questions.length !== ids.length)) {
-                    return RRError.reject('qxNotFound');
-                }
                 if (!questions.length) {
                     return questions;
                 }
                 const map = new Map(questions.map(question => ([question.id, question])));
                 if (ids) {
                     questions = ids.map(id => map.get(id));  // eslint-disable-line no-param-reassign, max-len
+                    questions = questions.filter(question => !!question); // Remove Undefined and NULL Questions
                 }
                 return this.updateAllTexts(questions, language)
                     .then(() => {

@@ -16,7 +16,8 @@ exports.createAnswers = function createAnswers(req, res) {
 exports.getAnswers = function getAnswers(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const userId = req.user.id;
-    req.models.answer.getAnswers({ userId, surveyId })
+    const isIdentifying = true; // True Because you can only pull answers for yourself
+    req.models.answer.getAnswers({ userId, surveyId, isIdentifying })
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };
@@ -34,6 +35,7 @@ exports.exportAnswers = function exportAnswers(req, res) {
 
 exports.exportMultiUserAnswers = function exportMultiUserAnswers(req, res) {
     const userIds = _.get(req, 'swagger.params.user-ids.value');
+    const isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
     req.models.answer.exportForUsers(userIds)
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=answer.csv');
@@ -81,7 +83,8 @@ exports.listAnswersExport = function listAnswersExport(req, res) {
 
 exports.listAnswersMultiUserExport = function listAnswersMultiUserExport(req, res) {
     const userIds = _.get(req, 'swagger.params.user-ids.value');
-    req.models.answer.listAnswers({ scope: 'export', userIds })
+    const isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
+    req.models.answer.listAnswers({ scope: 'export', userIds, isIdentifying })
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };
@@ -129,4 +132,3 @@ exports.federatedListAnswers = function federatedListAnswers(req, res) {
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
-

@@ -349,7 +349,7 @@ module.exports = class AnswerDAO extends Base {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, history, ids, userIds }) {
+    listAnswers({ userId, scope, surveyId, history, ids, userIds, isIdentifying }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
@@ -380,10 +380,16 @@ module.exports = class AnswerDAO extends Base {
         if (userIds) {
             attributes.push('userId');
         }
-        const include = [
+        let include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
             { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
         ];
+        if(!isIdentifying){ //If not looking up questions for self then supply
+          include = [
+              { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'], where:{isIdentifying:false}},
+              { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
+          ];
+        }
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
             .then((result) => {
                 result.forEach((r) => {
@@ -447,9 +453,10 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    getAnswers({ userId, surveyId }) {
+    getAnswers({ userId, surveyId, isIdentifying }) {
+       console.log(isIdentifying);
         return this.validateConsent(userId, surveyId, 'read')
-            .then(() => this.listAnswers({ userId, surveyId }));
+            .then(() => this.listAnswers({ userId, surveyId, isIdentifying }));
     }
 
     exportForUser(userId) {
