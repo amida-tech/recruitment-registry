@@ -1,0 +1,125 @@
+'use strict';
+
+const surveys = require('./surveys');
+
+module.exports = [{
+    surveyIndex: 0,
+    survey: surveys.travelSurvey,
+    surveyLevel: true,
+    purpose: 'completeSurvey',
+}, {
+    surveyIndex: 1,
+    questionIndex: 5,
+    type: 'text',
+    purpose: 'enableWhen',
+    logic: 'not-equals',
+    relativeIndex: 1,
+}, {
+    surveyIndex: 2,
+    questionIndex: 2,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 2,
+    questionIndex: 4,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 2,
+    questionIndex: 3,
+    type: 'choice',
+    purpose: 'enableWhen',
+    logic: 'equals',
+    relativeIndex: 1,
+}, {
+    surveyIndex: 3,
+    questionIndex: 3,
+    type: 'choice',
+    logic: 'not-equals',
+    count: 3,
+    purpose: 'questionSection',
+}, {
+    surveyIndex: 4,
+    questionIndex: 5,
+    type: 'choice',
+    logic: 'equals',
+    count: 1,
+    purpose: 'questionSection',
+}, {
+    surveyIndex: 5,
+    questionIndex: 3,
+    type: 'bool',
+    logic: 'equals',
+    count: 2,
+    purpose: 'questionSection',
+}, {
+    surveyIndex: 6,
+    questionIndex: 0,
+    type: 'text',
+    logic: 'not-exists',
+    count: 1,
+    purpose: 'questionSection',
+}, {
+    surveyIndex: 7,
+    questionIndex: 2,
+    type: 'text',
+    logic: 'exists',
+    count: 2,
+    purpose: 'questionSection',
+}, {
+    surveyIndex: 8,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'equals',
+    answerSurveyIndex: 2,
+    answerQuestionIndex: 4,
+}, {
+    surveyIndex: 9,
+    questionIndex: 3,
+    type: 'text',
+    purpose: 'type',
+}, {
+    surveyIndex: 10,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'not-equals',
+    answerSurveyIndex: 9,
+    answerQuestionIndex: 3,
+}, {
+    surveyIndex: 11,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'not-exists',
+    answerSurveyIndex: 9,
+    answerQuestionIndex: 4,
+}, {
+    surveyIndex: 12,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'exists',
+    answerSurveyIndex: 9,
+    answerQuestionIndex: 4,
+}, {
+    surveyIndex: 13,
+    questionIndex: 1,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 13,
+    questionIndex: 6,
+    type: 'choice',
+    purpose: 'type',
+}, {
+    surveyIndex: 14,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhenMulti',
+    multiInfos: [{
+        logic: 'equals',
+        answerSurveyIndex: 13,
+        answerQuestionIndex: 1,
+    }, {
+        logic: 'not-equals',
+        answerSurveyIndex: 13,
+        answerQuestionIndex: 6,
+    }],
+}];

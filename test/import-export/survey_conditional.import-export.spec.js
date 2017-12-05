@@ -25,16 +25,17 @@ const intoStream = require('into-stream');
 const expect = chai.expect;
 
 describe('survey import-export conditional unit', function surveyImportExportUnit() {
+    const hxSurvey = new SurveyHistory();
+    const hxChoiceSet = new History();
+
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator(null, { noMeta: true });
-    const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator });
+    const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator, hxSurvey });
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const shared = new SharedSpec(generator);
 
     const surveyCount = surveyGenerator.numOfCases();
 
-    const hxSurvey = new SurveyHistory();
-    const hxChoiceSet = new History();
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
     const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
@@ -45,6 +46,7 @@ describe('survey import-export conditional unit', function surveyImportExportUni
         it(`create choice set ${index}`, choiceSetTests.createChoiceSetFn(choiceSet));
         it(`get choice set ${index}`, choiceSetTests.getChoiceSetFn(index));
     });
+
     it('set comparator choice map', () => {
         comparator.updateChoiceSetMap(choiceSets);
     });

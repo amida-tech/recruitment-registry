@@ -14,7 +14,7 @@ module.exports = class AnswerRuleDAO extends Base {
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
         const where = { surveyId };
-        const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
+        const attributes = ['id', 'logic', 'questionId', 'sectionId', 'answerQuestionId', 'answerSurveyId'];
         const include = [
             { model: Question, as: 'question', attributes: ['type'] },
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
@@ -27,13 +27,18 @@ module.exports = class AnswerRuleDAO extends Base {
                 const rules = {};
                 const ruleIds = [];
                 const result = answerRules.map((answerRule) => {
-                    const { id, logic, questionId, answerQuestionId, sectionId } = answerRule;
+                    const {
+                        id, logic, questionId, answerQuestionId, answerSurveyId, sectionId,
+                    } = answerRule;
                     const questionType = answerRule['answerQuestion.type'];
                     const rule = { id, logic, type: questionType };
                     ruleIds.push(id);
                     rules[id] = rule;
                     const ruleInfo = { questionId, sectionId, rule };
                     ruleInfo.rule.questionId = answerQuestionId;
+                    if (answerSurveyId) {
+                        ruleInfo.rule.surveyId = answerSurveyId;
+                    }
                     return ruleInfo;
                 });
                 return AnswerRuleValue.findAll({
