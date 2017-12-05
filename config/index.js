@@ -96,6 +96,9 @@ const main = {
         resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES,
         resetExpiresUnit: process.env.RECREG_CRYPT_RESET_EXPIRES_UNIT,
     },
+    jwt:{
+        jwtTokenExpirationMinutes: process.env.RECREG_TOKEN_EXPIRATION_MINTUES,
+    },
     clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
     tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
     cohortBucket: process.env.RECREG_COHORT_BUCKET,

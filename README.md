@@ -73,6 +73,7 @@ RECREG_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
 RECREG_ZIP_API_KEY=xxx
 RECREG_ZIP_DISTANCE=50
 RECREG_ZIP_UNITS=mile
+RECREG_TOKEN_EXPIRATION_MINTUES=43200
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
@@ -107,6 +108,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
+- RECREG_TOKEN_EXPIRATION_MINTUES: how long until JWT tokens expire, leave blank for no expiration
 - AWS_ACCESS_KEY_ID: Amazon Web Services access key ID.
 - AWS_SECRET: Amazon Web Service secret access key.
 
