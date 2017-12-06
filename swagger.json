@@ -5007,7 +5007,7 @@
                     "type": "number"
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
                     "type": "string",
@@ -5043,7 +5043,7 @@
                     "minItems": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -5132,7 +5132,7 @@
                     "minimum": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -5225,7 +5225,7 @@
                     "minLength": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -5315,7 +5315,7 @@
                     "type": "integer"
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
                     "type": "string",
@@ -5349,7 +5349,7 @@
                     "minItems": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -7107,6 +7107,10 @@
             "items": {
                 "$ref": "#/definitions/file"
             }
+        },
+        "answerTextValue": {
+            "type": "string",
+            "pattern": "^[^\\s]+(\\s+[^\\s]+)*$"
         }
     }
 }

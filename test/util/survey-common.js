@@ -7,6 +7,7 @@ const _ = require('lodash');
 
 const models = require('../../models');
 const comparator = require('./comparator');
+const History = require('./history');
 
 const expect = chai.expect;
 
@@ -190,7 +191,7 @@ const SpecTests = class SurveySpecTests {
     constructor(generator, hxSurvey, hxQuestion) {
         this.generator = generator;
         this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion; // not updated in all creates.
+        this.hxQuestion = hxQuestion || new History(); // not updated in all creates.
     }
 
     createSurveyFn(options) {
@@ -268,15 +269,15 @@ const IntegrationTests = class SurveyIntegrationTests {
         this.rrSuperTest = rrSuperTest;
         this.generator = generator;
         this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion; // not updated in all creates.
+        this.hxQuestion = hxQuestion || new History(); // not updated in all creates.
     }
 
-    createSurveyFn(options) {
+    createSurveyFn(options = {}) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         return function createSurvey(done) {
-            const survey = generator.newSurvey(options);
+            const survey = options.survey || generator.newSurvey(options);
             rrSuperTest.post('/surveys', survey, 201)
                 .expect((res) => {
                     hxSurvey.push(survey, res.body);
