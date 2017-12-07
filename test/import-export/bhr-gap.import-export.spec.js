@@ -1,4 +1,4 @@
-/* global before,xdescribe,it,it*/
+/* global before,xdescribe,it,it */
 
 'use strict';
 
@@ -79,7 +79,7 @@ xdescribe('bhr gap import-export', () => {
     it('export subject answer', () => {
         const fpExported = path.join(outputDir, 'Subjects_exported.csv');
         return bhrGapExport.writeSubjectsData(fpExported, {
-            order: 'SubjectCode',
+            order: ['SubjectCode'],
             surveyIdentifier: {
                 type: 'bhr-gap',
                 value: 'subjects',

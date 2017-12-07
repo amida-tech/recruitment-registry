@@ -19,7 +19,7 @@ module.exports = class AnswerRuleDAO extends Base {
             { model: Question, as: 'question', attributes: ['type'] },
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
         ];
-        return AnswerRule.findAll({ raw: true, where, attributes, include, order: 'line' })
+        return AnswerRule.findAll({ raw: true, where, attributes, include, order: ['line'] })
             .then((answerRules) => {
                 if (answerRules.length < 1) {
                     return answerRules;
@@ -113,7 +113,7 @@ module.exports = class AnswerRuleDAO extends Base {
                     where: { ruleId: { $in: ruleIds } },
                     attributes: ['ruleId', 'questionChoiceId', 'value'],
                     raw: true,
-                    order: 'id',
+                    order: ['id'],
                 })
                     .then(answerRuleValues => answerRuleValues.reduce((r, { ruleId, questionChoiceId, value }) => { // eslint-disable-line max-len
                         let current = r.get(ruleId);

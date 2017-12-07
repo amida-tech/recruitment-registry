@@ -54,7 +54,7 @@ module.exports = class FilterDAO extends Base {
 
     listFilters() {
         const attributes = this.attributes();
-        return this.db.Filter.findAll({ raw: true, attributes, order: 'id' })
+        return this.db.Filter.findAll({ raw: true, attributes, order: ['id'] })
             .then(records => records.map(record => _.omitBy(record, _.isNil)));
     }
 

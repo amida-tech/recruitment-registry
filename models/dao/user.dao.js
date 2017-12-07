@@ -46,7 +46,7 @@ module.exports = class UserDAO extends Base {
             role = { $in: ['admin', 'clinician', 'participant'] };
         }
         const where = { role };
-        return this.db.User.findAll({ raw: true, where, attributes, order: 'username' })
+        return this.db.User.findAll({ raw: true, where, attributes, order: ['username'] })
             .then(users => users.map(user => _.omitBy(user, _.isNil)));
     }
 

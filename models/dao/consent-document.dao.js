@@ -69,7 +69,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         const query = {
             raw: true,
             attributes: ['id', 'typeId', createdAtColumn],
-            order: 'id',
+            order: ['id'],
         };
         if (options.transaction) {
             query.transaction = options.transaction;
@@ -193,7 +193,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
             raw: true,
             attributes: ['id'],
             where: { typeId },
-            order: 'id',
+            order: ['id'],
             paranoid: false,
         })
             .then(documents => this.updateAllTexts(documents, language))

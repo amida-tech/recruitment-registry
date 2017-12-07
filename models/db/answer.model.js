@@ -93,6 +93,17 @@ module.exports = function answer(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        assessmentId: {
+            type: Sequelize.INTEGER,
+            field: 'assessment_id',
+            references: {
+                model: {
+                    schema,
+                    tableName: 'assessment',
+                },
+                key: 'id',
+            },
+        },
     }, {
         freezeTableName: true,
         tableName,
@@ -102,6 +113,12 @@ module.exports = function answer(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{
+            fields: ['survey_id'], where: { deleted_at: { $eq: null } },
+        }, {
+            fields: ['assessment_id'], where: { deleted_at: { $eq: null } },
+        }, {
+            fields: ['user_id'], where: { deleted_at: { $eq: null } },
+        }],
     });
 };

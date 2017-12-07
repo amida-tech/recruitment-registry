@@ -188,6 +188,7 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
         this.models = inputModels || models;
     }
 
+    ////Passing
     createQuestionFn(options = {}) {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
@@ -250,6 +251,8 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
         this.rrSuperTest = rrSuperTest;
     }
 
+
+    ////Failing
     createQuestionFn(options = {}) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;

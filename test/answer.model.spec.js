@@ -1,4 +1,4 @@
-/* global describe,before,it*/
+/* global describe,before,it */
 
 'use strict';
 
@@ -20,14 +20,14 @@ const SurveyHistory = require('./util/survey-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
 const choiceSetCommon = require('./util/choice-set-common');
+const surveyCommon = require('./util/survey-common');
+const answerSession = require('./fixtures/answer-session/survey-0');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedSpec(generator);
 
 describe('answer unit', () => {
-    const testQuestions = answerCommon.testQuestions;
-
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
@@ -38,6 +38,7 @@ describe('answer unit', () => {
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
+    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
 
     before(shared.setUpFn());
 
@@ -51,22 +52,10 @@ describe('answer unit', () => {
         it(`get question ${i}`, questionTests.getQuestionFn(i));
     });
 
-    const createSurveyFn = function (qxIndices) {
-        return function createSurvey() {
-            const inputSurvey = generator.newSurvey();
-            delete inputSurvey.sections;
-            inputSurvey.questions = qxIndices.map(index => ({
-                id: hxQuestion.server(index).id,
-                required: false,
-            }));
-            return models.survey.createSurvey(inputSurvey)
-                .then((id) => {
-                    hxSurvey.push(inputSurvey, { id });
-                });
-        };
-    };
-
-    _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => it(`create survey ${index}`, createSurveyFn(surveyQuestion)));
+    const surveyOpts = { noneRequired: true };
+    _.map(answerSession, 'survey').forEach((qxIndices, index) => {
+        it(`create survey ${index}`, surveyTests.createSurveyQxHxFn(qxIndices, surveyOpts));
+    });
 
     it('error: invalid answer property', () => {
         const input = {
@@ -132,7 +121,7 @@ describe('answer unit', () => {
 
     _.range(cases.length).forEach((i) => {
         const { userIndex, surveyIndex, seqIndex } = cases[i];
-        const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][0];
+        const questionIndices = answerSession[surveyIndex].answerSequences[seqIndex][0];
         it(`user ${userIndex} answers survey ${surveyIndex} (step 0)`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
         it(`user ${userIndex} gets answers to survey ${surveyIndex} (step 0)`, tests.getAnswersFn(userIndex, surveyIndex));
     });
@@ -140,7 +129,7 @@ describe('answer unit', () => {
     _.range(3).forEach((j) => {
         _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
+            const questionIndices = answerSession[surveyIndex].answerSequences[seqIndex][j];
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
             it(`list user ${userIndex} survey ${surveyIndex} answer history (step ${j})`, listAnswersFn(userIndex, surveyIndex));
@@ -150,7 +139,7 @@ describe('answer unit', () => {
     [0, 1].forEach((index) => {
         it(`create question ${20 + index}`, questionTests.createQuestionFn());
         it(`get question ${20 + index}`, questionTests.getQuestionFn());
-        it(`create survey ${testQuestions.length + 1}`, createSurveyFn([20 + index]));
+        it(`create survey ${answerSession.length + 1}`, surveyTests.createSurveyQxHxFn([20 + index], surveyOpts));
         it(`user 3 answers survey ${5 + index}`, tests.answerSurveyFn(3, 5 + index, [20 + index]));
         it(`user 3 gets answers to survey ${5 + index}`, tests.getAnswersFn(3, 5 + index));
     });
@@ -165,12 +154,12 @@ describe('answer unit', () => {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 7 (1 multi)', createSurveyFn([22, 34, 35, 36]));
-    it('create survey 8 (2 multi)', createSurveyFn([37, 23, 38, 39, 24]));
-    it('create survey 9 (3 multi)', createSurveyFn([25, 40, 41, 42, 26, 27]));
-    it('create survey 10 (1 multi)', createSurveyFn([43, 44, 28, 45]));
-    it('create survey 11 (2 multi)', createSurveyFn([46, 29, 30, 47, 48]));
-    it('create survey 12 (3 multi)', createSurveyFn([31, 49, 32, 50, 33, 51]));
+    it('create survey 7 (1 multi)', surveyTests.createSurveyQxHxFn([22, 34, 35, 36], surveyOpts));
+    it('create survey 8 (2 multi)', surveyTests.createSurveyQxHxFn([37, 23, 38, 39, 24], surveyOpts));
+    it('create survey 9 (3 multi)', surveyTests.createSurveyQxHxFn([25, 40, 41, 42, 26, 27], surveyOpts));
+    it('create survey 10 (1 multi)', surveyTests.createSurveyQxHxFn([43, 44, 28, 45], surveyOpts));
+    it('create survey 11 (2 multi)', surveyTests.createSurveyQxHxFn([46, 29, 30, 47, 48], surveyOpts));
+    it('create survey 12 (3 multi)', surveyTests.createSurveyQxHxFn([31, 49, 32, 50, 33, 51], surveyOpts));
 
     it('switch back to generic answerer', () => {
         generator.updateAnswererClass(Answerer);
@@ -206,8 +195,8 @@ describe('answer unit', () => {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 13 (5 choice sets)', createSurveyFn([52, 53, 54, 55, 56]));
-    it('create survey 14 (5 choice sets)', createSurveyFn([57, 58, 59, 60, 61]));
+    it('create survey 13 (5 choice sets)', surveyTests.createSurveyQxHxFn([52, 53, 54, 55, 56], surveyOpts));
+    it('create survey 14 (5 choice sets)', surveyTests.createSurveyQxHxFn([57, 58, 59, 60, 61], surveyOpts));
 
     it('user 3 answers survey 13', tests.answerSurveyFn(3, 13, [52, 53, 54, 55, 56]));
     it('user 3 gets answers to survey 13', tests.getAnswersFn(3, 13));

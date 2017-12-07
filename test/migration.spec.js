@@ -1,4 +1,4 @@
-/* global describe,it*/
+/* global describe,it */
 
 'use strict';
 
@@ -85,10 +85,10 @@ describe('migration spec', () => {
         });
 
         it('get/compare foreign keys', () => db.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
-                .then(foreignKeys => dbMigrate.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
-                        .then((migrateForeignKeys) => {
-                            expect(migrateForeignKeys).to.deep.equal(foreignKeys);
-                        })));
+            .then(foreignKeys => dbMigrate.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
+                .then((migrateForeignKeys) => {
+                    expect(migrateForeignKeys).to.deep.equal(foreignKeys);
+                })));
 
         const normalizeDescription = function (description) {
             Object.keys(description).forEach((key) => {
@@ -116,12 +116,20 @@ describe('migration spec', () => {
             return db.sequelize.Promise.all(pxs);
         });
 
+        const normalizeIndexes = function (indexes) {
+            indexes.forEach((r) => {
+                delete r.indkey;
+            });
+        };
+
         it('compare table indexes', () => {
             const pxs = tables.map(tableName => db.sequelize.getQueryInterface().showIndex(tableName)
-                    .then(indexes => dbMigrate.sequelize.getQueryInterface().showIndex(tableName)
-                            .then((migrateIndexes) => {
-                                expect(migrateIndexes).to.deep.equal(indexes);
-                            })));
+                .then(indexes => dbMigrate.sequelize.getQueryInterface().showIndex(tableName)
+                    .then((migrateIndexes) => {
+                        normalizeIndexes(migrateIndexes);
+                        normalizeIndexes(indexes);
+                        expect(migrateIndexes).to.deep.equal(indexes);
+                    })));
             return db.sequelize.Promise.all(pxs);
         });
 

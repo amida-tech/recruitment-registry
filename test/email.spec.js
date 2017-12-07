@@ -1,4 +1,4 @@
-/* global describe,it*/
+/* global describe,it */
 // In the future, if we use rewire more often, we may look for a global ignore
 // on dangling underscores.
 
@@ -52,7 +52,7 @@ describe('email unit', () => {
     /* Resetting environmental variables was a pain with a beforeEach to replace
     and restoring them from a cloned object. So I decided just to make it the
     responsibility of each test to restore things as they were after. Will look at
-    better methods later.*/
+    better methods later. */
     it('confirms ensureConstantContactConfig returns false without apiKey', () => {
         const backup = ccConfig.apiKey;
         ccConfig.apiKey = undefined;

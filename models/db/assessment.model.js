@@ -7,32 +7,35 @@ module.exports = function assessment(sequelize, Sequelize, schema) {
         name: {
             type: Sequelize.TEXT,
             allowNull: false,
-            unique: true,
-        },
-        sequenceType: {
-            type: Sequelize.ENUM('ondemand', 'biyearly'),
-            field: 'sequence_type',
-            allowNull: false,
         },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
         },
-        updatedAt: {
-            type: Sequelize.DATE,
-            field: 'updated_at',
-        },
         deletedAt: {
             type: Sequelize.DATE,
             field: 'deleted_at',
+        },
+        stage: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+        },
+        group: {
+            type: Sequelize.TEXT,
+            field: 'group',
         },
     }, {
         freezeTableName: true,
         tableName,
         schema,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
+        indexes: [{
+            fields: ['group'],
+            where: { deleted_at: { $eq: null } },
+        }],
         paranoid: true,
     });
 };

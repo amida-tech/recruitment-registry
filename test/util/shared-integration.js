@@ -1,4 +1,4 @@
-/* global it*/
+/* global it */
 
 'use strict';
 
@@ -143,29 +143,6 @@ class SharedIntegration {
             return rrSuperTest.post('/users', user, 201)
                 .then((res) => {
                     history.push(user, { id: res.body.id });
-                });
-        };
-    }
-
-    createSurveyFn(hxSurvey, hxQuestion, qxIndices) {
-        const generator = this.generator;
-        const rrSuperTest = this.rrSuperTest;
-        return function createSurvey(done) {
-            const inputSurvey = generator.newSurvey();
-            delete inputSurvey.sections;
-            if (hxQuestion) {
-                inputSurvey.questions = qxIndices.map(index => ({
-                    id: hxQuestion.server(index).id,
-                    required: false,
-                }));
-            }
-            rrSuperTest.post('/surveys', inputSurvey, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxSurvey.push(inputSurvey, res.body);
-                    return done();
                 });
         };
     }

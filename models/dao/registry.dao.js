@@ -15,7 +15,7 @@ module.exports = class RegistryDAO extends Base {
 
     listRegistries() {
         const attributes = ['id', 'name'];
-        return this.db.Registry.findAll({ raw: true, attributes, order: 'name' });
+        return this.db.Registry.findAll({ raw: true, attributes, order: ['name'] });
     }
 
     findRegistries() {

@@ -102,7 +102,9 @@ module.exports = class QuestionDAO extends Translatable {
                                         choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' })); // eslint-disable-line max-len
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
-                                        .then(chs => (result.choices = chs)); // eslint-disable-line no-param-reassign, max-len
+                                        .then((chs) => {
+                                            result.choices = chs; // eslint-disable-line no-param-reassign, max-len
+                                        });
                                 }
                                 return null;
                             })
@@ -304,12 +306,14 @@ module.exports = class QuestionDAO extends Translatable {
             }
             options.where = where;
         }
+
+
         const Question = this.db.Question;
         if (surveyId) {
             Object.assign(options, { model: Question, as: 'question' });
             const include = [options];
             const where = { surveyId };
-            const sqOptions = { raw: true, where, include, attributes: [], order: 'question_id' };
+            const sqOptions = { raw: true, where, include, attributes: [], order: ['question_id'] };
             return this.db.SurveyQuestion.findAll(sqOptions)
                 .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {  // eslint-disable-line no-param-reassign, max-len
                     const newKey = key.split('.')[1];
@@ -318,13 +322,12 @@ module.exports = class QuestionDAO extends Translatable {
                 }, {})));
         }
         if(!isIdentifying){
-          const where = { isIdentifying };
-          const sqOptions = { raw: true, where, attributes:options.attributes};
-          return Question.findAll(sqOptions);
-        }else{
-          Object.assign(options, { raw: true, order: 'id' });
-          return Question.findAll(options);
+          if(!options.where)
+            options.where = {};
+          options.where.isIdentifying = false;
         }
+        Object.assign(options, { raw: true, order: 'id' });
+        return Question.findAll(options);
     }
 
     findFederatedQuestions(options = {}) {

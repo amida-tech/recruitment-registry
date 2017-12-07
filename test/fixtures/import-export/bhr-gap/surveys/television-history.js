@@ -12,6 +12,7 @@ module.exports = {
         questions: [{
             text: 'Do you own any television of the following brands?',
             required: false,
+            isIdentifying: false,
             type: 'choices',
             choices: [
                 { text: 'Samsung', answerIdentifier: { type: 'television-column', value: 'QID1_1' } },
@@ -21,6 +22,7 @@ module.exports = {
         }, {
             text: 'Do you own any other television brands?',
             required: true,
+            isIdentifying: false,
             type: 'choice-ref',
             answerIdentifier: { type: 'television-column', value: 'QID2' },
             choiceSetReference: 'yes-no-1-2',
@@ -34,6 +36,7 @@ module.exports = {
                     text: 'Please list the other television brands you currently own.',
                     instruction: 'Television',
                     required: false,
+                    isIdentifying: false,
                     type: 'text',
                     multiple: true,
                     maxCount: 3,
@@ -44,6 +47,7 @@ module.exports = {
                 }, {
                     text: 'What is the model number for the television?',
                     required: false,
+                    isIdentifying: false,
                     type: 'text',
                     multiple: true,
                     maxCount: 3,
@@ -60,12 +64,14 @@ module.exports = {
         }, {
             text: 'Are you currently happy with your televisions?',
             required: false,
+            isIdentifying: false,
             type: 'choice-ref',
             choiceSetReference: 'yes-no-1-2',
             answerIdentifier: { type: 'television-column', value: 'QID5' },
         }, {
             text: 'Please list all brands that you are not happy with?',
             required: true,
+            isIdentifying: false,
             type: 'text',
             multiple: true,
             maxCount: 3,
@@ -85,24 +91,28 @@ module.exports = {
             text: 'Basketball',
             type: 'choice-ref',
             required: false,
+            isIdentifying: false,
             choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_1' },
         }, {
             text: 'Footbal',
             type: 'choice-ref',
             required: false,
+            isIdentifying: false,
             choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_2' },
         }, {
             text: 'Baseball',
             type: 'choice-ref',
             required: false,
+            isIdentifying: false,
             choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_3' },
         }, {
             text: 'Ice Hockey',
             type: 'choice-ref',
             required: false,
+            isIdentifying: false,
             choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_4' },
         }],

@@ -67,7 +67,7 @@ module.exports = class SectionDAO extends Base {
         return this.db.SurveySection.findAll({
             where: { surveyId },
             raw: true,
-            order: 'line',
+            order: ['line'],
             attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
             include: [{ model: this.db.Section, as: 'section', attributes: ['meta'] }],
         })
@@ -99,7 +99,7 @@ module.exports = class SectionDAO extends Base {
                 return this.db.SurveySectionQuestion.findAll({
                     where: { surveySectionId: { $in: ids } },
                     raw: true,
-                    order: 'line',
+                    order: ['line'],
                     attributes: ['surveySectionId', 'questionId'],
                 })
                     .then((records) => {

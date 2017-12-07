@@ -1,4 +1,4 @@
-/* global describe,before,it*/
+/* global describe,before,it */
 
 'use strict';
 
@@ -21,7 +21,9 @@ const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
+const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
+const answerSession = require('./fixtures/answer-session/survey-0');
 
 const expect = chai.expect;
 
@@ -29,8 +31,6 @@ describe('answer integration', () => {
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);
-
-    const testQuestions = answerCommon.testQuestions;
 
     const hxUser = new History();
     const hxClinician = new History();
@@ -43,6 +43,7 @@ describe('answer integration', () => {
 
     const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
+    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
 
     before(shared.setUpFn());
 
@@ -59,7 +60,10 @@ describe('answer integration', () => {
         it(`get question ${i}`, questionTests.getQuestionFn(i));
     });
 
-    _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => it(`create survey ${index}`, shared.createSurveyFn(hxSurvey, hxQuestion, surveyQuestion)));
+    const surveyOpts = { noneRequired: true };
+    _.map(answerSession, 'survey').forEach((qxIndices, index) => {
+        it(`create survey ${index}`, surveyTests.createSurveyQxHxFn(qxIndices, surveyOpts));
+    });
 
     it('logout as super', shared.logoutFn());
 
@@ -75,7 +79,7 @@ describe('answer integration', () => {
     _.range(3).forEach((j) => {
         _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
+            const questionIndices = answerSession[surveyIndex].answerSequences[seqIndex][j];
             it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
@@ -88,7 +92,7 @@ describe('answer integration', () => {
 
         it(`create question ${20 + index}`, questionTests.createQuestionFn());
         it(`get question ${20 + index}`, questionTests.getQuestionFn(20 + index));
-        it(`create survey ${testQuestions.length + 1 + index}`, shared.createSurveyFn(hxSurvey, hxQuestion, [20 + index]));
+        it(`create survey ${answerSession.length + 1 + index}`, surveyTests.createSurveyQxHxFn([20 + index], surveyOpts));
         it('logout as super', shared.logoutFn());
         it('login as user 3', shared.loginIndexFn(hxUser, 3));
 
@@ -109,12 +113,12 @@ describe('answer integration', () => {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 7 (1 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [22, 34, 35, 36]));
-    it('create survey 8 (2 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [37, 23, 38, 39, 24]));
-    it('create survey 9 (3 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [25, 40, 41, 42, 26, 27]));
-    it('create survey 10 (1 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [43, 44, 28, 45]));
-    it('create survey 11 (2 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [46, 29, 30, 47, 48]));
-    it('create survey 12 (3 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [31, 49, 32, 50, 33, 51]));
+    it('create survey 7 (1 multi)', surveyTests.createSurveyQxHxFn([22, 34, 35, 36], surveyOpts));
+    it('create survey 8 (2 multi)', surveyTests.createSurveyQxHxFn([37, 23, 38, 39, 24], surveyOpts));
+    it('create survey 9 (3 multi)', surveyTests.createSurveyQxHxFn([25, 40, 41, 42, 26, 27], surveyOpts));
+    it('create survey 10 (1 multi)', surveyTests.createSurveyQxHxFn([43, 44, 28, 45], surveyOpts));
+    it('create survey 11 (2 multi)', surveyTests.createSurveyQxHxFn([46, 29, 30, 47, 48], surveyOpts));
+    it('create survey 12 (3 multi)', surveyTests.createSurveyQxHxFn([31, 49, 32, 50, 33, 51], surveyOpts));
 
     it('logout as super', shared.logoutFn());
 
@@ -189,8 +193,8 @@ describe('answer integration', () => {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 13 (5 choice sets)', shared.createSurveyFn(hxSurvey, hxQuestion, [52, 53, 54, 55, 56]));
-    it('create survey 14 (5 choice sets)', shared.createSurveyFn(hxSurvey, hxQuestion, [57, 58, 59, 60, 61]));
+    it('create survey 13 (5 choice sets)', surveyTests.createSurveyQxHxFn([52, 53, 54, 55, 56], surveyOpts));
+    it('create survey 14 (5 choice sets)', surveyTests.createSurveyQxHxFn([57, 58, 59, 60, 61], surveyOpts));
 
     it('logout as super', shared.logoutFn());
 

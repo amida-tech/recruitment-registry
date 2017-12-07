@@ -33,7 +33,7 @@ module.exports = class SurveyQuestionsDAO extends Base {
             where: { surveyId },
             raw: true,
             attributes: ['questionId', 'required'],
-            order: 'line',
+            order: ['line'],
         };
         return this.db.SurveyQuestion.findAll(options)
             .then((questions) => {
@@ -48,7 +48,7 @@ module.exports = class SurveyQuestionsDAO extends Base {
         return this.db.SurveySection.findAll({
             where: { surveyId },
             raw: true,
-            order: 'line',
+            order: ['line'],
             attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
         })
             .then((sections) => {
@@ -59,7 +59,7 @@ module.exports = class SurveyQuestionsDAO extends Base {
                 return this.db.SurveySectionQuestion.findAll({
                     where: { surveySectionId: { $in: ids } },
                     raw: true,
-                    order: 'line',
+                    order: ['line'],
                     attributes: ['surveySectionId', 'questionId'],
                 })
                     .then((sectionQuestions) => {
