@@ -136,7 +136,7 @@ module.exports = class SurveyGenerator {
             if (options.noneRequired) {
                 required = false;
             }
-            return { id, required, isIdentifying:false  };
+            return { id, required, isIdentifying:false };
         });
         return result;
     }

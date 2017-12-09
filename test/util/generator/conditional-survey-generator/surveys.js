@@ -37,6 +37,7 @@ const travelSurvey = {
         questions: [{ // 2
             text: 'How do you rate your experience?',
             required: true,
+            isIdentifying: false,
             type: 'choice-ref',
             choiceSetReference: 'rating',
             sections: [{
