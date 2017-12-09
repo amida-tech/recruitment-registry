@@ -4568,9 +4568,6 @@
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
-                "enableWhen": {
-                    "$ref": "#/definitions/newEnableWhen"
-                },
                 "sections": {
                     "type": "array",
                     "items": {
