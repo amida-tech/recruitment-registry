@@ -8,6 +8,7 @@ const _ = require('lodash');
 const models = require('../../models');
 const comparator = require('./comparator');
 const History = require('./history');
+const errHandlerSpec = require('./err-handler-spec');
 
 const expect = chai.expect;
 
@@ -243,6 +244,47 @@ const SpecTests = class SurveySpecTests {
             const id = hxSurvey.id(index);
             return models.survey.deleteSurvey(id)
                 .then(() => hxSurvey.remove(index));
+        };
+    }
+
+    verifySurveyFn(index, { noSectionId } = {}) {
+        const hxSurvey = this.hxSurvey;
+        return function verifySurvey() {
+            const expected = _.cloneDeep(hxSurvey.server(index));
+            const surveyId = hxSurvey.id(index);
+            return models.survey.getSurvey(surveyId)
+                .then((survey) => {
+                    if (noSectionId) {
+                        removeSurveySectionIds(expected);
+                        removeSurveySectionIds(survey);
+                    }
+                    expect(survey).to.deep.equal(expected);
+                });
+        };
+    }
+
+    patchSurveyFn(index, patch, options = {}) {
+        const hxSurvey = this.hxSurvey;
+        return function patchSurvey() {
+            const survey = hxSurvey.server(index);
+            Object.assign(survey, patch);
+            const payload = options.complete ? survey : patch;
+            const patchOptions = { complete: options.complete };
+            return models.survey.patchSurvey(survey.id, payload, patchOptions);
+        };
+    }
+
+    errorStatusChangeFn(index, status, errorKey, complete) {
+        const hxSurvey = this.hxSurvey;
+        return function errorStatusChange() {
+            const id = hxSurvey.id(index);
+            const errHandler = errHandlerSpec.expectedErrorHandlerFn(errorKey);
+            const patch = { status };
+            if (complete) {
+                Object.assign({}, hxSurvey.server(index), patch);
+            }
+            return models.survey.patchSurvey(id, patch, { complete })
+                .then(errHandlerSpec.throwingHandler, errHandler);
         };
     }
 
