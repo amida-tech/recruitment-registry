@@ -80,4 +80,27 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
     it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
+
+    const p1 = { a: 1 };
+    const p2 = { b: 2 };
+    const p3 = 1;
+    [{ p1, p2 }, { p2 }, null, { p3 }, { p1, p2, p3 }, null].forEach((meta, metaIndex) => {
+        [0, 4].forEach((index) => {
+            it(`patch meta ${metaIndex} to survey ${index}`,
+                tests.patchSurveyFn(index, { meta }, { complete: true }));
+
+            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
+        });
+    });
+
+    [true, false, false, true].forEach((hasDecription, descriptionIndex) => {
+        [0, 4].forEach((index) => {
+            const name = `patch name ${descriptionIndex}`;
+            const description = hasDecription ? `patch description ${descriptionIndex}` : null;
+            it(`patch name/description to survey ${index}`,
+                tests.patchSurveyFn(index, { name, description }, { complete: true }));
+
+            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
+        });
+    });
 });

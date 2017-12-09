@@ -268,6 +268,11 @@ const SpecTests = class SurveySpecTests {
         return function patchSurvey() {
             const survey = hxSurvey.server(index);
             Object.assign(survey, patch);
+            _.forOwn(patch, (value, key) => {
+                if (value === null) {
+                    delete survey[key];
+                }
+            });
             const payload = options.complete ? survey : patch;
             const patchOptions = { complete: options.complete };
             return models.survey.patchSurvey(survey.id, payload, patchOptions);

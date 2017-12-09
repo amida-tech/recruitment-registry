@@ -348,40 +348,43 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
+    // use empty object to remove meta
+    patchSurveyFieldsTx(survey, { status, meta, forceStatus }, transaction) {
+        if (status || meta) {
+            const fields = {};
+            const { status: currentStatus, id } = survey;
+            if (status && (status !== currentStatus)) {
+                if (currentStatus === 'draft' && status === 'retired') {
+                    return RRError.reject('surveyDraftToRetiredUpdate');
+                }
+                if (!forceStatus && (status === 'draft') && (currentStatus === 'published')) {
+                    return RRError.reject('surveyPublishedToDraftUpdate');
+                }
+                fields.status = status;
+            }
+            if (meta) {
+                if (_.isEmpty(meta)) {
+                    fields.meta = null;
+                } else {
+                    fields.meta = meta;
+                }
+            }
+            if (!_.isEmpty(fields)) {
+                const where = { id };
+                return this.db.Survey.update(fields, { where, transaction });
+            }
+        }
+        return SPromise.resolve();
+    }
+
     patchSurveyTx(surveyId, surveyPatch, transaction) {
         return this.patchSurveyInformationTx(surveyId, surveyPatch, transaction)
             .then((survey) => {
+                Object.assign(survey, { id: surveyId });
                 if (!surveyPatch.forceStatus && survey.status === 'retired') {
                     return RRError.reject('surveyRetiredStatusUpdate');
                 }
-                return SPromise.resolve()
-                    .then(() => {
-                        const { status, meta, forceStatus } = surveyPatch;
-                        if (status || meta) {
-                            const fields = {};
-                            if (status && (status !== survey.status)) {
-                                if (survey.status === 'draft' && status === 'retired') {
-                                    return RRError.reject('surveyDraftToRetiredUpdate');
-                                }
-                                if (!forceStatus && (status === 'draft') && (survey.status === 'published')) { // eslint-disable-line max-len
-                                    return RRError.reject('surveyPublishedToDraftUpdate');
-                                }
-                                fields.status = status;
-                            }
-                            if (meta) {
-                                if (_.isEmpty(meta)) {
-                                    fields.meta = null;
-                                } else {
-                                    fields.meta = meta;
-                                }
-                            }
-                            if (!_.isEmpty(fields)) {
-                                const where = { id: surveyId };
-                                return this.db.Survey.update(fields, { where, transaction });
-                            }
-                        }
-                        return null;
-                    })
+                return this.patchSurveyFieldsTx(survey, surveyPatch, transaction)
                     .then(() => {
                         let { name, description } = surveyPatch;
                         if (name || (description !== undefined)) {
@@ -452,104 +455,24 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurveyCompleteTx(surveyId, surveyPatch, transaction) {
-        return this.patchSurveyInformationTx(surveyId, surveyPatch, transaction)
+        return this.getSurvey(surveyId) // TODO: Need a version of getSurvey with transaction
             .then((survey) => {
                 if (!surveyPatch.forceStatus && survey.status === 'retired') {
                     return RRError.reject('surveyRetiredStatusUpdate');
                 }
-                return SPromise.resolve()
+                const { status, meta, forceStatus } = surveyPatch;
+                const surveyFieldsPatch = { status, forceStatus };
+                surveyFieldsPatch.meta = !meta ? {} : meta;
+                return this.patchSurveyFieldsTx(survey, surveyFieldsPatch, transaction)
                     .then(() => {
-                        const { status, meta, forceStatus } = surveyPatch;
-                        if (status || meta) {
-                            const fields = {};
-                            if (status && (status !== survey.status)) {
-                                if (survey.status === 'draft' && status === 'retired') {
-                                    return RRError.reject('surveyDraftToRetiredUpdate');
-                                }
-                                if (!forceStatus && (status === 'draft') && (survey.status === 'published')) { // eslint-disable-line max-len
-                                    return RRError.reject('surveyPublishedToDraftUpdate');
-                                }
-                                fields.status = status;
-                            }
-                            if (meta) {
-                                if (_.isEmpty(meta)) {
-                                    fields.meta = null;
-                                } else {
-                                    fields.meta = meta;
-                                }
-                            }
-                            if (!_.isEmpty(fields)) {
-                                const where = { id: surveyId };
-                                return this.db.Survey.update(fields, { where, transaction });
-                            }
-                        }
-                        return null;
-                    })
-                    .then(() => {
-                        let { name, description } = surveyPatch;
-                        if (name || (description !== undefined)) {
-                            name = name || survey.name;
-                            if (description === '') {
-                                description = null;
-                            } else {
-                                description = description || survey.description;
-                            }
-                            const record = { id: surveyId, name, description };
+                        const { name, description } = surveyPatch;
+                        const { name: existingName, description: existingDescription } = survey;
+                        if ((name !== existingName) || (description !== existingDescription)) {
+                            const record = { id: surveyId, name };
+                            record.description = description || null;
                             return this.createTextTx(record, transaction);
                         }
                         return null;
-                    })
-                    .then(() => {
-                        if (!(surveyPatch.questions || surveyPatch.sections)) {
-                            return null;
-                        }
-                        const { sections, questions } = this.flattenHierarchy(surveyPatch);
-                        if (!questions) {
-                            return RRError.reject('surveyNoQuestionsInSections');
-                        }
-                        const questionIdSet = new Set();
-                        questions.forEach((question) => {
-                            const questionId = question.id;
-                            if (questionId) {
-                                questionIdSet.add(questionId);
-                            }
-                        });
-                        const removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
-                            if (!questionIdSet.has(questionId)) {
-                                r.push(questionId);
-                            }
-                            return r;
-                        }, []);
-                        if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) { // eslint-disable-line max-len
-                            if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
-                                return RRError.reject('surveyChangeQuestionWhenPublished');
-                            }
-                        }
-                        return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
-                            .then(() => {
-                                if (removedQuestionIds.length) {
-                                    const where = {
-                                        surveyId, questionId: { $in: removedQuestionIds },
-                                    };
-                                    // NOTE: This is a short-term fix to allow conditions to be
-                                    // updated without persisting an "old version" of it (as we
-                                    // do questions whenever they or the surveys they're attached
-                                    // to are updated)
-                                    return this.db.AnswerRule.destroy({ where, transaction })
-                                        .then(() => this.db.Answer.destroy({ where, transaction }));
-                                }
-                                return null;
-                            })
-                            .then(() => this.createSurveyQuestionsTx(questions, sections, surveyId, transaction)) // eslint-disable-line max-len
-                            .then(qxs => qxs.map(question => question.id))
-                            .then((questionIds) => {
-                                if (sections) {
-                                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction); // eslint-disable-line max-len
-                                } else if (survey.sectionCount) {
-                                    return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
-                                }
-                                return null;
-                            });
                     });
             });
     }
