@@ -1261,6 +1261,12 @@
                 "summary": "Updates registry user profile",
                 "operationId": "updateProfile",
                 "security": [{
+                    "admin": []
+                },
+                {
+                    "clinician": []
+                },
+                {
                     "participant": []
                 }],
                 "parameters": [{
@@ -1285,6 +1291,12 @@
                 "summary": "Gets user profile",
                 "operationId": "getProfile",
                 "security": [{
+                    "admin": []
+                },
+                {
+                    "clinician": []
+                },
+                {
                     "participant": []
                 }],
                 "responses": {
@@ -4555,6 +4567,9 @@
                 },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhen"
                 },
                 "sections": {
                     "type": "array",
