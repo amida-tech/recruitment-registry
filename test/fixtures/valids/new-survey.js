@@ -2,7 +2,7 @@
 
 /* eslint no-param-reassign: 0, max-len: 0 */
 
-const conditionalExamples = require('../../util/generator/conditional-survey-generator/surveys');
+const conditionalExamples = require('../example/survey');
 
 module.exports = [
     conditionalExamples.travelSurvey,

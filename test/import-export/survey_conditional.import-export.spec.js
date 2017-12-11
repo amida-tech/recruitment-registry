@@ -21,27 +21,35 @@ const History = require('../util/history');
 const choiceSetCommon = require('../util/choice-set-common');
 const surveyCommon = require('../util/survey-common');
 const intoStream = require('into-stream');
+const conditionalSession = require('../fixtures/conditional-session/conditional');
+const choiceSets = require('../fixtures/example/choice-set');
 
 const expect = chai.expect;
 
 describe('survey import-export conditional unit', function surveyImportExportUnit() {
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
+    const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
 
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator(null, { noMeta: true });
-    const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator, hxSurvey });
+    const surveyGenerator = new ConditionalSurveyGenerator({
+        questionGenerator,
+        hxSurvey,
+        setup: conditionalSession.setup,
+        requiredOverrides: conditionalSession.requiredOverrides,
+        counts,
+    });
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const shared = new SharedSpec(generator);
 
-    const surveyCount = surveyGenerator.numOfCases();
+    const surveyCount = counts.length;
 
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
     const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
 
-    const choiceSets = ConditionalSurveyGenerator.getChoiceSets();
     choiceSets.forEach((choiceSet, index) => {
         it(`create choice set ${index}`, choiceSetTests.createChoiceSetFn(choiceSet));
         it(`get choice set ${index}`, choiceSetTests.getChoiceSetFn(index));

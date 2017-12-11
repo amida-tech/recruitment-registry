@@ -1,6 +1,6 @@
 'use strict';
 
-const surveys = require('./surveys');
+const surveys = require('../../example/survey');
 
 module.exports = [{
     surveyIndex: 0,

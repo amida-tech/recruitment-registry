@@ -3,17 +3,10 @@
 /* eslint no-param-reassign: 0, max-len: 0 */
 
 const _ = require('lodash');
-const models = require('../../../../models');
+const models = require('../../../models');
 
-const SurveyGenerator = require('../survey-generator');
-const Answerer = require('../answerer');
-
-const conditionalSetup = require('./conditional-setup');
-const requiredOverrides = require('./required-overrides');
-const errorAnswerSetup = require('./error-answer-setup');
-const passAnswerSetup = require('./pass-answer-setup');
-const userSurveysSetup = require('./user-surveys-setup');
-const choiceSets = require('./choice-sets');
+const SurveyGenerator = require('./survey-generator');
+const Answerer = require('./answerer');
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -170,11 +163,15 @@ const questionSurveyManipulator = {
 };
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
-    constructor({ questionGenerator, answerer, hxSurvey } = {}) {
+    constructor(options = {}) {
+        const {
+            questionGenerator, answerer, hxSurvey,
+            setup, requiredOverrides, counts,
+        } = options;
         super(questionGenerator);
         this.answerer = answerer || new Answerer();
         this.hxSurvey = hxSurvey;
-        this.conditionalMap = conditionalSetup.reduce((r, questionInfo) => {
+        this.conditionalMap = setup.reduce((r, questionInfo) => {
             const { surveyIndex, purpose, questionIndex } = questionInfo;
             if (surveyIndex === undefined) {
                 throw new Error('No survey index specified');
@@ -195,7 +192,8 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             survey[questionIndex] = questionInfo;
             return r;
         }, {});
-        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+        this.counts = counts; // [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+        this.requiredOverrides = requiredOverrides;
     }
 
     count() {
@@ -208,10 +206,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return !(surveyLevel && purpose.startsWith('surveyEnableWhen'));
     }
 
-    numOfCases() {
-        return this.counts.length;
-    }
-
     addAnswer(rule, questionInfo, question) {
         const logic = questionInfo.logic;
         if (logic === 'equals' || logic === 'not-equals') {
@@ -219,8 +213,8 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         }
     }
 
-    getRequiredOverride(key) { // eslint-disable-line class-methods-use-this
-        return requiredOverrides[key];
+    getRequiredOverride(key) {
+        return this.requiredOverrides[key];
     }
 
     newSurveyQuestion(index) {
@@ -239,22 +233,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             question.required = requiredOverride;
         }
         return question;
-    }
-
-    static conditionalErrorSetup() {
-        return errorAnswerSetup;
-    }
-
-    static conditionalPassSetup() {
-        return passAnswerSetup;
-    }
-
-    static conditionalUserSurveysSetup() {
-        return userSurveysSetup;
-    }
-
-    static getChoiceSets() {
-        return choiceSets;
     }
 
     answersWithConditions({

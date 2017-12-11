@@ -20,6 +20,8 @@ const History = require('./util/history');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
+const conditionalSession = require('./fixtures/conditional-session/conditional');
+const choiceSets = require('./fixtures/example/choice-set');
 
 const expect = chai.expect;
 
@@ -27,14 +29,22 @@ describe('conditional survey integration', function surveyConditionalIntegration
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
+    const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
 
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();
-    const surveyGenerator = new CSG({ questionGenerator, answerer, hxSurvey });
+    const surveyGenerator = new CSG({
+        questionGenerator,
+        answerer,
+        hxSurvey,
+        setup: conditionalSession.setup,
+        requiredOverrides: conditionalSession.requiredOverrides,
+        counts,
+    });
 
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
 
-    const numOfCases = surveyGenerator.numOfCases();
+    const numOfCases = counts.length;
 
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);
@@ -46,7 +56,6 @@ describe('conditional survey integration', function surveyConditionalIntegration
 
     it('login as super', shared.loginFn(config.superUser));
 
-    const choiceSets = CSG.getChoiceSets();
     choiceSets.forEach((choiceSet, index) => {
         it(`create choice set ${index}`, choceSetTests.createChoiceSetFn(choiceSet));
         it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));
@@ -101,7 +110,7 @@ describe('conditional survey integration', function surveyConditionalIntegration
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
-    CSG.conditionalErrorSetup().forEach((errorSetup) => {
+    conditionalSession.errorAnswer.forEach((errorSetup) => {
         it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, () => {
             const { surveyIndex, error } = errorSetup;
             const survey = hxSurvey.server(surveyIndex);
@@ -115,7 +124,7 @@ describe('conditional survey integration', function surveyConditionalIntegration
         });
     });
 
-    CSG.conditionalPassSetup().forEach((passSetup) => {
+    conditionalSession.passAnswer.forEach((passSetup) => {
         let answers;
 
         it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
@@ -165,7 +174,7 @@ describe('conditional survey integration', function surveyConditionalIntegration
     };
 
     const statusMap = {};
-    CSG.conditionalUserSurveysSetup().forEach((userSurveySetup, stepIndex) => {
+    conditionalSession.userSurveys.forEach((userSurveySetup, stepIndex) => {
         const { skipAnswering, surveyIndex, missingSurveys, status } = userSurveySetup;
         if (!skipAnswering) {
             let answers;
