@@ -4297,7 +4297,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "section": {
@@ -4325,7 +4325,7 @@
                     "$ref": "#/definitions/enableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "sectionTextUpdate": {

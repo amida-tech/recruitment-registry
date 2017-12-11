@@ -194,6 +194,7 @@ const textOnlySurvey = {
     name: 'textOnlySurvey',
     questions: [{
         text: 'Text One',
+        isIdentifying: false,
         required: false,
         type: 'text',
     }],

@@ -640,34 +640,31 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 return this.answerRule.getSurveyAnswerRules({ surveyId: survey.id })
                     .then(answerRuleInfos => this.updateText(survey, options.language)
-                            .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
-                            .then((surveyQuestions) => {
-                                const ids = _.map(surveyQuestions, 'questionId');
-                                const language = options.language;
-                                const isIdentifying =  options.isIdentifying
-                                return this.question.listQuestions({ scope: 'complete', ids, language, isIdentifying })
-                                    .then((questions) => {
-                                        const qxMap = _.keyBy(questions, 'id');
-                                        let qxs = surveyQuestions.map((surveyQuestion) => {
-                                            if(qxMap[surveyQuestion.questionId]){
-                                              const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
-                                              return result;
-                                            }else{
-                                              return null;
-                                            }
-                                        });
-                                        qxs = qxs.filter(qx => !!qx); //Remove null and undefined
-                                        answerRuleInfos.forEach(({ questionId, rule }) => {
-                                            if (questionId) {
-                                                const question = qxMap[questionId];
-                                                if (!question.enableWhen) {
-                                                    question.enableWhen = [];
-                                                }
-                                                question.enableWhen.push(rule);
-                                            }
-                                        });
-                                        return qxs;
+                        .then(() => {
+                            const enableWhen = answerRuleInfos.reduce((r, p) => {
+                                const { questionId, sectionId, rule } = p;
+                                if (!(questionId || sectionId)) {
+                                    r.push(rule);
+                                }
+                                return r;
+                            }, []);
+                            if (enableWhen.length) {
+                                survey.enableWhen = enableWhen; // eslint-disable-line no-param-reassign, max-len
+                            }
+                        })
+                        .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
+                        .then((surveyQuestions) => {
+                            const ids = _.map(surveyQuestions, 'questionId');
+                            const language = options.language;
+                            const isIdentifying =  options.isIdentifying
+                            return this.question.listQuestions({ scope: 'complete', ids, language, isIdentifying })
+                                .then((questions) => {
+                                    const qxMap = _.keyBy(questions, 'id');
+                                    let qxs = surveyQuestions.map((surveyQuestion) => {
+                                        const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
+                                        return result;
                                     });
+                                    qxs = qxs.filter(qx => !!qx); //Remove null and undefined
                                     answerRuleInfos.forEach(({ questionId, rule }) => {
                                         if (questionId) {
                                             const question = qxMap[questionId];
@@ -713,7 +710,7 @@ module.exports = class SurveyDAO extends Translatable {
                         return survey;
                     });
             });
-    }
+}
 
     updateQuestionQuestionsMap(questions, map) {
         questions.forEach((question) => {
