@@ -60,7 +60,7 @@ exports.listQuestions = function listQuestions(req, res) {
     let isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
     if(user.role == 'admin'){
         isIdentifying = true;
-    }else if(role == 'participant'){
+    }else if(user.role == 'participant'){
         isIdentifying = false;
     }
     const options = { scope, language, surveyId, commonOnly, federated, isIdentifying };
