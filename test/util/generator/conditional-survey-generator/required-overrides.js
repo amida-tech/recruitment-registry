@@ -23,4 +23,8 @@ module.exports = {
     '7-2': false,
     '7-3': false,
     '7-4': true,
+    '13-0': false,
+    '13-1': false,
+    '13-5': false,
+    '13-6': false,
 };

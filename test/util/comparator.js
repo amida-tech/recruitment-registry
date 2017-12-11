@@ -13,7 +13,7 @@ const expect = chai.expect;
 let choiceSetMap;
 
 const comparator = {
-    enableWhen(client, server, options) {
+    enableWhen(client, server, options = {}) {
         if (client.enableWhen && server.enableWhen) {
             expect(server.enableWhen.length).to.equal(client.enableWhen.length);
             client.enableWhen.forEach((clientRule, index) => {
@@ -24,7 +24,7 @@ const comparator = {
                 }
                 clientRule.id = serverRule.id;
                 const answer = clientRule.answer;
-                if (answer) {
+                if (answer && options.serverQuestionMap) {
                     const question = options.serverQuestionMap[serverRule.questionId];
                     if (answer.choiceText) {
                         const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
@@ -170,6 +170,7 @@ const comparator = {
         if (!expected.status) {
             expected.status = 'published';
         }
+        this.enableWhen(expected, server);
         const serverSurveyQuestions = models.survey.getQuestions(server);
         const serverQuestionMap = _.keyBy(serverSurveyQuestions, 'id');
         options.serverQuestionMap = serverQuestionMap;

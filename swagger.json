@@ -1271,6 +1271,12 @@
                 "summary": "Updates registry user profile",
                 "operationId": "updateProfile",
                 "security": [{
+                    "admin": []
+                },
+                {
+                    "clinician": []
+                },
+                {
                     "participant": []
                 }],
                 "parameters": [{
@@ -1295,6 +1301,12 @@
                 "summary": "Gets user profile",
                 "operationId": "getProfile",
                 "security": [{
+                    "admin": []
+                },
+                {
+                    "clinician": []
+                },
+                {
                     "participant": []
                 }],
                 "responses": {
@@ -4169,6 +4181,10 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/newRuleAnswer"
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "minProperties": 2,
@@ -4354,6 +4370,9 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhen"
+                },
                 "sections": {
                     "type": "array",
                     "items": {
@@ -4394,6 +4413,10 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false
@@ -4531,6 +4554,9 @@
                 },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhen"
                 },
                 "sections": {
                     "type": "array",
@@ -5018,7 +5044,7 @@
                     "type": "number"
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
                     "type": "string",
@@ -5054,7 +5080,7 @@
                     "minItems": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -5143,7 +5169,7 @@
                     "minimum": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -5236,7 +5262,7 @@
                     "minLength": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -5326,7 +5352,7 @@
                     "type": "integer"
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
                     "type": "string",
@@ -5360,7 +5386,7 @@
                     "minItems": 1
                 },
                 "textValue": {
-                    "type": "string"
+                    "$ref": "#/definitions/answerTextValue"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -7124,6 +7150,10 @@
             "items": {
                 "$ref": "#/definitions/file"
             }
+        },
+        "answerTextValue": {
+            "type": "string",
+            "pattern": "^[^\\s]+(\\s+[^\\s]+)*$"
         }
     }
 }

@@ -2,18 +2,17 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
+const chai = require('chai');
 
 const config = require('../config');
 
 const Answerer = require('./util/generator/answerer');
 const RRSuperTest = require('./util/rr-super-test');
 const QuestionGenerator = require('./util/generator/question-generator');
-const ConditionalSurveyGenerator = require('./util/generator/conditional-survey-generator');
+const CSG = require('./util/generator/conditional-survey-generator');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const SurveyHistory = require('./util/survey-history');
@@ -22,19 +21,24 @@ const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
 
-describe('survey (conditional questions) integration', () => {
-    const answerer = new Answerer();
-    const questionGenerator = new QuestionGenerator();
-    const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator, answerer });
-    const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
+const expect = chai.expect;
 
-    const surveyCount = surveyGenerator.numOfCases();
-
-    const rrSuperTest = new RRSuperTest();
-    const shared = new SharedIntegration(rrSuperTest, generator);
+describe('conditional survey integration', function surveyConditionalIntegration() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
+
+    const answerer = new Answerer();
+    const questionGenerator = new QuestionGenerator();
+    const surveyGenerator = new CSG({ questionGenerator, answerer, hxSurvey });
+
+    const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
+
+    const numOfCases = surveyGenerator.numOfCases();
+
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
+
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
@@ -42,47 +46,50 @@ describe('survey (conditional questions) integration', () => {
 
     it('login as super', shared.loginFn(config.superUser));
 
-    const choiceSets = ConditionalSurveyGenerator.getChoiceSets();
+    const choiceSets = CSG.getChoiceSets();
     choiceSets.forEach((choiceSet, index) => {
         it(`create choice set ${index}`, choceSetTests.createChoiceSetFn(choiceSet));
         it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));
     });
+
     it('set comparator choice map', () => {
         comparator.updateChoiceSetMap(choiceSets);
     });
 
-    _.range(surveyCount).forEach((index) => {
+    _.range(numOfCases).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
+    let surveyCount = numOfCases;
 
-    _.range(surveyCount).forEach((surveyIndex) => {
-        it(`create survey ${surveyIndex + surveyCount} from survey ${surveyIndex} questions`, (done) => {
-            const survey = hxSurvey.server(surveyIndex);
-            const clientSurvey = hxSurvey.client(surveyIndex);
-            const newSurvey = ConditionalSurveyGenerator.newSurveyFromPrevious(clientSurvey, survey);
-            rrSuperTest.post('/surveys', newSurvey, 201)
-                .expect((res) => {
-                    const server = _.cloneDeep(hxSurvey.server(surveyIndex));
-                    server.id = res.body.id;
-                    hxSurvey.push(newSurvey, server);
-                })
-                .end(done);
-        });
+    _.range(numOfCases).forEach((surveyIndex) => {
+        if (surveyGenerator.versionWithIdsNeeded(surveyIndex)) {
+            it(`create survey ${surveyCount} from survey ${surveyIndex} questions`, () => {
+                const survey = hxSurvey.server(surveyIndex);
+                const clientSurvey = hxSurvey.client(surveyIndex);
+                const newSurvey = CSG.newSurveyFromPrevious(clientSurvey, survey);
+                return rrSuperTest.post('/surveys', newSurvey, 201)
+                    .then((res) => {
+                        const server = _.cloneDeep(hxSurvey.server(surveyIndex));
+                        server.id = res.body.id;
+                        hxSurvey.push(newSurvey, server);
+                    });
+            });
+            surveyCount += 1;
+        }
     });
 
     const verifySurveyFn = function (index) {
-        return function verifySurvey(done) {
+        return function verifySurvey() {
             const survey = _.cloneDeep(hxSurvey.server(index));
-            rrSuperTest.get(`/surveys/${survey.id}`, true, 200)
-                .expect((res) => {
+            return rrSuperTest.get(`/surveys/${survey.id}`, true, 200)
+                .then((res) => {
                     comparator.conditionalSurveyTwiceCreated(survey, res.body);
-                })
-                .end(done);
+                });
         };
     };
 
-    _.range(surveyCount, 2 * surveyCount).forEach((surveyIndex) => {
+    _.range(numOfCases, surveyCount).forEach((surveyIndex) => {
         it(`verify survey ${surveyIndex}`, verifySurveyFn(surveyIndex));
     });
 
@@ -94,22 +101,91 @@ describe('survey (conditional questions) integration', () => {
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
-    ConditionalSurveyGenerator.conditionalErrorSetup().forEach((errorSetup) => {
-        it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, (done) => {
+    CSG.conditionalErrorSetup().forEach((errorSetup) => {
+        it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, () => {
             const { surveyIndex, error } = errorSetup;
             const survey = hxSurvey.server(surveyIndex);
-            const answers = surveyGenerator.answersWithConditions(survey, errorSetup);
+            const answers = surveyGenerator.answersWithConditions(errorSetup);
             const input = {
                 surveyId: survey.id,
                 answers,
             };
-            rrSuperTest.post('/answers', input, 400)
-                .expect(res => shared.verifyErrorMessage(res, error))
-                .end(done);
+            return rrSuperTest.post('/answers', input, 400)
+                .then(res => shared.verifyErrorMessage(res, error));
+        });
+    });
+
+    CSG.conditionalPassSetup().forEach((passSetup) => {
+        let answers;
+
+        it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
+            const survey = hxSurvey.server(passSetup.surveyIndex);
+            answers = surveyGenerator.answersWithConditions(passSetup);
+            const input = {
+                surveyId: survey.id,
+                answers,
+            };
+            return rrSuperTest.post('/answers', input, 204);
+        });
+
+        it(`verify survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
+            const { surveyIndex } = passSetup;
+            const survey = hxSurvey.server(surveyIndex);
+            return rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
+                .then((res) => {
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete survey.authorId;
+                    }
+                    comparator.answeredSurvey(survey, answers, res.body);
+                });
         });
     });
 
     it('logout as user 0', shared.logoutFn());
+
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+
+    const verifyUserSurveyListFn = function (userIndex, statusMap, missingSurveys) {
+        return function verifyUserSurveyList() {
+            return rrSuperTest.get('/user-surveys', true, 200)
+                .then((res) => {
+                    const userSurveys = res.body;
+                    const expectedAll = _.cloneDeep(hxSurvey.listServers());
+                    expectedAll.forEach((r, index) => {
+                        r.status = statusMap[index] || 'new';
+                        if (r.description === undefined) {
+                            delete r.description;
+                        }
+                    });
+                    const missingSet = new Set(missingSurveys);
+                    const expected = expectedAll.filter((r, index) => !missingSet.has(index));
+                    expect(userSurveys).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const statusMap = {};
+    CSG.conditionalUserSurveysSetup().forEach((userSurveySetup, stepIndex) => {
+        const { skipAnswering, surveyIndex, missingSurveys, status } = userSurveySetup;
+        if (!skipAnswering) {
+            let answers;
+
+            it(`answer survey ${surveyIndex} step ${stepIndex}`, () => {
+                const survey = hxSurvey.server(surveyIndex);
+                answers = surveyGenerator.answersWithConditions(userSurveySetup);
+                statusMap[surveyIndex] = status;
+                const input = {
+                    answers,
+                    status,
+                };
+                return rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204);
+            });
+        }
+
+        it(`list user surveys step ${stepIndex}`, verifyUserSurveyListFn(2, statusMap, missingSurveys));
+    });
+
+    it('logout as user 2', shared.logoutFn());
 
     shared.verifyUserAudit();
 });

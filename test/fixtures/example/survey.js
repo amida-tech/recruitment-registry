@@ -190,6 +190,15 @@ const alzheimerReanswer = [{
     boolValue: false,
 }];
 
+const textOnlySurvey = {
+    name: 'textOnlySurvey',
+    questions: [{
+        text: 'Text One',
+        required: false,
+        type: 'text',
+    }],
+};
+
 module.exports = {
     example,
     exampleAnswer,
@@ -199,4 +208,5 @@ module.exports = {
     alzheimer,
     alzheimerAnswer,
     alzheimerReanswer,
+    textOnlySurvey,
 };

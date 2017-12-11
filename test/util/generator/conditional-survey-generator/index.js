@@ -8,35 +8,12 @@ const models = require('../../../../models');
 const SurveyGenerator = require('../survey-generator');
 const Answerer = require('../answerer');
 
-const conditionalQuestions = require('./conditional-questions');
+const conditionalSetup = require('./conditional-setup');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
+const userSurveysSetup = require('./user-surveys-setup');
 const choiceSets = require('./choice-sets');
-
-const counts = [0, 8, 8, 8, 8, 8, 8, 8];
-
-const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => {
-    const surveyIndex = questionInfo.surveyIndex;
-    if (surveyIndex === undefined) {
-        throw new Error('No survey index specified');
-    }
-    if (questionInfo.purpose === 'completeSurvey') {
-        r[surveyIndex] = questionInfo;
-        return r;
-    }
-    let survey = r[surveyIndex];
-    if (!survey) {
-        survey = {};
-        r[surveyIndex] = survey;
-    }
-    const questionIndex = questionInfo.questionIndex;
-    if (questionIndex === undefined) {
-        throw new Error('No survey question index specified.');
-    }
-    survey[questionIndex] = questionInfo;
-    return r;
-}, {});
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -84,6 +61,42 @@ const specialAnswerer = {
         }
         return answer;
     },
+    samerulesurvey(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        return { questionId: question.id, answer: enableWhenAnswer };
+    },
+    differentrulesurvey(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        let answer = generator.answerer.answerQuestion(question);
+        if (_.isEqual(answer.answer, enableWhenAnswer)) {
+            answer = generator.answerer.answerQuestion(question);
+        }
+        return answer;
+    },
+    samerulesurveymulti(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[answerInfo.ruleIndex].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        return { questionId: question.id, answer: enableWhenAnswer };
+    },
+    differentrulesurveymulti(generator, questions, question, answerInfo, enableWhen) {
+        const enableWhenAnswer = enableWhen[answerInfo.ruleIndex].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        let answer = generator.answerer.answerQuestion(question);
+        if (_.isEqual(answer.answer, enableWhenAnswer)) {
+            answer = generator.answerer.answerQuestion(question);
+        }
+        return answer;
+    },
     samerulesection(generator, questions, question) {
         const enableWhen = question.sections[0].enableWhen;
         const enableWhenAnswer = enableWhen[0].answer;
@@ -110,6 +123,33 @@ const specialAnswerer = {
 };
 
 const surveyManipulator = {
+    surveyEnableWhen(survey, conditionalInfo, generator) {
+        const { hxSurvey, answerer } = generator;
+        const { answerSurveyIndex, answerQuestionIndex, logic } = conditionalInfo;
+        const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
+        const question = questions[answerQuestionIndex];
+        let rule;
+        if (logic === 'equals' || logic === 'not-equals') {
+            rule = answerer.answerQuestion(question);
+        } else {
+            rule = { questionId: question.id };
+        }
+        Object.assign(rule, { surveyId, logic });
+        if (survey.enableWhen) {
+            survey.enableWhen.push(rule);
+        } else {
+            survey.enableWhen = [rule];
+        }
+        return question;
+    },
+    surveyEnableWhenMulti(survey, conditionalInfo, generator) {
+        conditionalInfo.multiInfos.forEach((info) => {
+            surveyManipulator.surveyEnableWhen(survey, info, generator);
+        });
+    },
+};
+
+const questionSurveyManipulator = {
     enableWhen(survey, questionInfo, generator) {
         const questionIndex = questionInfo.questionIndex;
         const question = survey.questions[questionIndex];
@@ -130,18 +170,46 @@ const surveyManipulator = {
 };
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
-    constructor({ questionGenerator, answerer } = {}) {
+    constructor({ questionGenerator, answerer, hxSurvey } = {}) {
         super(questionGenerator);
         this.answerer = answerer || new Answerer();
+        this.hxSurvey = hxSurvey;
+        this.conditionalMap = conditionalSetup.reduce((r, questionInfo) => {
+            const { surveyIndex, purpose, questionIndex } = questionInfo;
+            if (surveyIndex === undefined) {
+                throw new Error('No survey index specified');
+            }
+            if ((purpose === 'completeSurvey') || (purpose.startsWith('surveyEnableWhen'))) {
+                r[surveyIndex] = questionInfo;
+                r.surveyLevel = true;
+                return r;
+            }
+            let survey = r[surveyIndex];
+            if (!survey) {
+                survey = {};
+                r[surveyIndex] = survey;
+            }
+            if (questionIndex === undefined) {
+                throw new Error('No survey question index specified.');
+            }
+            survey[questionIndex] = questionInfo;
+            return r;
+        }, {});
+        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
     }
 
     count() {
         const surveyIndex = this.currentIndex();
-        return counts[surveyIndex];
+        return this.counts[surveyIndex];
     }
 
-    numOfCases() { // eslint-disable-line class-methods-use-this
-        return counts.length;
+    versionWithIdsNeeded(surveyIndex) {
+        const { surveyLevel, purpose } = this.conditionalMap[surveyIndex];
+        return !(surveyLevel && purpose.startsWith('surveyEnableWhen'));
+    }
+
+    numOfCases() {
+        return this.counts.length;
     }
 
     addAnswer(rule, questionInfo, question) {
@@ -157,7 +225,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
-        const questionInfo = conditionalQuestionMap[surveyIndex][index];
+        const questionInfo = this.conditionalMap[surveyIndex][index];
         let question;
         if (questionInfo) {
             const purpose = questionInfo.purpose;
@@ -182,11 +250,19 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return passAnswerSetup;
     }
 
+    static conditionalUserSurveysSetup() {
+        return userSurveysSetup;
+    }
+
     static getChoiceSets() {
         return choiceSets;
     }
 
-    answersWithConditions(survey, { questionIndex, multipleIndices, noAnswers = [], specialAnswers = [] }) {
+    answersWithConditions({
+            surveyIndex, questionIndex, multipleIndices,
+            noAnswers = [], specialAnswers = [],
+    }) {
+        const survey = this.hxSurvey.server(surveyIndex);
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
         const doAnswer = new Map(specialAnswers.map(r => [r.questionIndex, r]));
@@ -196,8 +272,13 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             }
             const specialAnswer = doAnswer.get(index);
             if (specialAnswer) {
-                const type = specialAnswer.type;
-                const answer = specialAnswerer[type](this, questions, question, specialAnswer);
+                const { type, ruleSurveyIndex } = specialAnswer;
+                let enableWhen = null;
+                if (ruleSurveyIndex !== undefined) {
+                    const ruleSurvey = this.hxSurvey.server(ruleSurveyIndex);
+                    enableWhen = ruleSurvey.enableWhen;
+                }
+                const answer = specialAnswerer[type](this, questions, question, specialAnswer, enableWhen);
                 r.push(answer);
                 return r;
             }
@@ -217,15 +298,20 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     newSurvey() {
         const surveyIndex = this.currentIndex();
-        const surveyQuestionInfos = conditionalQuestionMap[surveyIndex + 1];
-        if (surveyQuestionInfos.surveyIndex !== undefined) {
+        const conditionalInfo = this.conditionalMap[surveyIndex + 1];
+        const { surveyLevel, purpose: surveyLevelPurpose } = conditionalInfo;
+        if (surveyLevel && surveyLevelPurpose === 'completeSurvey') {
             this.incrementIndex();
-            return surveyQuestionInfos.survey;
+            return conditionalInfo.survey;
         }
         const survey = super.newSurvey({ noSection: true });
-        _.forOwn(surveyQuestionInfos, (questionInfo) => {
+        if (surveyLevel) {
+            const manipulator = surveyManipulator[surveyLevelPurpose];
+            manipulator(survey, conditionalInfo, this);
+        }
+        _.forOwn(conditionalInfo, (questionInfo) => {
             const purpose = questionInfo.purpose;
-            const manipulator = surveyManipulator[purpose];
+            const manipulator = questionSurveyManipulator[purpose];
             if (manipulator) {
                 manipulator(survey, questionInfo, this);
             }

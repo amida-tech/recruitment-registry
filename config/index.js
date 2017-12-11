@@ -44,19 +44,10 @@ const all = {
     // TODO: Linux vs Windows vs deployed environment pathing needs to be addressed
     tmpDirectory: '/tmp',
     cohortBucket: 'recreg-dev-cohorts',
-    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
     zipCodeApi: {
         baseUrl: 'https://www.zipwise.com/webservices/radius.php',
         distance: 50,
     },
-    awsApi: {
-        baseUrl: '',
-        apiKey: '',
-        apiSecret: '',
-        s3: {},
-    },
-
 };
 
 const main = {
@@ -99,8 +90,6 @@ const main = {
     clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
     tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
     cohortBucket: process.env.RECREG_COHORT_BUCKET,
-    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
     constantContact: {
         baseApiUrl: process.env.RECREG_CONSTANT_CONTACT__URL,
         token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,
@@ -113,11 +102,8 @@ const main = {
         apiKey: process.env.RECREG_ZIP_API_KEY,
         distance: process.env.RECREG_ZIP_DISTANCE,
     },
-    awsApi: {
-        baseUrl: '',
-        apiKey: '',
-        apiSecret: '',
-        s3: {},
+    fileServiceApi: {
+        baseUrl: process.env.FILE_SERVICE_BASE_URL,
     },
 };
 
