@@ -192,11 +192,14 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             survey[questionIndex] = questionInfo;
             return r;
         }, {});
-        this.counts = counts; // [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+        this.counts = counts;
         this.requiredOverrides = requiredOverrides;
     }
 
     count() {
+        if (!this.counts) {
+            return 8;
+        }
         const surveyIndex = this.currentIndex();
         return this.counts[surveyIndex];
     }
@@ -219,7 +222,8 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
-        const questionInfo = this.conditionalMap[surveyIndex][index];
+        const conditionalInfo = this.conditionalMap[surveyIndex];
+        const questionInfo = conditionalInfo && conditionalInfo[index];
         let question;
         if (questionInfo) {
             const purpose = questionInfo.purpose;
@@ -273,9 +277,12 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return answers;
     }
 
-    newSurvey() {
+    newSurvey(options = {}) {
         const surveyIndex = this.currentIndex();
         const conditionalInfo = this.conditionalMap[surveyIndex + 1];
+        if (!conditionalInfo) {
+            return super.newSurvey(options);
+        }
         const { surveyLevel, purpose: surveyLevelPurpose } = conditionalInfo;
         if (surveyLevel && surveyLevelPurpose === 'completeSurvey') {
             this.incrementIndex();

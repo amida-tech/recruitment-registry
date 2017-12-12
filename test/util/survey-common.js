@@ -279,6 +279,14 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
+    patchSameSurveyFn(index) {
+        const hxSurvey = this.hxSurvey;
+        return function patchSameSurvey() {
+            const survey = hxSurvey.server(index);
+            return models.survey.patchSurvey(survey.id, survey, { complete: true });
+        };
+    }
+
     errorStatusChangeFn(index, status, errorKey, complete) {
         const hxSurvey = this.hxSurvey;
         return function errorStatusChange() {

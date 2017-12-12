@@ -7,34 +7,50 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 
 const Generator = require('./util/generator');
+const CSG = require('./util/generator/conditional-survey-generator');
+const Answerer = require('./util/generator/answerer');
+const QuestionGenerator = require('./util/generator/question-generator');
 const SurveyHistory = require('./util/survey-history');
 const History = require('./util/history');
 const SharedSpec = require('./util/shared-spec');
 const surveyCommon = require('./util/survey-common');
 const questionCommon = require('./util/question-common');
-
-const generator = new Generator();
-const shared = new SharedSpec(generator);
+const conditionalSession = require('./fixtures/conditional-session/patch');
 
 describe('survey (patch complete) unit', function surveyPatchUnit() {
-    before(shared.setUpFn());
+    const hxSurvey = new SurveyHistory();
+    const hxQuestion = new History();
+
+    const answerer = new Answerer();
+    const questionGenerator = new QuestionGenerator();
+    const surveyGenerator = new CSG({
+        questionGenerator,
+        answerer,
+        hxSurvey,
+        setup: conditionalSession.setup,
+        requiredOverrides: conditionalSession.requiredOverrides,
+    });
+
+    const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
+    const tests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
+    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
+
+    const shared = new SharedSpec(generator);
 
     let surveyCount = 0;
 
-    const hxQuestion = new History();
-    const hxSurvey = new SurveyHistory();
-
-    const tests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
-    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
+    before(shared.setUpFn());
 
     _.range(10).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    _.range(8).forEach((index) => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+    _.range(8).forEach(() => {
+        it(`create survey ${surveyCount}`, tests.createSurveyFn());
         it(`get survey ${surveyCount}`, tests.getSurveyFn(surveyCount));
+        it(`patch survey ${surveyCount} as is`, tests.patchSameSurveyFn(surveyCount));
+        it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount, { noSectionId: true }));
         it('list surveys', tests.listSurveysFn());
         surveyCount += 1;
     });

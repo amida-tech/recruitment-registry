@@ -454,6 +454,73 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
+    patchSurveyQuestions(survey, surveyPatch, transaction) {
+        const {
+            sections: sectionsPatch,
+            questions: questionsPatch,
+        } = this.flattenHierarchy(surveyPatch);
+        if (!questionsPatch) {
+            return RRError.reject('surveyNoQuestions');
+        }
+        const { questions } = this.flattenHierarchy(survey);
+        const questionsPatchMap = questionsPatch.reduce((r, question) => {
+            const questionId = question.id;
+            if (questionId) {
+                r.set(questionId, question);
+            }
+            return r;
+        }, new Map());
+        const removedQuestionIds = questions.reduce((r, { id }) => {
+            if (!questionsPatchMap.has(id)) {
+                r.push(id);
+            }
+            return r;
+        }, []);
+        const patchedQuestions = questions.reduce((r, question) => {
+            const id = question.id;
+            const questionPatch = questionsPatchMap.get(id);
+            if (questionPatch && !_.isEqual(question, questionPatch)) {
+                r.push({ patch: questionPatch, current: question });
+            }
+            return r;
+        }, []);
+        const questionsChanged = removedQuestionIds.length || patchedQuestions.length;
+        if (questionsChanged) {
+            if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
+                return RRError.reject('surveyChangeQuestionWhenPublished');
+            }
+        }
+        if ((!questionsChanged) && (surveyPatch.length === surveyPatch.length)) {
+            return SPromise.resolve();
+        }
+        const surveyId = survey.id;
+        return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
+            .then(() => {
+                if (removedQuestionIds.length) {
+                    const where = {
+                        surveyId, questionId: { $in: removedQuestionIds },
+                    };
+                    // NOTE: This is a short-term fix to allow conditions to be
+                    // updated without persisting an "old version" of it (as we
+                    // do questions whenever they or the surveys they're attached
+                    // to are updated)
+                    return this.db.AnswerRule.destroy({ where, transaction })
+                        .then(() => this.db.Answer.destroy({ where, transaction }));
+                }
+                return null;
+            })
+            .then(() => this.createSurveyQuestionsTx(questionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
+            .then(qxs => qxs.map(question => question.id))
+            .then((questionIds) => {
+                if (sectionsPatch) {
+                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sectionsPatch, transaction); // eslint-disable-line max-len
+                } else if (survey.sectionCount) {
+                    return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
+                }
+                return null;
+            });
+    }
+
     patchSurveyCompleteTx(surveyId, surveyPatch, transaction) {
         return this.getSurvey(surveyId) // TODO: Need a version of getSurvey with transaction
             .then((survey) => {
@@ -473,7 +540,8 @@ module.exports = class SurveyDAO extends Translatable {
                             return this.createTextTx(record, transaction);
                         }
                         return null;
-                    });
+                    })
+                    .then(() => this.patchSurveyQuestions(survey, surveyPatch, transaction));
             });
     }
 
