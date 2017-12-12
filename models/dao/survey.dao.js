@@ -486,6 +486,17 @@ module.exports = class SurveyDAO extends Translatable {
         return SPromise.resolve();
     }
 
+    removeSurveyQuestions(surveyId, questionIds, transaction) {
+        if (questionIds.length) {
+            const where = {
+                surveyId, questionId: { $in: questionIds },
+            };
+            return this.db.AnswerRule.destroy({ where, transaction })
+                .then(() => this.db.Answer.destroy({ where, transaction }));
+        }
+        return SPromise.resolve();
+    }
+
     patchSurveyTx(surveyId, surveyPatch, transaction) {
         return this.patchSurveyInformationTx(surveyId, surveyPatch, transaction)
             .then((survey) => {
@@ -535,20 +546,7 @@ module.exports = class SurveyDAO extends Translatable {
                             }
                         }
                         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
-                            .then(() => {
-                                if (removedQuestionIds.length) {
-                                    const where = {
-                                        surveyId, questionId: { $in: removedQuestionIds },
-                                    };
-                                    // NOTE: This is a short-term fix to allow conditions to be
-                                    // updated without persisting an "old version" of it (as we
-                                    // do questions whenever they or the surveys they're attached
-                                    // to are updated)
-                                    return this.db.AnswerRule.destroy({ where, transaction })
-                                        .then(() => this.db.Answer.destroy({ where, transaction }));
-                                }
-                                return null;
-                            })
+                            .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)) // eslint-disable-line max-len
                             .then(() => this.createSurveyQuestionsTx(questions, sections, surveyId, transaction)) // eslint-disable-line max-len
                             .then(qxs => qxs.map(question => question.id))
                             .then((questionIds) => {
@@ -602,20 +600,7 @@ module.exports = class SurveyDAO extends Translatable {
             return SPromise.resolve(null);
         }
         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
-            .then(() => {
-                if (removedQuestionIds.length) {
-                    const where = {
-                        surveyId, questionId: { $in: removedQuestionIds },
-                    };
-                    // NOTE: This is a short-term fix to allow conditions to be
-                    // updated without persisting an "old version" of it (as we
-                    // do questions whenever they or the surveys they're attached
-                    // to are updated)
-                    return this.db.AnswerRule.destroy({ where, transaction })
-                        .then(() => this.db.Answer.destroy({ where, transaction }));
-                }
-                return null;
-            })
+            .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction))
             .then(() => this.createSurveyQuestionsTx(surveyQuestionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
             .then(qxs => qxs.map(question => question.id))
             .then((questionIds) => {
