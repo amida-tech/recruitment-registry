@@ -13,54 +13,163 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 
-const translateRuleChoices = function (ruleParent, choices) {
+const translateRuleChoices = function (ruleParent, choices, noThrow) {
     const choiceText = _.get(ruleParent, 'answer.choiceText');
     const rawChoices = _.get(ruleParent, 'answer.choices');
     if (choiceText || rawChoices) {
         if (!choices) {
-            return RRError.reject('surveySkipChoiceForNonChoice');
+            return RRError.reject('surveyRuleChoiceForNonChoice');
         }
         const p = ruleParent.answer;
         if (choiceText) {
             const serverChoice = choices.find(choice => choice.text === choiceText);
             if (!serverChoice) {
-                return RRError.reject('surveySkipChoiceNotFound');
+                if (!noThrow) {
+                    return RRError.reject('surveyRuleChoiceTextNotFound', choiceText);
+                }
+                return null;
             }
-            p.choice = serverChoice.id;
-            delete p.choiceText;
+            const choice = serverChoice.id;
+            if (choice) {
+                p.choice = choice;
+                delete p.choiceText;
+            }
         }
         if (rawChoices) {
             p.choices.forEach((r) => {
                 const serverChoice = choices.find(choice => choice.text === r.text);
                 if (!serverChoice) {
-                    throw new RRError('surveySkipChoiceNotFound');
+                    if (!noThrow) {
+                        throw new RRError('surveyRuleChoiceNotFound', r.text);
+                    }
+                    return;
                 }
-                r.id = serverChoice.id;
+                const id = serverChoice.id;
+                if (id) {
+                    r.id = id;
+                    delete r.text;
+                }
             });
-            p.choices.forEach(r => delete r.text);
         }
         return ruleParent;
     }
     return null;
 };
 
-const translateEnableWhen = function (parent, questions, questionChoices) {
+const translateEnableWhenOnly = function (enableWhen, questions, questionChoices, noThrow) {
+    return enableWhen.map((r) => {
+        const questionIndex = r.questionIndex;
+        if (questionIndex !== undefined) {
+            const question = questions[questionIndex];
+            if (!question) {
+                if (!noThrow) {
+                    throw new RRError('surveyRuleQuestionIndexNotFound', questionIndex);
+                }
+                return r;
+            }
+            const id = question.id;
+            if (id) {
+                r.questionId = id;
+                delete r.questionIndex;
+            }
+        }
+        if (questionChoices) {
+            const choices = questionChoices[r.questionId];
+            return translateRuleChoices(r, choices) || r;
+        }
+        return r;
+    });
+};
+
+const translateEnableWhen = function (parent, questions, questionChoices, noThrow) {
     let enableWhen = parent.enableWhen;
     if (enableWhen) {
         enableWhen = _.cloneDeep(enableWhen);
-        parent.enableWhen = enableWhen.map((r) => { // eslint-disable-line no-param-reassign
-            const questionIndex = r.questionIndex;
-            if (questionIndex !== undefined) {
-                r.questionId = questions[questionIndex].id;
-                delete r.questionIndex;
-            }
-            if (questionChoices) {
-                const choices = questionChoices[r.questionId];
-                return translateRuleChoices(r, choices) || r;
-            }
-            return r;
-        });
+        parent.enableWhen = translateEnableWhenOnly(enableWhen, questions, questionChoices, noThrow); // eslint-disable-line no-param-reassign, max-len
     }
+};
+
+const findPatchedQuestionPropers = function (questions, questionsPatchMap) {
+    return questions.reduce((r, question) => {
+        const id = question.id;
+        const questionPatch = questionsPatchMap[id];
+        if (questionPatch) {
+            const questionProper = _.omit(question, ['required', 'enableWhen']);
+            const questionPatchProper = _.omit(questionPatch, ['required', 'enableWhen']);
+            if (!_.isEqual(questionProper, questionPatchProper)) {
+                r.push({ patch: questionPatchProper, current: questionProper });
+            }
+        }
+        return r;
+    }, []);
+};
+
+const createQuestionChoicesMap = function (questions) {
+    return questions.reduce((r, question) => {
+        const id = question.id;
+        if (id) {
+            const choices = question.choices;
+            if (choices) {
+                r[id] = choices;
+            }
+        }
+        return r;
+    }, {});
+};
+
+const formSurveyQuestionsPatch = function (questionsPatch, questionsPatchMap, questions) {
+    let dirty = false;
+    let dirtyEnableWhen = false;
+    const questionChoices = createQuestionChoicesMap(questionsPatch);
+    const questionsMap = questions.reduce((r, question) => {
+        r[question.id] = question;
+        return r;
+    }, {});
+    const surveyQuestionsPatch = questionsPatch.map((questionPatch, index) => {
+        const id = questionPatch.id;
+        if (!id) {
+            dirty = true;
+            return questionPatch;
+        }
+        const question = questionsMap[id];
+        const required = questionPatch.required || false;
+        if (!question) {
+            dirty = true;
+            const result = { id, required };
+            if (questionPatch.enableWhen) {
+                result.enableWhen = questionPatch.enableWhen;
+            }
+            return result;
+        }
+        const result = { id, required };
+        dirty = dirty || (required !== question.required);
+        dirty = dirty || ((questions[index] && questions[index].id) !== id);
+        let enableWhenPatch = questionPatch.enableWhen;
+        if (!enableWhenPatch) {
+            if (question.enableWhenPatch) {
+                dirtyEnableWhen = true;
+                result.enableWhen = [];
+            }
+            return result;
+        }
+        enableWhenPatch = translateEnableWhenOnly(enableWhenPatch, questionsPatch, questionChoices, true); // eslint-disable-line max-len
+        enableWhenPatch = enableWhenPatch.map(ewp => _.omit(ewp, 'id'));
+        let enableWhen = question.enableWhen;
+        if (!enableWhen) {
+            result.enableWhen = enableWhenPatch;
+            dirtyEnableWhen = true;
+            return result;
+        }
+        enableWhen = enableWhen.map(ewp => _.omit(ewp, 'id'));
+        if (_.isEqual(enableWhen, enableWhenPatch)) {
+            return result;
+        }
+        result.enableWhen = enableWhenPatch;
+        dirtyEnableWhen = true;
+        return result;
+    }, []);
+    dirtyEnableWhen = dirtyEnableWhen || dirty;
+    return { surveyQuestionsPatch, dirty, dirtyEnableWhen };
 };
 
 module.exports = class SurveyDAO extends Translatable {
@@ -174,16 +283,16 @@ module.exports = class SurveyDAO extends Translatable {
         if (newQuestions.length) {
             const questionChoices = {};
             return SPromise.all(newQuestions.map(q => this.question.createQuestionTx(q.qx, tx)
-                        .then(({ id, choices }) => {
-                            const inputQuestion = questions[q.index];
-                            questions[q.index] = { id, required: inputQuestion.required }; // eslint-disable-line no-param-reassign, max-len
-                            questionChoices[id] = choices;
-                            let enableWhen = inputQuestion.enableWhen;
-                            if (enableWhen) {
-                                enableWhen = _.cloneDeep(enableWhen);
-                                questions[q.index].enableWhen = enableWhen; // eslint-disable-line no-param-reassign, max-len
-                            }
-                        })))
+                    .then(({ id, choices }) => {
+                        const inputQuestion = questions[q.index];
+                        questions[q.index] = { id, required: inputQuestion.required }; // eslint-disable-line no-param-reassign, max-len
+                        questionChoices[id] = choices;
+                        let enableWhen = inputQuestion.enableWhen;
+                        if (enableWhen) {
+                            enableWhen = _.cloneDeep(enableWhen);
+                            questions[q.index].enableWhen = enableWhen; // eslint-disable-line no-param-reassign, max-len
+                        }
+                    })))
                 .then(() => ({ questions, questionChoices }));
         }
         return SPromise.resolve({ questions });
@@ -466,34 +575,32 @@ module.exports = class SurveyDAO extends Translatable {
         const questionsPatchMap = questionsPatch.reduce((r, question) => {
             const questionId = question.id;
             if (questionId) {
-                r.set(questionId, question);
+                r[questionId] = question;
             }
             return r;
-        }, new Map());
+        }, {});
         const removedQuestionIds = questions.reduce((r, { id }) => {
-            if (!questionsPatchMap.has(id)) {
+            if (!questionsPatchMap[id]) {
                 r.push(id);
             }
             return r;
         }, []);
-        const patchedQuestions = questions.reduce((r, question) => {
-            const id = question.id;
-            const questionPatch = questionsPatchMap.get(id);
-            if (questionPatch && !_.isEqual(question, questionPatch)) {
-                r.push({ patch: questionPatch, current: question });
-            }
-            return r;
-        }, []);
-        const questionsChanged = removedQuestionIds.length || patchedQuestions.length;
+        const patchedQuestionPropers = findPatchedQuestionPropers(questions, questionsPatchMap);
+        const questionsChanged = removedQuestionIds.length || patchedQuestionPropers.length;
         if (questionsChanged) {
             if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
                 return RRError.reject('surveyChangeQuestionWhenPublished');
             }
         }
-        if ((!questionsChanged) && (surveyPatch.length === surveyPatch.length)) {
-            return SPromise.resolve();
-        }
+        const {
+            dirty,
+            dirtyEnableWhen,
+            surveyQuestionsPatch,
+        } = formSurveyQuestionsPatch(questionsPatch, questionsPatchMap, questions);
         const surveyId = survey.id;
+        if (!dirty && !dirtyEnableWhen) {
+            return SPromise.resolve(null);
+        }
         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
             .then(() => {
                 if (removedQuestionIds.length) {
@@ -509,7 +616,7 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 return null;
             })
-            .then(() => this.createSurveyQuestionsTx(questionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
+            .then(() => this.createSurveyQuestionsTx(surveyQuestionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
             .then(qxs => qxs.map(question => question.id))
             .then((questionIds) => {
                 if (sectionsPatch) {

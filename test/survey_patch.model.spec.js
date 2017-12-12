@@ -51,6 +51,8 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
         it(`get survey ${surveyCount}`, tests.getSurveyFn(surveyCount));
         it(`patch survey ${surveyCount} as is`, tests.patchSameSurveyFn(surveyCount));
         it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount, { noSectionId: true }));
+        it(`patch survey ${surveyCount} same conditions`, tests.patchSameSurveyEnableWhenFn(surveyCount));
+        it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount, { noSectionId: true }));
         it('list surveys', tests.listSurveysFn());
         surveyCount += 1;
     });

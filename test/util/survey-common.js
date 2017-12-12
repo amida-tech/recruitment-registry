@@ -287,6 +287,26 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
+    patchSameSurveyEnableWhenFn(index) {
+        const hxSurvey = this.hxSurvey;
+        return function patchSameEnableWhen() {
+            const survey = _.cloneDeep(hxSurvey.server(index));
+            const client = hxSurvey.client(index);
+            const { questions } = models.survey.flattenHierarchy(survey);
+            const { questions: clientQuestions } = models.survey.flattenHierarchy(client);
+            clientQuestions.forEach((clientQuestion, questionIndex) => {
+                const enableWhen = clientQuestion.enableWhen;
+                if (enableWhen) {
+                    const question = questions[questionIndex];
+                    if (question) {
+                        question.enableWhen = enableWhen;
+                    }
+                }
+            });
+            return models.survey.patchSurvey(survey.id, survey, { complete: true });
+        };
+    }
+
     errorStatusChangeFn(index, status, errorKey, complete) {
         const hxSurvey = this.hxSurvey;
         return function errorStatusChange() {
