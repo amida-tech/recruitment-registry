@@ -306,7 +306,8 @@ module.exports = class SurveyDAO extends Translatable {
                 answerQuestionId: p.questionId,
                 answerSurveyId: p.surveyId || null,
             }, baseObject);
-            return this.db.AnswerRule.create(answerRule, { transaction })
+            return this.db.AnswerRule.destroy({ where: baseObject, transaction })
+                .then(() => this.db.AnswerRule.create(answerRule, { transaction }))
                 .then(({ id }) => {
                     const code = p.answer && p.answer.code;
                     if ((code !== null) && (code !== undefined)) {
@@ -384,7 +385,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.createTextTx(record, transaction)
             .then(({ id }) => {
                 if (survey.enableWhen) {
-                    const baseObject = { surveyId: id };
+                    const baseObject = { surveyId: id, sectionId: null, questionId: null };
                     const enableWhen = survey.enableWhen;
                     return this.createRulesForEnableWhen(baseObject, enableWhen, transaction)
                         .then(() => ({ id }));

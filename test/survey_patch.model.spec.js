@@ -10,12 +10,14 @@ const Generator = require('./util/generator');
 const CSG = require('./util/generator/conditional-survey-generator');
 const Answerer = require('./util/generator/answerer');
 const QuestionGenerator = require('./util/generator/question-generator');
+const PatchGenerator = require('./util/generator/survey-patch-generator');
 const SurveyHistory = require('./util/survey-history');
 const History = require('./util/history');
 const SharedSpec = require('./util/shared-spec');
 const surveyCommon = require('./util/survey-common');
 const questionCommon = require('./util/question-common');
 const conditionalSession = require('./fixtures/conditional-session/patch');
+const models = require('../models');
 
 describe('survey (patch complete) unit', function surveyPatchUnit() {
     const hxSurvey = new SurveyHistory();
@@ -30,6 +32,7 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
         setup: conditionalSession.setup,
         requiredOverrides: conditionalSession.requiredOverrides,
     });
+    const patchGenerator = new PatchGenerator({ hxSurvey, answerer });
 
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const tests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
@@ -120,5 +123,30 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
 
             it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
         });
+    });
+
+    const patchSurveyFromSpecFn = function (spec) {
+        return function patchSurveyFromSpec() {
+            const patch = patchGenerator.generateSurveyPatch(spec);
+            const index = spec.surveyIndex;
+            const id = hxSurvey.id(index);
+            const patchOptions = { complete: true };
+            return models.survey.patchSurvey(id, patch, patchOptions);
+        };
+    };
+
+    const getSurveyFromSpecFn = function (spec) {
+        return function getSurveyFromSpec() {
+            const surveyId = hxSurvey.id(spec.surveyIndex);
+            return models.survey.getSurvey(surveyId)
+                .then((survey) => {
+                    patchGenerator.compareAndReplace(spec, survey);
+                });
+        };
+    };
+
+    conditionalSession.patchSetup.forEach((spec, index) => {
+        it(`patch survey spec ${index}`, patchSurveyFromSpecFn(spec));
+        it(`get survey spec ${index}`, getSurveyFromSpecFn(spec));
     });
 });

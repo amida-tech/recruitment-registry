@@ -12,6 +12,7 @@ class History {
         this.listFields = listFields;
         this.translations = {};
         this.idIndex = {};
+        this.patches = {};
     }
 
     reset() {
