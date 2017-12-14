@@ -1,5 +1,6 @@
 'use strict';
 
+const config = require('../config');
 const passport = require('passport');
 const passportHttp = require('passport-http');
 
@@ -26,7 +27,11 @@ exports.authenticateBasic = function authenticateBasic(req, res) {
             return res.status(401).json(json);
         }
         const token = tokener.createJWT(req.user);
-        res.cookie('rr-jwt-token', token, { httpOnly: true });
+        if (!config.jwt.jwtTokenExpirationMinutes) {
+          res.cookie('rr-jwt-token', token, { httpOnly: true});
+        } else {
+          res.cookie('rr-jwt-token', token, { httpOnly: true, maxAge: 1000*60*config.jwt.jwtTokenExpirationMinutes });
+        }
         return res.status(200).json({});
     });
 };

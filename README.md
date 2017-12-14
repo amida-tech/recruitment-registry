@@ -73,6 +73,7 @@ RECREG_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
 RECREG_ZIP_API_KEY=xxx
 RECREG_ZIP_DISTANCE=50
 RECREG_ZIP_UNITS=mile
+RECREG_TOKEN_EXPIRATION_MINTUES=43200
 FILE_SERVICE_BASE_URL=http://localhost:8080
 ```
 
@@ -107,6 +108,8 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_BASE_URL: Base API URL for Zipwise zip code API. Set to `https://www.zipwise.com/webservices/radius.php`.
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
+- RECREG_JWT_<registry name>: JWT for remote registries for federated search.
+- RECREG_TOKEN_EXPIRATION_MINTUES: how long until JWT tokens expire, leave blank for no expiration
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
 - FILE_SERVICE_BASE_URL: The url to the file service instance handling cohort zip files and s3 uploads.
 - AWS_ACCESS_KEY_ID: Amazon Web Services access key ID.
