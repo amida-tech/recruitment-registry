@@ -1,8 +1,11 @@
 'use strict';
 
 const _ = require('lodash');
+const chai = require('chai');
 
 const comparator = require('../comparator');
+
+const expect = chai.expect;
 
 const specHandler = {
     enableWhenRaw(patch, generator, spec) {
@@ -29,6 +32,16 @@ const specHandler = {
             Object.assign(rule, generator.answerer.answerQuestion(ruleQuestion));
         }
     },
+    deleteEnableWhenElement(patch, generator, spec) {
+        const { questionIndex, index } = spec;
+        const question = patch.questions[questionIndex];
+        question.enableWhen.splice(index, 1);
+    },
+    deleteEnableWhen(patch, generator, spec) {
+        const { questionIndex } = spec;
+        const question = patch.questions[questionIndex];
+        delete question.enableWhen;
+    },
 };
 
 const patchComparators = {
@@ -41,7 +54,7 @@ const patchComparators = {
             return r;
         }, {});
         comparator.enableWhen(questionPatch, patchedQuestion, { serverQuestionMap });
-        const question = patchedSurvey.questions[questionIndex];
+        const question = survey.questions[questionIndex];
         question.enableWhen = patchedQuestion.enableWhen;
     },
     enableWhenRaw(spec, survey, surveyPatch, patchedSurvey) {
@@ -49,6 +62,25 @@ const patchComparators = {
     },
     enableWhen(spec, survey, surveyPatch, patchedSurvey) {
         patchComparators.enableWhenCommon(spec, survey, surveyPatch, patchedSurvey);
+    },
+    deleteEnableWhenElement(spec, survey, surveyPatch, patchedSurvey) {
+        const { questionIndex, index } = spec;
+        const question = survey.questions[questionIndex];
+        const enableWhen = question.enableWhen;
+        enableWhen.splice(index, 1);
+        const enableWhenNoId = enableWhen.map(rule => _.omit(rule, 'id'));
+        const patchedQuestion = patchedSurvey.questions[questionIndex];
+        const patchedEnableWhen = patchedQuestion.enableWhen;
+        const patchedEnableWhenNoId = patchedEnableWhen.map(rule => _.omit(rule, 'id'));
+        expect(enableWhenNoId).to.deep.equal(patchedEnableWhenNoId);
+        patchedEnableWhen.forEach((rule, ruleIndex) => {
+            enableWhen[ruleIndex].id = rule.id;
+        });
+    },
+    deleteEnableWhen(spec, survey) {
+        const { questionIndex } = spec;
+        const question = survey.questions[questionIndex];
+        delete question.enableWhen;
     },
 };
 
@@ -78,5 +110,6 @@ module.exports = class SurveyPatchGenerator {
             const patchComparator = patchComparators[mod.purpose];
             patchComparator(mod, survey, surveyPatch, patchedSurvey);
         });
+        expect(survey).to.deep.equal(patchedSurvey);
     }
 };

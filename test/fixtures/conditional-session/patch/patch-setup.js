@@ -16,4 +16,14 @@ module.exports = [{
         logic: 'equals',
         relativeIndex: 1,
     }],
+}, {
+    surveyIndex: 1,
+    mods: [{
+        questionIndex: 3,
+        purpose: 'deleteEnableWhenElement',
+        index: 0,
+    }, {
+        questionIndex: 5,
+        purpose: 'deleteEnableWhen',
+    }],
 }];

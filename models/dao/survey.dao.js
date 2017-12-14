@@ -146,7 +146,7 @@ const formSurveyQuestionsPatch = function (questionsPatch, questionsPatchMap, qu
         dirty = dirty || ((questions[index] && questions[index].id) !== id);
         let enableWhenPatch = questionPatch.enableWhen;
         if (!enableWhenPatch) {
-            if (question.enableWhenPatch) {
+            if (question.enableWhen) {
                 dirtyEnableWhen = true;
                 result.enableWhen = [];
             }
@@ -299,30 +299,32 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRulesForEnableWhen(baseObject, enableWhen, transaction) {
-        const promises = enableWhen.map((p, line) => {
-            const answerRule = Object.assign({
-                logic: p.logic,
-                line,
-                answerQuestionId: p.questionId,
-                answerSurveyId: p.surveyId || null,
-            }, baseObject);
-            return this.db.AnswerRule.destroy({ where: baseObject, transaction })
-                .then(() => this.db.AnswerRule.create(answerRule, { transaction }))
-                .then(({ id }) => {
-                    const code = p.answer && p.answer.code;
-                    if ((code !== null) && (code !== undefined)) {
-                        return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction) // eslint-disable-line max-len
-                            .then((choiceId) => {
-                                p.answer.choice = choiceId;
-                                delete p.answer.code;
-                                return { id };
-                            });
-                    }
-                    return ({ id });
-                })
-                .then(({ id }) => this.createRuleAnswerValue(id, p.answer, transaction));
-        });
-        return SPromise.all(promises);
+        return this.db.AnswerRule.destroy({ where: baseObject, transaction })
+            .then(() => {
+                const promises = enableWhen.map((p, line) => {
+                    const answerRule = Object.assign({
+                        logic: p.logic,
+                        line,
+                        answerQuestionId: p.questionId,
+                        answerSurveyId: p.surveyId || null,
+                    }, baseObject);
+                    return this.db.AnswerRule.create(answerRule, { transaction })
+                        .then(({ id }) => {
+                            const code = p.answer && p.answer.code;
+                            if ((code !== null) && (code !== undefined)) {
+                                return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction) // eslint-disable-line max-len
+                                    .then((choiceId) => {
+                                        p.answer.choice = choiceId;
+                                        delete p.answer.code;
+                                        return { id };
+                                    });
+                            }
+                            return ({ id });
+                        })
+                        .then(({ id }) => this.createRuleAnswerValue(id, p.answer, transaction));
+                });
+                return SPromise.all(promises);
+            });
     }
 
     createRulesForQuestions(surveyId, questions, transaction) {

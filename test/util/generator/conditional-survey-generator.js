@@ -25,6 +25,16 @@ const specialQuestionGenerator = {
         question.enableWhen = enableWhen;
         return question;
     },
+    enableWhenMulti(surveyGenerator, questionInfo, index) {
+        const { type, rules } = questionInfo;
+        const question = surveyGenerator.questionGenerator.newQuestion({ type });
+        const enableWhen = rules.map(({ relativeIndex, logic }) => {
+            const questionIndex = index - relativeIndex;
+            return { questionIndex, logic };
+        });
+        question.enableWhen = enableWhen;
+        return question;
+    },
     questionSection(surveyGenerator, questionInfo) {
         const type = questionInfo.type;
         return surveyGenerator.questionGenerator.newQuestion({ type });
@@ -146,8 +156,19 @@ const questionSurveyManipulator = {
     enableWhen(survey, questionInfo, generator) {
         const questionIndex = questionInfo.questionIndex;
         const question = survey.questions[questionIndex];
-        const sourceIndex = question.enableWhen[0].questionIndex;
-        generator.addAnswer(question.enableWhen[0], question.enableWhen[0], survey.questions[sourceIndex]);
+        const rule = question.enableWhen[0];
+        const sourceIndex = rule.questionIndex;
+        generator.addAnswer(rule, questionInfo, survey.questions[sourceIndex]);
+    },
+    enableWhenMulti(survey, questionInfo, generator) {
+        const questionIndex = questionInfo.questionIndex;
+        const question = survey.questions[questionIndex];
+        const enableWhen = question.enableWhen;
+        questionInfo.rules.forEach((ruleInfo, index) => {
+            const sourceIndex = question.enableWhen[index].questionIndex;
+            const rule = enableWhen[index];
+            generator.addAnswer(rule, ruleInfo, survey.questions[sourceIndex]);
+        });
     },
     questionSection(survey, questionInfo, generator) {
         const { questionIndex, logic, count } = questionInfo;
@@ -212,7 +233,8 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     addAnswer(rule, questionInfo, question) {
         const logic = questionInfo.logic;
         if (logic === 'equals' || logic === 'not-equals') {
-            rule.answer = this.answerer.answerRawQuestion(question);
+            const options = _.pick(questionInfo, 'choiceIndex');
+            rule.answer = this.answerer.answerRawQuestion(question, options);
         }
     }
 
