@@ -31,4 +31,31 @@ module.exports = [{
     questionIndex: 5,
     logic: 'exists',
     relativeIndex: 3,
+}, {
+    surveyIndex: 2,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'exists',
+    answerSurveyIndex: 1,
+    answerQuestionIndex: 4,
+}, {
+    surveyIndex: 3,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'not-exists',
+    answerSurveyIndex: 0,
+    answerQuestionIndex: 3,
+}, {
+    surveyIndex: 4,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhenMulti',
+    multiInfos: [{
+        logic: 'equals',
+        answerSurveyIndex: 1,
+        answerQuestionIndex: 1,
+    }, {
+        logic: 'not-equals',
+        answerSurveyIndex: 0,
+        answerQuestionIndex: 5,
+    }],
 }];

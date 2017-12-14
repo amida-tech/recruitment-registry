@@ -360,6 +360,19 @@ module.exports = class SurveyDAO extends Translatable {
         return sections;
     }
 
+    createSurveyEnableWhen(surveyId, enableWhen, transaction) {
+        const baseObject = { surveyId, sectionId: null, questionId: null };
+        return this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
+    }
+
+    createRulesForSurvey(id, survey, transaction) {
+        const enableWhen = survey.enableWhen;
+        if (enableWhen) {
+            return this.createSurveyEnableWhen(id, enableWhen, transaction).then(() => ({ id }));
+        }
+        return ({ id });
+    }
+
     createSurveyQuestionsTx(inputQuestions, sections, surveyId, transaction) {
         return this.createNewQuestionsTx(inputQuestions.slice(), transaction)
             .then(({ questions, questionChoices }) => {
@@ -385,15 +398,7 @@ module.exports = class SurveyDAO extends Translatable {
         }
         const record = { id: inputId, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
-            .then(({ id }) => {
-                if (survey.enableWhen) {
-                    const baseObject = { surveyId: id, sectionId: null, questionId: null };
-                    const enableWhen = survey.enableWhen;
-                    return this.createRulesForEnableWhen(baseObject, enableWhen, transaction)
-                        .then(() => ({ id }));
-                }
-                return ({ id });
-            })
+            .then(({ id }) => this.createRulesForSurvey(id, survey, transaction))
             .then(({ id }) => this.createSurveyQuestionsTx(questions, sections, id, transaction)
                 .then((qxs) => {
                     const questionIds = qxs.map(question => question.id);
@@ -635,6 +640,22 @@ module.exports = class SurveyDAO extends Translatable {
                             return this.createTextTx(record, transaction);
                         }
                         return null;
+                    })
+                    .then(() => {
+                        const enableWhen = survey.enableWhen;
+                        const enableWhenPatch = surveyPatch.enableWhen;
+                        if (!enableWhen && !enableWhenPatch) {
+                            return null;
+                        }
+                        if (enableWhen && enableWhenPatch) {
+                            const enableWhenNoId = _.omit(enableWhen, 'id');
+                            const enableWhenPatchNoId = _.omit(enableWhenPatch, 'id');
+                            if (_.isEqual(enableWhenNoId, enableWhenPatchNoId)) {
+                                return null;
+                            }
+                        }
+                        const patch = enableWhenPatch || [];
+                        return this.createSurveyEnableWhen(surveyId, patch, transaction);
                     })
                     .then(() => this.patchSurveyQuestions(survey, surveyPatch, transaction));
             });

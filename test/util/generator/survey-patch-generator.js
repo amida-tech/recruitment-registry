@@ -42,6 +42,36 @@ const specHandler = {
         const question = patch.questions[questionIndex];
         delete question.enableWhen;
     },
+    surveyEnableWhen(patch, generator, spec) {
+        const { hxSurvey, answerer } = generator;
+        const { answerSurveyIndex, answerQuestionIndex, logic } = spec;
+        const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
+        const question = questions[answerQuestionIndex];
+        let rule;
+        if (logic === 'equals' || logic === 'not-equals') {
+            rule = answerer.answerQuestion(question);
+        } else {
+            rule = { questionId: question.id };
+        }
+        Object.assign(rule, { surveyId, logic });
+        Object.assign(patch, { enableWhen: [rule] });
+    },
+    deleteSurveyEnableWhenElement(patch, generator, spec) {
+        const { index } = spec;
+        patch.enableWhen.splice(index, 1);
+    },
+    deleteSurveyEnableWhen(patch) {
+        delete patch.enableWhen; // eslint-disable-line no-param-reassign
+    },
+};
+
+const checkAndCopyEnableWhenId = function (enableWhen, patchedEnableWhen) {
+    const enableWhenNoId = enableWhen.map(rule => _.omit(rule, 'id'));
+    const patchedEnableWhenNoId = patchedEnableWhen.map(rule => _.omit(rule, 'id'));
+    expect(enableWhenNoId).to.deep.equal(patchedEnableWhenNoId);
+    patchedEnableWhen.forEach((rule, ruleIndex) => {
+        Object.assign(enableWhen[ruleIndex], { id: rule.id });
+    });
 };
 
 const patchComparators = {
@@ -68,19 +98,26 @@ const patchComparators = {
         const question = survey.questions[questionIndex];
         const enableWhen = question.enableWhen;
         enableWhen.splice(index, 1);
-        const enableWhenNoId = enableWhen.map(rule => _.omit(rule, 'id'));
-        const patchedQuestion = patchedSurvey.questions[questionIndex];
-        const patchedEnableWhen = patchedQuestion.enableWhen;
-        const patchedEnableWhenNoId = patchedEnableWhen.map(rule => _.omit(rule, 'id'));
-        expect(enableWhenNoId).to.deep.equal(patchedEnableWhenNoId);
-        patchedEnableWhen.forEach((rule, ruleIndex) => {
-            enableWhen[ruleIndex].id = rule.id;
-        });
+        checkAndCopyEnableWhenId(enableWhen, patchedSurvey.questions[questionIndex].enableWhen);
     },
     deleteEnableWhen(spec, survey) {
         const { questionIndex } = spec;
         const question = survey.questions[questionIndex];
         delete question.enableWhen;
+    },
+    surveyEnableWhen(spec, survey, surveyPatch, patchedSurvey) {
+        comparator.enableWhen(surveyPatch, patchedSurvey);
+        expect(survey.enableWhen).not.deep.equal(patchedSurvey.enableWhen);
+        Object.assign(survey, { enableWhen: patchedSurvey.enableWhen });
+    },
+    deleteSurveyEnableWhenElement(spec, survey, surveyPatch, patchedSurvey) {
+        const { index } = spec;
+        const enableWhen = survey.enableWhen;
+        enableWhen.splice(index, 1);
+        checkAndCopyEnableWhenId(enableWhen, patchedSurvey.enableWhen);
+    },
+    deleteSurveyEnableWhen(spec, survey) {
+        delete survey.enableWhen; // eslint-disable-line no-param-reassign
     },
 };
 
