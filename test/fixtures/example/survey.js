@@ -6,6 +6,7 @@ const example = {
     questions: [{
         text: 'Which sports do you like?',
         required: false,
+        isIdentifying: false,
         type: 'choices',
         choices: [
             { text: 'Football' },
@@ -16,6 +17,7 @@ const example = {
     }, {
         text: 'What is your hair color?',
         required: true,
+        isIdentifying: false,
         type: 'choice',
         choices: [
             { text: 'Black' },
@@ -26,14 +28,17 @@ const example = {
     }, {
         text: 'Where were you born?',
         required: true,
+        isIdentifying: false,
         type: 'text',
     }, {
         text: 'Are you injured?',
         required: false,
+        isIdentifying: false,
         type: 'bool',
     }, {
         text: 'Do you have a cat?',
         required: true,
+        isIdentifying: false,
         type: 'bool',
     }],
 };
@@ -96,6 +101,7 @@ const alzheimer = {
     questions: [{
         text: 'Ethnicity',
         required: true,
+        isIdentifying: false,
         type: 'choice',
         oneOfChoices: [
             'Caucasian',
@@ -106,19 +112,23 @@ const alzheimer = {
     }, {
         text: 'Gender',
         required: true,
+        isIdentifying: false,
         type: 'choice',
         oneOfChoices: ['male', 'female', 'other'],
     }, {
         text: 'Zip code',
         required: false,
+        isIdentifying: false,
         type: 'text',
     }, {
         text: 'Family history of memory disorders/AD/dementia?',
         required: true,
+        isIdentifying: false,
         type: 'bool',
     }, {
         text: 'How did you hear about us?',
         required: false,
+        isIdentifying: false,
         type: 'choices',
         choices: [
             { text: 'TV' },
@@ -134,6 +144,7 @@ const alzheimer = {
     }, {
         text: 'Are you interested in receiving email updates on any of the following?',
         required: true,
+        isIdentifying: false,
         type: 'choices',
         choices: [
             { text: 'Brain Health' },
@@ -142,6 +153,7 @@ const alzheimer = {
     }, {
         text: 'Are you interested in participating in clinical trials?',
         required: false,
+        isIdentifying: false,
         type: 'bool',
     }],
 };
@@ -182,6 +194,7 @@ const textOnlySurvey = {
     name: 'textOnlySurvey',
     questions: [{
         text: 'Text One',
+        isIdentifying: false,
         required: false,
         type: 'text',
     }],

@@ -8,11 +8,13 @@ const travelSurvey = {
         questions: [{ // 0
             text: 'Did you travel to Canada before?',
             required: true,
+            isIdentifying: false,
             type: 'choice-ref',
             choiceSetReference: 'yes-no-1-2',
         }, { // 1
             text: 'Would you like to travel to Canada in the future?',
             required: true,
+            isIdentifying: false,
             type: 'choice-ref',
             choiceSetReference: 'yes-no-1-2',
             enableWhen: [{
@@ -35,6 +37,7 @@ const travelSurvey = {
         questions: [{ // 2
             text: 'How do you rate your experience?',
             required: true,
+            isIdentifying: false,
             type: 'choice-ref',
             choiceSetReference: 'rating',
             sections: [{
@@ -42,6 +45,7 @@ const travelSurvey = {
                     text: 'Please describe the best experiences during your visit.',
                     type: 'text',
                     required: true,
+                    isIdentifying: false,
                     enableWhen: [{
                         questionIndex: 2,
                         logic: 'equals',
@@ -61,6 +65,7 @@ const travelSurvey = {
                     text: 'Please describe how could your experience be better?',
                     type: 'text',
                     required: true,
+                    isIdentifying: false,
                     enableWhen: [{
                         questionIndex: 2,
                         logic: 'equals',
@@ -95,6 +100,7 @@ const travelSurvey = {
         questions: [{ // 5
             text: 'What experience are you looking for?',
             required: true,
+            isIdentifying: false,
             type: 'choice',
             choices: [{
                 text: 'Food',
@@ -110,6 +116,7 @@ const travelSurvey = {
                     text: 'Select on of the following cities.',
                     type: 'choice',
                     required: true,
+                    isIdentifying: false,
                     enableWhen: [{
                         questionIndex: 5,
                         logic: 'equals',
@@ -130,6 +137,7 @@ const travelSurvey = {
                     text: 'Select on the following cities?',
                     type: 'choice',
                     required: true,
+                    isIdentifying: false,
                     enableWhen: [{
                         questionIndex: 5,
                         logic: 'equals',
