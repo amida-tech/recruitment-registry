@@ -83,7 +83,7 @@ module.exports = class QuestionDAO extends Translatable {
         const Question = this.db.Question;
         return this.updateChoiceSetReference(question.choiceSetReference, transaction)
             .then((choiceSetId) => {
-                const baseFields = _.omit(question, ['oneOfChoices', 'choices']);
+                const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'text', 'instruction']);
                 if (choiceSetId) {
                     baseFields.choiceSetId = choiceSetId;
                 }
@@ -579,5 +579,51 @@ module.exports = class QuestionDAO extends Translatable {
                     return SPromise.all(pxs).then(() => mapIds);
                 });
             });
+    }
+
+    patchQuestionTx(id, patch, tx) {
+        const language = patch.language || 'en';
+        return this.getQuestion(id, { language }) // TO DO: getQuestion with tx
+            .then((question) => {
+                const { text: origText, instruction: orgInstruction } = question;
+                const { text, instruction } = patch;
+                if ((text !== origText) || (instruction !== orgInstruction)) {
+                    return this.updateQuestionTextTx({ id, text, instruction }, language, tx)
+                        .then(() => question);
+                }
+                return question;
+            })
+            .then((question) => {
+                const record = {};
+                let forced = false;
+                const { meta } = patch;
+                if (!_.isEqual(question.meta, meta)) {
+                    Object.assign(record, { meta: meta || null });
+                }
+                const common = patch.common || false;
+                if (question.common !== common) {
+                    Object.assign(record, { common });
+                }
+                const fields = ['type', 'multiple', 'maxCount', 'choiceSetId'];
+                fields.forEach((field) => {
+                    if (question[field] !== patch[field]) {
+                        record[field] = patch[field];
+                        if (!patch.force) {
+                            throw new RRError('qxPatchTypeFields', fields.join(', '));
+                        }
+                        forced = true;
+                    }
+                    return null;
+                });
+                if (!_.isEmpty(record)) {
+                    return this.db.Question.update(record, { where: { id }, transaction: tx })
+                        .then(() => question);
+                }
+                return { question, forced };
+            });
+    }
+
+    patchQuestion(id, patch) {
+        return this.transaction(tx => this.patchQuestionTx(id, patch, tx));
     }
 };

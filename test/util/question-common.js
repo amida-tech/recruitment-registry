@@ -8,6 +8,7 @@ const _ = require('lodash');
 const models = require('../../models');
 const SPromise = require('../../lib/promise');
 const comparator = require('./comparator');
+const errSpec = require('./err-handler-spec');
 
 const scopeToFieldsMap = {
     summary: ['id', 'type', 'text', 'instruction'],
@@ -180,6 +181,38 @@ const BaseTests = class BaseTests {
                 });
         };
     }
+
+    patchQuestionFn(index, patch, options = {}) {
+        const self = this;
+        return function patchQuestion() {
+            const question = self.hxQuestion.server(index);
+            Object.assign(question, patch);
+            _.forOwn(patch, (value, key) => {
+                if (value === null) {
+                    if (key === 'common') {
+                        question.common = false;
+                        return;
+                    }
+                    delete question[key];
+                }
+            });
+            if (options.force) {
+                patch.force = true;
+            }
+            return self.patchQuestionPx(question.id, _.omit(question, 'id'));
+        };
+    }
+
+    errorPatchQuestionFn(index, patch, options) {
+        const self = this;
+        return function patchQuestion() {
+            const question = _.cloneDeep(self.hxQuestion.server(index));
+            Object.assign(question, patch);
+            const errFn = errSpec.expectedErrorHandlerFn(options.error, options.errorParam);
+            return self.patchQuestionPx(question.id, _.omit(question, 'id'))
+                .then(errSpec.throwingHandler, errFn);
+        };
+    }
 };
 
 const SpecTests = class QuestionSpecTests extends BaseTests {
@@ -241,6 +274,10 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
 
     getIdsByAnswerIdentifierPx(type, answerIdentifier) {
         return this.models.answerIdentifier.getIdsByAnswerIdentifier(type, answerIdentifier);
+    }
+
+    patchQuestionPx(id, patch) {
+        return this.models.question.patchQuestion(id, patch);
     }
 };
 
@@ -308,6 +345,11 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
     getIdsByAnswerIdentifierPx(type, answerIdentifier) {
         const endpoint = `/answer-identifiers/${type}/${answerIdentifier}`;
         return this.rrSuperTest.get(endpoint, false, 200).then(res => res.body);
+    }
+
+    patchQuestionPx(id, patch) {
+        const endpoint = `/questions/${id}`;
+        return this.rrSuperTest.post(endpoint, patch, 204);
     }
 };
 

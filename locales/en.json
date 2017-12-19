@@ -23,6 +23,7 @@
 	"answerToBeSkippedAnswered": "Conditionally to be skipped questions are answered.",
 	"answerQxNotInSurvey": "Invalid question ids for answers.",
 	"qxReplaceWhenActiveSurveys": "Question in active surveys cannot be removed or replaced.",
+	"qxPatchTypeFields": "Changes in these fields might result in invalid answers and other related data: {{$0}}",
 	"consentTypeNotFound": "No active document of consent type is found.",
 	"consentTypeDeleteOnConsent": "Consent type cannot be removed because it is used by one or more consents.",
 	"smtpNotSpecified": "Smtp specifications are not specified.",
