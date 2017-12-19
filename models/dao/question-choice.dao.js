@@ -4,6 +4,7 @@ const _ = require('lodash');
 
 const queryrize = require('../../lib/queryrize');
 const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 
 const Translatable = require('./translatable');
 
@@ -36,7 +37,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             });
     }
 
-    createQuestionChoicesTx(choices, transaction) {
+    createQuestionChoicesTx(choices, transaction, language = 'en') {
         const records = choices.map((choice, line) => {
             const record = { line };
             Object.assign(record, _.omit(choice, 'text'));
@@ -47,7 +48,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             .then(result => result.map(({ id }) => id))
             .then((ids) => {
                 const texts = choices.map(({ text }, index) => ({ text, id: ids[index] }));
-                return this.createMultipleTextsTx(texts, 'en', transaction)
+                return this.createMultipleTextsTx(texts, language, transaction)
                     .then(() => ids);
             });
     }
@@ -159,7 +160,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     updateMultipleChoiceTexts(choices, language) {
-        return this.transaction(transaction => this.createMultipleTextsTx(choices, language, transaction)); // eslint-disable-line max-len
+        return this.transaction(tx => this.createMultipleTextsTx(choices, language, tx));
     }
 
     listQuestionChoices(choiceSetId, language) {
@@ -173,21 +174,53 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return QuestionChoice.destroy({ where: { choiceSetId }, transaction });
     }
 
-    deleteQuestionChoice(id) {
-        return this.db.Answer.count({ where: { questionChoiceId: id } })
+    validateForDelete(ids, force, transaction) {
+        if (force) {
+            return SPromise.resolve();
+        }
+        const where = { where: { questionChoiceId: { $in: ids } } };
+        if (transaction) {
+            where.transaction = transaction;
+        }
+        return this.db.Answer.count(where)
             .then((count) => {
                 if (count > 0) {
                     return RRError.reject('qxChoiceNoDeleteAnswered');
                 }
                 return null;
             })
-            .then(() => this.db.FilterAnswer.count({ where: { questionChoiceId: id } }))
+            .then(() => this.db.FilterAnswer.count(where))
             .then((count) => {
                 if (count > 0) {
                     return RRError.reject('qxChoiceNoDeleteInFilter');
                 }
                 return null;
             })
+            .then(() => this.db.AnswerRuleValue.count(where))
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('qxChoiceNoDeleteInEnableWhen');
+                }
+                return null;
+            });
+    }
+
+    deleteQuestionChoicesTx(ids, force, transaction) {
+        const where = { where: { questionChoiceId: { $in: ids } }, transaction };
+        return this.validateForDelete(ids, force, transaction)
+            .then(() => this.db.Answer.destroy(where))          // TODO V
+            .then(() => this.db.FilterAnswer.destroy(where))    // Empty filters should be removed
+            .then(() => this.db.AnswerRuleValue.destroy(where)) // Empty rules should be removed
+            .then(() => this.db.AnswerIdentifier.destroy(where))
+            .then(() => this.db.QuestionChoiceText.destroy(where))
+            .then(() => {
+                const options = { where: { id: { $in: ids } }, transaction };
+                return this.db.QuestionChoice.destroy(options);
+            });
+    }
+
+    deleteQuestionChoice(id) {
+        return this.validateForDelete([id])
             .then(() => this.db.QuestionChoice.destroy({ where: { id } }));
     }
 
@@ -199,6 +232,108 @@ module.exports = class QuestionChoiceDAO extends Translatable {
                     return result[0].id;
                 }
                 return RRError.reject('questionChoiceCodeNotFound');
+            });
+    }
+
+    updateForMatchedQuestionChoices(matchedChoices, language, transaction) {
+        const { textUpdates, baseUpdates } = matchedChoices.reduce((r, { choice, patch }) => {
+            if (choice.text !== patch.text) {
+                r.textUpdates.push({ id: patch.id, text: patch.text });
+            }
+            const textlessChoice = _.omit(choice, 'text');
+            const textlessPatch = _.omit(patch, 'text');
+            if (!_.isEqual(textlessPatch, textlessChoice)) {
+                const update = { id: patch.id };
+                ['meta', 'code', 'line'].forEach((field) => {
+                    let value = patch[field];
+                    if (value === undefined) {
+                        value = null;
+                    }
+                    update[field] = value;
+                });
+                r.baseUpdates.push({ id: patch.id, update });
+            }
+            return r;
+        }, { textUpdates: [], baseUpdates: [] });
+        return SPromise.resolve()
+            .then(() => {
+                if (textUpdates.length) {
+                    return this.createMultipleTextsTx(textUpdates, language, transaction);
+                }
+                return null;
+            })
+            .then(() => {
+                if (baseUpdates.length) {
+                    const pxs = baseUpdates.map(({ id, update }) => {
+                        const options = { where: { id }, transaction };
+                        return this.db.QuestionChoice.update(update, options);
+                    });
+                    return SPromise.all(pxs);
+                }
+                return null;
+            });
+    }
+
+    patchChoicesForQuestion(questionId, choices, choicesPatch, transaction, options) {
+        const choiceMap = choices.reduce((r, choice, line) => {
+            const record = Object.assign({ line }, choice);
+            r[choice.id] = record;
+            return r;
+        }, {});
+
+        const {
+            newChoices,
+            changedChoices,
+            choicesPatchMap,
+        } = choicesPatch.reduce((r, choicePatch, line) => {
+            const id = choicePatch.id;
+            const record = Object.assign({ line }, choicePatch);
+            if (id) {
+                const choice = choiceMap[id];
+                if (!choice) {
+                    throw new RRError('qxChoicePatchInvalidId', id);
+                }
+                if (choice.type !== record.type) {
+                    throw new RRError('qxChoicePatchNoTypeChange');
+                }
+                r.choicesPatchMap[id] = record;
+                if (_.isEqual(choice, record)) {
+                    return r;
+                }
+                r.changedChoices.push({ choice, patch: record });
+                return r;
+            }
+            r.newChoices.push(Object.assign(record, { questionId }));
+            return r;
+        }, { newChoices: [], changedChoices: [], choicesPatchMap: {} });
+
+        const deletedIds = choices.reduce((r, choice) => {
+            const id = choice.id;
+            if (!choicesPatchMap[id]) {
+                r.push(id);
+            }
+            return r;
+        }, []);
+
+        const language = options.language || 'en';
+        return SPromise.resolve()
+            .then(() => {
+                if (!deletedIds.length) {
+                    return null;
+                }
+                return this.deleteQuestionChoicesTx(deletedIds, options.force, transaction);
+            })
+            .then(() => {
+                if (!changedChoices.length) {
+                    return null;
+                }
+                return this.updateForMatchedQuestionChoices(changedChoices, language, transaction);
+            })
+            .then(() => {
+                if (!newChoices.length) {
+                    return null;
+                }
+                return this.createQuestionChoicesTx(newChoices, transaction, language);
             });
     }
 };

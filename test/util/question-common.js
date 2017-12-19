@@ -196,10 +196,11 @@ const BaseTests = class BaseTests {
                     delete question[key];
                 }
             });
+            const payload = _.omit(question, 'id');
             if (options.force) {
-                patch.force = true;
+                payload.force = true;
             }
-            return self.patchQuestionPx(question.id, _.omit(question, 'id'));
+            return self.patchQuestionPx(question.id, payload);
         };
     }
 
@@ -208,7 +209,12 @@ const BaseTests = class BaseTests {
         return function patchQuestion() {
             const question = _.cloneDeep(self.hxQuestion.server(index));
             Object.assign(question, patch);
-            const errFn = errSpec.expectedErrorHandlerFn(options.error, options.errorParam);
+            let errFn;
+            if (options.errorParam) {
+                errFn = errSpec.expectedErrorHandlerFn(options.error, options.errorParam);
+            } else {
+                errFn = errSpec.expectedErrorHandlerFn(options.error);
+            }
             return self.patchQuestionPx(question.id, _.omit(question, 'id'))
                 .then(errSpec.throwingHandler, errFn);
         };
@@ -238,12 +244,19 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
         return this.models.question.getQuestion(id, options);
     }
 
-    verifyQuestionFn(index) {
+    verifyQuestionFn(index, options = {}) {
         const hxQuestion = this.hxQuestion;
         return function verifyQuestion() {
             const question = hxQuestion.server(index);
             return models.question.getQuestion(question.id)
                 .then((result) => {
+                    if (options.updateMissingChoiceIds) {
+                        question.choices.forEach((choice, cindex) => {
+                            if (!choice.id) {
+                                choice.id = result.choices[cindex].id;
+                            }
+                        });
+                    }
                     expect(result).to.deep.equal(question);
                 });
         };

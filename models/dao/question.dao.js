@@ -595,7 +595,6 @@ module.exports = class QuestionDAO extends Translatable {
             })
             .then((question) => {
                 const record = {};
-                let forced = false;
                 const { meta } = patch;
                 if (!_.isEqual(question.meta, meta)) {
                     Object.assign(record, { meta: meta || null });
@@ -607,11 +606,7 @@ module.exports = class QuestionDAO extends Translatable {
                 const fields = ['type', 'multiple', 'maxCount', 'choiceSetId'];
                 fields.forEach((field) => {
                     if (question[field] !== patch[field]) {
-                        record[field] = patch[field];
-                        if (!patch.force) {
-                            throw new RRError('qxPatchTypeFields', fields.join(', '));
-                        }
-                        forced = true;
+                        throw new RRError('qxPatchTypeFields', fields.join(', '));
                     }
                     return null;
                 });
@@ -619,7 +614,19 @@ module.exports = class QuestionDAO extends Translatable {
                     return this.db.Question.update(record, { where: { id }, transaction: tx })
                         .then(() => question);
                 }
-                return { question, forced };
+                return question;
+            })
+            .then((question) => {
+                const chs = question.choices;
+                const chsPatch = patch.choices;
+                if (Boolean(chs) !== Boolean(chsPatch)) {
+                    return RRError.reject('qxPatchNoChoicesChange');
+                }
+                if (chs) {
+                    const opts = { force: patch.force, language };
+                    return this.questionChoice.patchChoicesForQuestion(id, chs, chsPatch, tx, opts);
+                }
+                return null;
             });
     }
 
