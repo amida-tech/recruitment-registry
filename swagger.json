@@ -474,6 +474,11 @@
                     "in": "path",
                     "required": true,
                     "type": "integer"
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }, {
                     "name": "language",
                     "in": "query",
@@ -623,6 +628,11 @@
                         "type": "integer",
                         "minimum": 1
                     }
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -1261,6 +1271,12 @@
                 "summary": "Updates registry user profile",
                 "operationId": "updateProfile",
                 "security": [{
+                    "admin": []
+                },
+                {
+                    "clinician": []
+                },
+                {
                     "participant": []
                 }],
                 "parameters": [{
@@ -1285,6 +1301,12 @@
                 "summary": "Gets user profile",
                 "operationId": "getProfile",
                 "security": [{
+                    "admin": []
+                },
+                {
+                    "clinician": []
+                },
+                {
                     "participant": []
                 }],
                 "responses": {
@@ -1389,6 +1411,12 @@
                     "name": "federated",
                     "in": "query",
                     "description": "Federated flag",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "description": "identifying flag",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -2713,6 +2741,12 @@
                     "name": "include-survey",
                     "in": "query",
                     "description": "Include survey",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "description": "identifying flag",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -4171,6 +4205,9 @@
                 "required": {
                     "type": "boolean"
                 },
+                "isIdentifying": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -4260,7 +4297,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "section": {
@@ -4288,7 +4325,7 @@
                     "$ref": "#/definitions/enableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "sectionTextUpdate": {
@@ -5441,6 +5478,9 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "isIdentifying": {
+                    "type": "boolean"
+                },
                 "common": {
                     "type": "boolean"
                 },
@@ -5559,6 +5599,9 @@
                     "type": "boolean"
                 },
                 "common": {
+                    "type": "boolean"
+                },
+                "isIdentifying": {
                     "type": "boolean"
                 },
                 "maxCount": {

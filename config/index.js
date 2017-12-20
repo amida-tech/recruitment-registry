@@ -57,6 +57,7 @@ const main = {
     },
     jwt: {
         secret: process.env.RECREG_CLIENT_SECRET,
+        jwtTokenExpirationMinutes: process.env.RECREG_TOKEN_EXPIRATION_MINTUES,
     },
     port: process.env.RECREG_PORT || 9005,
     db: {

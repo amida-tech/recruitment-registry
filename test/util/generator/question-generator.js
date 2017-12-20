@@ -56,7 +56,7 @@ module.exports = class QuestionGenerator {
     body(type) {
         this.index += 1;
         const index = this.index;
-        const result = { text: `text_${index}`, type };
+        const result = { text: `text_${index}`, type, isIdentifying:false };
         if (index % 2 === 0) {
             result.instruction = `instruction_${index}`;
         }

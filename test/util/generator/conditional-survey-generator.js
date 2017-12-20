@@ -251,6 +251,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const purpose = questionInfo.purpose;
             question = specialQuestionGenerator[purpose](this, questionInfo, index);
             question.required = false;
+            question.isIdentifying = false;
         } else {
             question = super.newSurveyQuestion(index);
         }

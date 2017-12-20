@@ -11,6 +11,7 @@ module.exports = {
     questions: [{
         text: 'Eye Color',
         required: false,
+        isIdentifying: false,
         type: 'choice',
         questionIdentifier: {
             type: 'users-column',
@@ -26,6 +27,7 @@ module.exports = {
     }, {
         text: 'Hair Color',
         required: false,
+        isIdentifying: false,
         type: 'choice',
         questionIdentifier: {
             type: 'users-column',
@@ -40,6 +42,7 @@ module.exports = {
     }, {
         text: 'Race/Ethnicity',
         required: false,
+        isIdentifying: false,
         type: 'choices',
         questionIdentifier: {
             type: 'users-column',
@@ -58,6 +61,7 @@ module.exports = {
     }, {
         text: 'Age',
         required: true,
+        isIdentifying: false,
         type: 'integer',
         questionIdentifier: {
             type: 'users-column',

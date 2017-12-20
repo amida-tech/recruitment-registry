@@ -877,13 +877,15 @@ module.exports = class SurveyDAO extends Translatable {
                         .then((surveyQuestions) => {
                             const ids = _.map(surveyQuestions, 'questionId');
                             const language = options.language;
-                            return this.question.listQuestions({ scope: 'complete', ids, language })
+                            const isIdentifying =  options.isIdentifying
+                            return this.question.listQuestions({ scope: 'complete', ids, language, isIdentifying })
                                 .then((questions) => {
                                     const qxMap = _.keyBy(questions, 'id');
-                                    const qxs = surveyQuestions.map((surveyQuestion) => {
+                                    let qxs = surveyQuestions.map((surveyQuestion) => {
                                         const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
                                         return result;
                                     });
+                                    qxs = qxs.filter(qx => !!qx); //Remove null and undefined
                                     answerRuleInfos.forEach(({ questionId, rule }) => {
                                         if (questionId) {
                                             const question = qxMap[questionId];
@@ -929,7 +931,7 @@ module.exports = class SurveyDAO extends Translatable {
                         return survey;
                     });
             });
-    }
+}
 
     updateQuestionQuestionsMap(questions, map) {
         questions.forEach((question) => {
@@ -982,25 +984,27 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getAnsweredSurvey(userId, id, options) {
+        if(!options){options = {};}
         return this.getSurvey(id, options)
             .then(survey => this.answer.getAnswers({
                 userId,
                 surveyId: survey.id,
+                isIdentifying: options.isIdentifying,
             })
-                    .then((answers) => {
-                        const questionMap = this.getQuestionsMap(survey);
-                        answers.forEach((answer) => {
-                            const qid = answer.questionId;
-                            const question = questionMap.get(qid);
-                            question.language = answer.language;
-                            if (answer.answer) {
-                                question.answer = answer.answer;
-                            } else if (answer.answers) {
-                                question.answers = answer.answers;
-                            }
-                        });
-                        return survey;
-                    }));
+            .then((answers) => {
+                const questionMap = this.getQuestionsMap(survey);
+                answers.forEach((answer) => {
+                    const qid = answer.questionId;
+                    const question = questionMap.get(qid);
+                    question.language = answer.language;
+                    if (answer.answer) {
+                        question.answer = answer.answer;
+                    } else if (answer.answers) {
+                        question.answers = answer.answers;
+                    }
+                });
+                return survey;
+            }));
     }
 
     exportAppendQuestionLines(r, startBaseObject, baseObject, questions) {

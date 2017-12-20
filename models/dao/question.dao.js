@@ -179,7 +179,7 @@ module.exports = class QuestionDAO extends Translatable {
     getQuestion(qid, options = {}) {
         const Question = this.db.Question;
         const language = options.language;
-        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common'];
+        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common', 'isIdentifying'];
         return Question.findById(qid, { raw: true, attributes })
             .then((question) => {
                 if (!question) {
@@ -287,8 +287,8 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    findQuestions({ scope, ids, surveyId, commonOnly }) {
-        const attributes = ['id', 'type'];
+    findQuestions({ scope, ids, surveyId, commonOnly, isIdentifying }) {
+        const attributes = ['id', 'type','isIdentifying'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
@@ -306,6 +306,8 @@ module.exports = class QuestionDAO extends Translatable {
             }
             options.where = where;
         }
+
+
         const Question = this.db.Question;
         if (surveyId) {
             Object.assign(options, { model: Question, as: 'question' });
@@ -319,7 +321,12 @@ module.exports = class QuestionDAO extends Translatable {
                     return r;
                 }, {})));
         }
-        Object.assign(options, { raw: true, order: ['id'] });
+        if(!isIdentifying){
+          if(!options.where)
+            options.where = {};
+          options.where.isIdentifying = false;
+        }
+        Object.assign(options, { raw: true, order: 'id' });
         return Question.findAll(options);
     }
 
@@ -357,15 +364,13 @@ module.exports = class QuestionDAO extends Translatable {
         return this.findQuestionsForList(options)
             .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
-                if (ids && (questions.length !== ids.length)) {
-                    return RRError.reject('qxNotFound');
-                }
                 if (!questions.length) {
                     return questions;
                 }
                 const map = new Map(questions.map(question => ([question.id, question])));
                 if (ids) {
                     questions = ids.map(id => map.get(id));  // eslint-disable-line no-param-reassign, max-len
+                    questions = questions.filter(question => !!question); // Remove Undefined and NULL Questions
                 }
                 return this.updateAllTexts(questions, language)
                     .then(() => {
