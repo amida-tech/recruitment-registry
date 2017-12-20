@@ -1,73 +1,61 @@
 'use strict';
 
-module.exports = function question(sequelize, Sequelize, schema) {
-    const tableName = 'question';
-    const modelName = `${schema}_${tableName}`;
-    return sequelize.define(modelName, {
+module.exports = function Table(sequelize, DataTypes) {
+    return sequelize.define('question', {
         type: {
-            type: Sequelize.TEXT,
+            type: DataTypes.TEXT,
             allowNull: false,
             references: {
                 model: {
-                    schema,
+                    schema: sequelize.options.schema,
                     tableName: 'question_type',
                 },
                 key: 'name',
             },
         },
         choiceSetId: {
-            type: Sequelize.INTEGER,
+            type: DataTypes.INTEGER,
             field: 'choice_set_id',
             references: {
                 model: {
-                    schema,
+                    schema: sequelize.options.schema,
                     tableName: 'choice_set',
                 },
                 key: 'id',
             },
         },
         version: {
-            type: Sequelize.INTEGER,
+            type: DataTypes.INTEGER,
         },
         groupId: {
-            type: Sequelize.INTEGER,
+            type: DataTypes.INTEGER,
             field: 'group_id',
         },
         meta: {
-            type: Sequelize.JSON,
+            type: DataTypes.JSON,
         },
         multiple: {
-            type: Sequelize.BOOLEAN,
+            type: DataTypes.BOOLEAN,
         },
         maxCount: {
-            type: Sequelize.INTEGER,
+            type: DataTypes.INTEGER,
             field: 'max_count',
         },
         createdAt: {
-            type: Sequelize.DATE,
+            type: DataTypes.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: Sequelize.DATE,
+            type: DataTypes.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: Sequelize.DATE,
+            type: DataTypes.DATE,
             field: 'deleted_at',
-        },
-        common: {
-            type: Sequelize.BOOLEAN,
-        },
-        isIdentifying: {
-            type: Sequelize.BOOLEAN,
-            field: 'is_identifying',
-            allowNull: false,
-            defaultValue: false,
         },
     }, {
         freezeTableName: true,
-        tableName,
-        schema,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
