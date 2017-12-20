@@ -28,3 +28,6 @@ Migrations script use the `.env` file in the root directory.  Each run creates/u
 
 It is possible to store the list of executed migrations in the database. The configuration file needs to be changed for the purpose. Details of the configuration table can be found [here](http://docs.sequelizejs.com/manual/tutorial/migrations.html).
 
+### Testing
+
+This project provides a [`mocha` test](../test/migration.spec.js) in the testing suite to verify correctness of migrations. This test loads [bootstrap model](../migration/models) apply [migrations](../migration/migrations) programmatically and compares resulting model with the [current model](../models/db).
