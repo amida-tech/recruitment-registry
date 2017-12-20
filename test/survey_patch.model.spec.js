@@ -32,9 +32,9 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
         setup: conditionalSession.setup,
         requiredOverrides: conditionalSession.requiredOverrides,
     });
-    const patchGenerator = new PatchGenerator({ hxSurvey, answerer });
-
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
+    const patchGenerator = new PatchGenerator({ hxSurvey, answerer, generator });
+
     const tests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
 

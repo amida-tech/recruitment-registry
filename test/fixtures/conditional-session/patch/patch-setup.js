@@ -68,4 +68,13 @@ module.exports = [{
         questionChoiceIndex: 2,
         patch: { text: 'patched text', code: 'recods' },
     }],
+}, {
+    surveyIndex: 5,
+    mods: [{
+        purpose: 'patchSurvey',
+        patch: { forceQuestions: true },
+    }, {
+        purpose: 'arrange',
+        arrangement: [2, 3, 4, 'n', 6, 1, 0, 'n'],
+    }],
 }];

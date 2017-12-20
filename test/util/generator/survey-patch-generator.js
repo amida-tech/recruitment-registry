@@ -75,6 +75,16 @@ const specHandler = {
         const choice = question.choices[spec.questionChoiceIndex];
         Object.assign(choice, spec.patch);
     },
+    arrange(patch, generator, spec) {
+        const questions = patch.questions;
+        const newQuestions = spec.arrangement.map((index) => {
+            if (index === 'n') {
+                return generator.generator.newQuestion();
+            }
+            return questions[index];
+        });
+        Object.assign(patch, { questions: newQuestions });
+    },
 };
 
 const checkAndCopyEnableWhenId = function (enableWhen, patchedEnableWhen) {
@@ -151,12 +161,27 @@ const patchComparators = {
         expect(choice).not.deep.equal(patchedChoice);
         Object.assign(choice, spec.patch);
     },
+    arrange(spec, survey, surveyPatch, patchedSurvey) {
+        const questions = survey.questions;
+        const patchedQuestions = patchedSurvey.questions;
+        const questionsPatch = surveyPatch.questions;
+        spec.arrangement.forEach((index, newIndex) => {
+            if (index === 'n') {
+                const patchedQuestion = _.omit(patchedQuestions[newIndex], 'required');
+                comparator.question(questionsPatch[newIndex], patchedQuestion);
+                return;
+            }
+            expect(questions[index]).to.deep.equal(patchedQuestions[newIndex]);
+        });
+        Object.assign(survey, { questions: patchedQuestions });
+    },
 };
 
 module.exports = class SurveyPatchGenerator {
-    constructor({ hxSurvey, answerer }) {
+    constructor({ hxSurvey, answerer, generator }) {
         this.hxSurvey = hxSurvey;
         this.answerer = answerer;
+        this.generator = generator;
     }
 
     generateSurveyPatch(spec) {
