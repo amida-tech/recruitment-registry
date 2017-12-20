@@ -58,4 +58,14 @@ module.exports = [{
         answerSurveyIndex: 0,
         answerQuestionIndex: 5,
     }],
+}, {
+    surveyIndex: 5,
+    purpose: 'type',
+    questionIndex: 1,
+    type: 'choice',
+}, {
+    surveyIndex: 5,
+    purpose: 'type',
+    questionIndex: 3,
+    type: 'choice',
 }];

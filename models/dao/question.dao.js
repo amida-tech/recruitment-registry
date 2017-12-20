@@ -581,19 +581,18 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    patchQuestionTx(id, patch, tx) {
-        const language = patch.language || 'en';
-        return this.getQuestion(id, { language }) // TO DO: getQuestion with tx
-            .then((question) => {
+    comparePatchQuestionTx(question, patch, language, tx) {
+        const id = question.id;
+        return SPromise.resolve()
+            .then(() => {
                 const { text: origText, instruction: orgInstruction } = question;
                 const { text, instruction } = patch;
                 if ((text !== origText) || (instruction !== orgInstruction)) {
-                    return this.updateQuestionTextTx({ id, text, instruction }, language, tx)
-                        .then(() => question);
+                    return this.updateQuestionTextTx({ id, text, instruction }, language, tx);
                 }
-                return question;
+                return null;
             })
-            .then((question) => {
+            .then(() => {
                 const record = {};
                 const { meta } = patch;
                 if (!_.isEqual(question.meta, meta)) {
@@ -611,12 +610,11 @@ module.exports = class QuestionDAO extends Translatable {
                     return null;
                 });
                 if (!_.isEmpty(record)) {
-                    return this.db.Question.update(record, { where: { id }, transaction: tx })
-                        .then(() => question);
+                    return this.db.Question.update(record, { where: { id }, transaction: tx });
                 }
-                return question;
+                return null;
             })
-            .then((question) => {
+            .then(() => {
                 const chs = question.choices;
                 const chsPatch = patch.choices;
                 if (Boolean(chs) !== Boolean(chsPatch)) {
@@ -628,6 +626,23 @@ module.exports = class QuestionDAO extends Translatable {
                 }
                 return null;
             });
+    }
+
+    patchQuestionPairsTx(pairs, language, tx) {
+        if (pairs && pairs.length) {
+            const pxs = pairs.map((pair) => {
+                const { question, patch } = pair;
+                return this.comparePatchQuestionTx(question, patch, language, tx);
+            });
+            return SPromise.all(pxs);
+        }
+        return SPromise.resolve();
+    }
+
+    patchQuestionTx(id, patch, tx) {
+        const language = patch.language || 'en';
+        return this.getQuestion(id, { language }) // TO DO: getQuestion with tx
+            .then(question => this.comparePatchQuestionTx(question, patch, language, tx));
     }
 
     patchQuestion(id, patch) {

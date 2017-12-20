@@ -63,6 +63,18 @@ const specHandler = {
     deleteSurveyEnableWhen(patch) {
         delete patch.enableWhen; // eslint-disable-line no-param-reassign
     },
+    patchSurvey(patch, generator, spec) {
+        Object.assign(patch, spec.patch);
+    },
+    patchQuestion(patch, generator, spec) {
+        const question = patch.questions[spec.questionIndex];
+        Object.assign(question, spec.patch);
+    },
+    patchQuestionChoice(patch, generator, spec) {
+        const question = patch.questions[spec.questionIndex];
+        const choice = question.choices[spec.questionChoiceIndex];
+        Object.assign(choice, spec.patch);
+    },
 };
 
 const checkAndCopyEnableWhenId = function (enableWhen, patchedEnableWhen) {
@@ -118,6 +130,26 @@ const patchComparators = {
     },
     deleteSurveyEnableWhen(spec, survey) {
         delete survey.enableWhen; // eslint-disable-line no-param-reassign
+    },
+    patchSurvey(spec, survey) {
+        const actualPatch = _.omit(spec.patch, 'forceQuestions');
+        Object.assign(survey, actualPatch);
+    },
+    patchQuestion(spec, survey, surveyPatch, patchedSurvey) {
+        const question = survey.questions[spec.questionIndex];
+        const keys = Object.keys(spec.patch);
+        const questionFields = _.pick(question, keys);
+        const patchedQuestionFields = _.pick(patchedSurvey.questions[spec.questionIndex], keys);
+        expect(questionFields).not.deep.equal(patchedQuestionFields);
+        Object.assign(question, spec.patch);
+    },
+    patchQuestionChoice(spec, survey, surveyPatch, patchedSurvey) {
+        const question = survey.questions[spec.questionIndex];
+        const choice = question.choices[spec.questionChoiceIndex];
+        const patchedQuestion = patchedSurvey.questions[spec.questionIndex];
+        const patchedChoice = patchedQuestion.choices[spec.questionChoiceIndex];
+        expect(choice).not.deep.equal(patchedChoice);
+        Object.assign(choice, spec.patch);
     },
 };
 

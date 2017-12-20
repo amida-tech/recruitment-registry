@@ -89,19 +89,21 @@ const translateEnableWhen = function (parent, questions, questionChoices, noThro
     }
 };
 
-const findPatchedQuestionPropers = function (questions, questionsPatchMap) {
-    return questions.reduce((r, question) => {
+const findPatchedQuestionPropers = function (questions, questionsPatchMap, force) {
+    const result = questions.reduce((r, question) => {
         const id = question.id;
         const questionPatch = questionsPatchMap[id];
         if (questionPatch) {
             const questionProper = _.omit(question, ['required', 'enableWhen']);
             const questionPatchProper = _.omit(questionPatch, ['required', 'enableWhen']);
             if (!_.isEqual(questionProper, questionPatchProper)) {
-                r.push({ patch: questionPatchProper, current: questionProper });
+                questionPatchProper.force = force;
+                r.push({ patch: questionPatchProper, question: questionProper });
             }
         }
         return r;
     }, []);
+    return result;
 };
 
 const createQuestionChoicesMap = function (questions) {
@@ -570,6 +572,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurveyQuestions(survey, surveyPatch, transaction) {
+        const language = surveyPatch.language || 'en';
         const {
             sections: sectionsPatch,
             questions: questionsPatch,
@@ -591,7 +594,7 @@ module.exports = class SurveyDAO extends Translatable {
             }
             return r;
         }, []);
-        const patchedQuestionPropers = findPatchedQuestionPropers(questions, questionsPatchMap);
+        const patchedQuestionPropers = findPatchedQuestionPropers(questions, questionsPatchMap, surveyPatch.forceQuestions); // eslint-disable-line max-len
         const questionsChanged = removedQuestionIds.length || patchedQuestionPropers.length;
         if (questionsChanged) {
             if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
@@ -605,10 +608,12 @@ module.exports = class SurveyDAO extends Translatable {
         } = formSurveyQuestionsPatch(questionsPatch, questionsPatchMap, questions);
         const surveyId = survey.id;
         if (!dirty && !dirtyEnableWhen) {
-            return SPromise.resolve(null);
+            return this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)
+                .then(() => this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)); // eslint-disable-line max-len
         }
         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
             .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction))
+            .then(() => this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)) // eslint-disable-line max-len
             .then(() => this.createSurveyQuestionsTx(surveyQuestionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
             .then(qxs => qxs.map(question => question.id))
             .then((questionIds) => {
@@ -622,6 +627,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurveyCompleteTx(surveyId, surveyPatch, transaction) {
+        const language = surveyPatch.language || 'en';
         return this.getSurvey(surveyId) // TODO: Need a version of getSurvey with transaction
             .then((survey) => {
                 if (!surveyPatch.forceStatus && survey.status === 'retired') {
@@ -635,7 +641,7 @@ module.exports = class SurveyDAO extends Translatable {
                         const { name, description } = surveyPatch;
                         const { name: existingName, description: existingDescription } = survey;
                         if ((name !== existingName) || (description !== existingDescription)) {
-                            const record = { id: surveyId, name };
+                            const record = { id: surveyId, name, language };
                             record.description = description || null;
                             return this.createTextTx(record, transaction);
                         }

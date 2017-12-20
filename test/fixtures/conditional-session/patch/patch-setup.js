@@ -53,4 +53,19 @@ module.exports = [{
         purpose: 'deleteSurveyEnableWhenElement',
         index: 1,
     }],
+}, {
+    surveyIndex: 5,
+    mods: [{
+        purpose: 'patchSurvey',
+        patch: { forceQuestions: true },
+    }, {
+        purpose: 'patchQuestion',
+        questionIndex: 1,
+        patch: { text: 'other', meta: { property: 15 } },
+    }, {
+        purpose: 'patchQuestionChoice',
+        questionIndex: 3,
+        questionChoiceIndex: 2,
+        patch: { text: 'patched text', code: 'recods' },
+    }],
 }];
