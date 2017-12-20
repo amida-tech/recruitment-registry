@@ -394,11 +394,11 @@ module.exports = class AnswerDAO extends Base {
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
             { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
         ];
-        if(!isIdentifying){ //If not looking up questions for self then supply
-          include = [
-              { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'], where:{isIdentifying:false}},
+        if (!isIdentifying) { // If not looking up questions for self then supply
+            include = [
+              { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'], where: { isIdentifying: false } },
               { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
-          ];
+            ];
         }
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
             .then((result) => {

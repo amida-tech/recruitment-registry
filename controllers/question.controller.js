@@ -58,9 +58,9 @@ exports.listQuestions = function listQuestions(req, res) {
     const commonOnly = _.get(req, 'swagger.params.common-only.value');
     const federated = _.get(req, 'swagger.params.federated.value');
     let isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
-    if(user.role == 'admin'){
+    if (user.role === 'admin') {
         isIdentifying = true;
-    }else if(user.role == 'participant'){
+    } else if (user.role === 'participant') {
         isIdentifying = false;
     }
     const options = { scope, language, surveyId, commonOnly, federated, isIdentifying };

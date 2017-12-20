@@ -467,15 +467,15 @@ describe('survey integration', function surveyIntegration() {
     it('login as super', shared.loginFn(config.superUser));
     it('create survey with identifying', (done) => {
         const postData = {
-          name: 'Identifying Test',
-          description: 'test',
-          status: 'published',
-          questions: [{
-            isIdentifying: true,
-            text: 'Identifying Question',
-            type: 'bool',
-            required: false
-          }]
+            name: 'Identifying Test',
+            description: 'test',
+            status: 'published',
+            questions: [{
+                isIdentifying: true,
+                text: 'Identifying Question',
+                type: 'bool',
+                required: false,
+            }],
         };
         rrSuperTest.post('/surveys', postData, 201).end(done);
     });
@@ -496,23 +496,22 @@ describe('survey integration', function surveyIntegration() {
     });
 
 
-
     it('answer survey with identifying', (done) => {
-      const postData = {
-        status: 'completed',
-        answers: [{
-          questionId:identifyingSurveyQuestionid,
-          language:'en',
-          answer:{boolValue:true}
-        }]
-      };
-      rrSuperTest.post(`/user-surveys/${surveyCount}/answers`, postData, 204).end(done);
+        const postData = {
+            status: 'completed',
+            answers: [{
+                questionId: identifyingSurveyQuestionid,
+                language: 'en',
+                answer: { boolValue: true },
+            }],
+        };
+        rrSuperTest.post(`/user-surveys/${surveyCount}/answers`, postData, 204).end(done);
     });
 
     it('get answered survey with identifying', (done) => {
         rrSuperTest.get(`/user-surveys/${surveyCount}/answers?isIdentifying=true`, true, 200)
             .expect((res) => {
-              expect(res.body.answers.length).to.equal(1);
+                expect(res.body.answers.length).to.equal(1);
             })
             .end(done);
     });
@@ -526,5 +525,4 @@ describe('survey integration', function surveyIntegration() {
     it('logout as user', shared.logoutFn());
 
     surveyCount += 1;
-
 });

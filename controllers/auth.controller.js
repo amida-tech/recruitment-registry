@@ -28,9 +28,9 @@ exports.authenticateBasic = function authenticateBasic(req, res) {
         }
         const token = tokener.createJWT(req.user);
         if (!config.jwt.jwtTokenExpirationMinutes) {
-          res.cookie('rr-jwt-token', token, { httpOnly: true});
+            res.cookie('rr-jwt-token', token, { httpOnly: true });
         } else {
-          res.cookie('rr-jwt-token', token, { httpOnly: true, maxAge: 1000*60*config.jwt.jwtTokenExpirationMinutes });
+            res.cookie('rr-jwt-token', token, { httpOnly: true, maxAge: 1000 * 60 * config.jwt.jwtTokenExpirationMinutes });
         }
         return res.status(200).json({});
     });

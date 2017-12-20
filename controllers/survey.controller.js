@@ -65,10 +65,10 @@ exports.getAnsweredSurvey = function getAnsweredSurvey(req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
     const isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
-    if(!isIdentifying){
-      options.isIdentifying = false;
-    }else{
-      options.isIdentifying = true;
+    if (!isIdentifying) {
+        options.isIdentifying = false;
+    } else {
+        options.isIdentifying = true;
     }
     options.admin = (req.user.role === 'admin');
     req.models.survey.getAnsweredSurvey(userId, id, options)

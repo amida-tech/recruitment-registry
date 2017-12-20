@@ -877,7 +877,7 @@ module.exports = class SurveyDAO extends Translatable {
                         .then((surveyQuestions) => {
                             const ids = _.map(surveyQuestions, 'questionId');
                             const language = options.language;
-                            const isIdentifying =  options.isIdentifying
+                            const isIdentifying = options.isIdentifying;
                             return this.question.listQuestions({ scope: 'complete', ids, language, isIdentifying })
                                 .then((questions) => {
                                     const qxMap = _.keyBy(questions, 'id');
@@ -885,7 +885,7 @@ module.exports = class SurveyDAO extends Translatable {
                                         const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required }); // eslint-disable-line max-len
                                         return result;
                                     });
-                                    qxs = qxs.filter(qx => !!qx); //Remove null and undefined
+                                    qxs = qxs.filter(qx => !!qx); // Remove null and undefined
                                     answerRuleInfos.forEach(({ questionId, rule }) => {
                                         if (questionId) {
                                             const question = qxMap[questionId];
@@ -931,7 +931,7 @@ module.exports = class SurveyDAO extends Translatable {
                         return survey;
                     });
             });
-}
+    }
 
     updateQuestionQuestionsMap(questions, map) {
         questions.forEach((question) => {
@@ -983,8 +983,7 @@ module.exports = class SurveyDAO extends Translatable {
         return list;
     }
 
-    getAnsweredSurvey(userId, id, options) {
-        if(!options){options = {};}
+    getAnsweredSurvey(userId, id, options = {}) {
         return this.getSurvey(id, options)
             .then(survey => this.answer.getAnswers({
                 userId,

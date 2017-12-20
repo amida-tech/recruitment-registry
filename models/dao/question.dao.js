@@ -288,7 +288,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     findQuestions({ scope, ids, surveyId, commonOnly, isIdentifying }) {
-        const attributes = ['id', 'type','isIdentifying'];
+        const attributes = ['id', 'type', 'isIdentifying'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
@@ -321,10 +321,9 @@ module.exports = class QuestionDAO extends Translatable {
                     return r;
                 }, {})));
         }
-        if(!isIdentifying){
-          if(!options.where)
-            options.where = {};
-          options.where.isIdentifying = false;
+        if (!isIdentifying) {
+            if (!options.where) { options.where = {}; }
+            options.where.isIdentifying = false;
         }
         Object.assign(options, { raw: true, order: 'id' });
         return Question.findAll(options);
@@ -370,8 +369,8 @@ module.exports = class QuestionDAO extends Translatable {
                 const map = new Map(questions.map(question => ([question.id, question])));
                 if (ids) {
                     questions = ids.map(id => map.get(id));  // eslint-disable-line no-param-reassign, max-len
-                    questions = questions.filter(question => !!question); // Remove Undefined and NULL Questions
-                }
+                    questions = questions.filter(question => !!question); // eslint-disable-line no-param-reassign, max-len
+                } // Remove Undefined and NULL Questions ^^
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         const promises = questions.reduce((r, question) => {

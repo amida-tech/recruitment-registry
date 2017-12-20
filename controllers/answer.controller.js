@@ -35,7 +35,6 @@ exports.exportAnswers = function exportAnswers(req, res) {
 
 exports.exportMultiUserAnswers = function exportMultiUserAnswers(req, res) {
     const userIds = _.get(req, 'swagger.params.user-ids.value');
-    const isIdentifying = _.get(req, 'swagger.params.isIdentifying.value');
     req.models.answer.exportForUsers(userIds)
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=answer.csv');
