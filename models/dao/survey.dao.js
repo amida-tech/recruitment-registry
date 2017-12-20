@@ -667,9 +667,9 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    patchSurvey(id, surveyPatch, options = {}) {
+    patchSurvey(id, surveyPatch) {
         return this.transaction((transaction) => {
-            if (options.complete) {
+            if (surveyPatch.complete) {
                 return this.patchSurveyCompleteTx(id, surveyPatch, transaction);
             }
             return this.patchSurveyTx(id, surveyPatch, transaction);

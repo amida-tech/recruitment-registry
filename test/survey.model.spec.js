@@ -155,13 +155,13 @@ describe('survey unit', function surveyUnit() {
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
     it('error: change published survey to draft status',
-        tests.errorStatusChangeFn(surveyCount - 4, 'draft', 'surveyPublishedToDraftUpdate'));
+        tests.errorStatusChangeFn(surveyCount - 4, 'draft', { errorKey: 'surveyPublishedToDraftUpdate' }));
 
     it('error: retire draft survey',
-        tests.errorStatusChangeFn(surveyCount - 7, 'retired', 'surveyDraftToRetiredUpdate'));
+        tests.errorStatusChangeFn(surveyCount - 7, 'retired', { errorKey: 'surveyDraftToRetiredUpdate' }));
 
     it('error: patch retired survey',
-        tests.errorStatusChangeFn(surveyCount - 2, 'retired', 'surveyRetiredStatusUpdate'));
+        tests.errorStatusChangeFn(surveyCount - 2, 'retired', { errorKey: 'surveyRetiredStatusUpdate' }));
 
     it(`publish draft survey ${surveyCount - 9}`,
         tests.patchSurveyFn(surveyCount - 9, { status: 'published' }));

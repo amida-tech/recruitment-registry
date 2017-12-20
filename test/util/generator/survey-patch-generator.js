@@ -79,7 +79,9 @@ const specHandler = {
         const questions = patch.questions;
         const newQuestions = spec.arrangement.map((index) => {
             if (index === 'n') {
-                return generator.generator.newQuestion();
+                const question = generator.generator.newQuestion();
+                question.required = false;
+                return question;
             }
             return questions[index];
         });
@@ -167,7 +169,7 @@ const patchComparators = {
         const questionsPatch = surveyPatch.questions;
         spec.arrangement.forEach((index, newIndex) => {
             if (index === 'n') {
-                const patchedQuestion = _.omit(patchedQuestions[newIndex], 'required');
+                const patchedQuestion = patchedQuestions[newIndex];
                 comparator.question(questionsPatch[newIndex], patchedQuestion);
                 return;
             }

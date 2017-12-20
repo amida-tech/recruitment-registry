@@ -2,22 +2,28 @@
 
 'use strict';
 
+/* eslint max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 
+const config = require('../config');
+
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const CSG = require('./util/generator/conditional-survey-generator');
 const Answerer = require('./util/generator/answerer');
 const QuestionGenerator = require('./util/generator/question-generator');
 const SurveyHistory = require('./util/survey-history');
 const History = require('./util/history');
-const SharedSpec = require('./util/shared-spec');
+const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const questionCommon = require('./util/question-common');
 const conditionalSession = require('./fixtures/conditional-session/patch');
 
 describe('survey (patch complete) unit', function surveyPatchUnit() {
+    const rrSuperTest = new RRSuperTest();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
 
@@ -32,14 +38,16 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
     });
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
 
-    const tests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
-    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
+    const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
+    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
 
-    const shared = new SharedSpec(generator);
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     let surveyCount = 0;
 
     before(shared.setUpFn());
+
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(10).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());
@@ -71,13 +79,22 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
     it('error: change published survey to draft status',
-        tests.errorStatusChangeFn(surveyCount - 4, 'draft', { errorKey: 'surveyPublishedToDraftUpdate' }, true));
+        tests.errorStatusChangeFn(surveyCount - 4, 'draft', {
+            errorKey: 'surveyPublishedToDraftUpdate',
+            statusCode: 409,
+        }, true));
 
     it('error: retire draft survey',
-        tests.errorStatusChangeFn(surveyCount - 7, 'retired', { errorKey: 'surveyDraftToRetiredUpdate' }, true));
+        tests.errorStatusChangeFn(surveyCount - 7, 'retired', {
+            errorKey: 'surveyDraftToRetiredUpdate',
+            statusCode: 403,
+        }, true));
 
     it('error: patch retired survey',
-        tests.errorStatusChangeFn(surveyCount - 2, 'retired', { errorKey: 'surveyRetiredStatusUpdate' }, true));
+        tests.errorStatusChangeFn(surveyCount - 2, 'retired', {
+            errorKey: 'surveyRetiredStatusUpdate',
+            statusCode: 409,
+        }, true));
 
     it(`publish draft survey ${surveyCount - 9}`,
         tests.patchSurveyFn(surveyCount - 9, { status: 'published' }, { complete: true }));
@@ -126,4 +143,6 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
         it(`patch survey spec ${index}`, tests.patchSurveyFromSpecFn(spec));
         it(`get survey spec ${index}`, tests.getSurveyFromSpecFn(spec));
     });
+
+    it('logout as user', shared.logoutFn());
 });

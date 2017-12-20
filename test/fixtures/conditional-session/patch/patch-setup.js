@@ -53,7 +53,7 @@ module.exports = [{
         purpose: 'deleteSurveyEnableWhenElement',
         index: 1,
     }],
-}, {
+}, { // ^ 6, v 7
     surveyIndex: 5,
     mods: [{
         purpose: 'patchSurvey',
@@ -68,7 +68,7 @@ module.exports = [{
         questionChoiceIndex: 2,
         patch: { text: 'patched text', code: 'recods' },
     }],
-}, {
+}, { // ^7, v 8
     surveyIndex: 5,
     mods: [{
         purpose: 'patchSurvey',

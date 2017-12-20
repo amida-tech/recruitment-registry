@@ -3,8 +3,10 @@
 const chai = require('chai');
 
 const RRError = require('../../lib/rr-error');
+const i18n = require('../../i18n');
 
 const expect = chai.expect;
+const unknownError = new RRError('unknown');
 
 const throwingHandler = function () {
     throw new Error('Unexpected no error.');
@@ -30,8 +32,30 @@ const expectedSeqErrorHandlerFn = function (name, fields) {
     };
 };
 
+const verifyErrorMessage = function (res, code, ...params) {
+    const req = {};
+    const response = {};
+    i18n.init(req, response);
+    const expected = (new RRError(code, ...params)).getMessage(response);
+    expect(expected).to.not.equal(code);
+    expect(expected).to.not.equal(unknownError.getMessage(response));
+    expect(res.body.message).to.equal(expected);
+};
+
+const verifyErrorMessageLang = function (res, language, code, ...params) {
+    const req = { url: `http://aaa.com/anything?language=${language}` };
+    const response = {};
+    i18n.init(req, response);
+    const expected = (new RRError(code, ...params)).getMessage(response);
+    expect(expected).to.not.equal(code);
+    expect(expected).to.not.equal(unknownError.getMessage(response));
+    expect(res.body.message).to.equal(expected);
+};
+
 module.exports = {
     throwingHandler,
     expectedErrorHandlerFn,
     expectedSeqErrorHandlerFn,
+    verifyErrorMessage,
+    verifyErrorMessageLang,
 };
