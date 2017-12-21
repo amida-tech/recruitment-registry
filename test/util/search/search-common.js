@@ -45,6 +45,9 @@ const answerGenerators = {
     integer(questionId, spec) {
         return { answer: { integerValue: spec.value } };
     },
+    date(questionId, spec) {
+        return { answer: { dateValue: spec.value } };
+    },
     choice(questionId, spec, choiceIdMap) {
         const choiceIds = choiceIdMap.get(questionId);
         const choice = choiceIds[spec.choiceIndex];
@@ -94,6 +97,12 @@ const filterAnswerGenerators = Object.assign(Object.create(answerGenerators), {
         }
         return { answer: { integerValue: spec.value } };
     },
+    date(questionId, spec) {
+        if (spec.rangeValue) {
+            return { answer: { dateRange: spec.rangeValue } };
+        }
+        return { answer: { dateRange: spec.value } };
+    },
     $idProperty: 'id',
 });
 
@@ -115,6 +124,16 @@ const federatedAnswerGenerators = {
             return [{ identifier, questionText, integerRange: spec.rangeValue }];
         }
         return [{ identifier, questionText, integerValue: spec.value }];
+    },
+    date(question, spec) {
+        console.log('!!!!!!!!');
+        console.log(spec);
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        if (spec.rangeValue) {
+            return [{ identifier, questionText, dateRange: spec.rangeValue }];
+        }
+        return [{ identifier, questionText, dateValue: spec.value }];
     },
     choice(question, spec) {
         const choice = question.choices[spec.choiceIndex];
@@ -169,6 +188,11 @@ const federatedAnswerListGenerators = {
         const identifier = question.answerIdentifier;
         const questionText = question.text;
         return [{ identifier, questionText, value: spec.value.toString() }];
+    },
+    date(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        return [{ identifier, questionText, value: spec.value }];
     },
     bool(question, spec) {
         const identifier = question.answerIdentifier;
@@ -240,7 +264,7 @@ const Tests = class BaseTests {
         const questions = [];
         let addIdentifier = true;
         const questionGenerator = new QuestionGenerator();
-        ['choice', 'choices', 'text', 'bool', 'integer'].forEach((type) => {
+        ['choice', 'choices', 'text', 'bool', 'integer', 'date'].forEach((type) => {
             const opt = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
             const indices = [];
