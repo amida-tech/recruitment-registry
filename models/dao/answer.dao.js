@@ -152,9 +152,8 @@ const searchParticipantConditionMaker = {
             return { value };
         }
         const [min, max] = value.split(':');
-        const qColName = dao.qualifiedCol('answer', 'value');
         const condition = dateRangeCondition(min, max);
-        return { value: dao.db.sequelize.where(condition) };
+        return { value: condition };
     },
 };
 
@@ -617,7 +616,7 @@ module.exports = class AnswerDAO extends Base {
                     const condition = Object.assign({ question_id: question.id }, qxCondsAll);
                     where.$or.push(condition);
                 });
-
+                
                 // find users with a matching answer for each question
                 // (i.e., users who match all criteria)
                 const include = [{ model: this.db.User, as: 'user', attributes: [] }];

@@ -5305,6 +5305,21 @@
                     "minProperties": 1,
                     "additionalProperties": false
                 },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "floatValue": {
                     "type": "number"
                 },

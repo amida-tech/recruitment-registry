@@ -101,7 +101,7 @@ const filterAnswerGenerators = Object.assign(Object.create(answerGenerators), {
         if (spec.rangeValue) {
             return { answer: { dateRange: spec.rangeValue } };
         }
-        return { answer: { dateRange: spec.value } };
+        return { answer: { dateValue: spec.value } };
     },
     $idProperty: 'id',
 });
@@ -126,8 +126,6 @@ const federatedAnswerGenerators = {
         return [{ identifier, questionText, integerValue: spec.value }];
     },
     date(question, spec) {
-        console.log('!!!!!!!!');
-        console.log(spec);
         const identifier = question.answerIdentifier;
         const questionText = question.text;
         if (spec.rangeValue) {
@@ -245,7 +243,7 @@ const federatedAnswerListGenerators = {
 const Tests = class BaseTests {
     constructor(options = {}) {
         this.offset = options.offset || 5;
-        this.surveyCount = options.surveyCount || 4;
+        this.surveyCount = options.surveyCount || 6;
         this.userCount = 6;
         this.noSync = options.noSync;
 
