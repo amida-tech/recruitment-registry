@@ -333,7 +333,11 @@ module.exports = class QuestionChoiceDAO extends Translatable {
                 if (!newChoices.length) {
                     return null;
                 }
-                return this.createQuestionChoicesTx(newChoices, transaction, language);
-            });
+                return this.createQuestionChoicesTx(newChoices, transaction, language)
+                    .then((ids) => {
+                        newChoices.forEach((r, index) => Object.assign(r, { id: ids[index] }));
+                    });
+            })
+            .then(() => ({ deletedIds, newChoices }));
     }
 };

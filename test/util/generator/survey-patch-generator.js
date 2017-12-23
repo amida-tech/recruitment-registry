@@ -9,7 +9,7 @@ const expect = chai.expect;
 
 const specHandler = {
     enableWhenRaw(patch, generator, spec) {
-        const { questionIndex, relativeIndex, logic } = spec;
+        const { questionIndex, relativeIndex, logic, choiceIndex } = spec;
         const ruleQuestionIndex = questionIndex - relativeIndex;
         const rule = { questionIndex: ruleQuestionIndex, logic };
         const enableWhen = [rule];
@@ -17,7 +17,8 @@ const specHandler = {
         question.enableWhen = enableWhen;
         if (logic === 'equals' || logic === 'not-equals') {
             const ruleQuestion = patch.questions[ruleQuestionIndex];
-            rule.answer = generator.answerer.answerRawQuestion(ruleQuestion);
+            const options = { choiceIndex };
+            rule.answer = generator.answerer.answerRawQuestion(ruleQuestion, options);
         }
     },
     enableWhen(patch, generator, spec) {
@@ -86,6 +87,13 @@ const specHandler = {
             return questions[index];
         });
         Object.assign(patch, { questions: newQuestions });
+    },
+    addChoices(patch, generator, spec) {
+        const { questionIndex, newChoiceCount } = spec;
+        const questionGenerator = generator.generator.questionGenerator;
+        const newChoices = questionGenerator.newChoices(newChoiceCount);
+        const newQxChoices = newChoices.map(ch => ({ text: ch }));
+        patch.questions[questionIndex].choices.push(...newQxChoices);
     },
 };
 

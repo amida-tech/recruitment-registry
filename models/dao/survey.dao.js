@@ -595,34 +595,34 @@ module.exports = class SurveyDAO extends Translatable {
             return r;
         }, []);
         const patchedQuestionPropers = findPatchedQuestionPropers(questions, questionsPatchMap, surveyPatch.forceQuestions); // eslint-disable-line max-len
-        const questionsChanged = removedQuestionIds.length || patchedQuestionPropers.length;
-        if (questionsChanged) {
-            if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
-                return RRError.reject('surveyChangeQuestionWhenPublished');
-            }
-        }
-        const {
-            dirty,
-            dirtyEnableWhen,
-            surveyQuestionsPatch,
-        } = formSurveyQuestionsPatch(questionsPatch, questionsPatchMap, questions);
-        const surveyId = survey.id;
-        if (!dirty && !dirtyEnableWhen) {
-            return this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)
-                .then(() => this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)); // eslint-disable-line max-len
-        }
-        return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
-            .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction))
-            .then(() => this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)) // eslint-disable-line max-len
-            .then(() => this.createSurveyQuestionsTx(surveyQuestionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
-            .then(qxs => qxs.map(question => question.id))
-            .then((questionIds) => {
-                if (sectionsPatch) {
-                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sectionsPatch, transaction); // eslint-disable-line max-len
-                } else if (survey.sectionCount) {
-                    return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
+        return this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)
+            .then(() => {
+                if (removedQuestionIds.length) {
+                    if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
+                        return RRError.reject('surveyChangeQuestionWhenPublished');
+                    }
                 }
-                return null;
+                const {
+                    dirty,
+                    dirtyEnableWhen,
+                    surveyQuestionsPatch,
+                } = formSurveyQuestionsPatch(questionsPatch, questionsPatchMap, questions);
+                const surveyId = survey.id;
+                if (!dirty && !dirtyEnableWhen) {
+                    return this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction);
+                }
+                return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
+                    .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)) // eslint-disable-line max-len
+                    .then(() => this.createSurveyQuestionsTx(surveyQuestionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
+                    .then(qxs => qxs.map(question => question.id))
+                    .then((questionIds) => {
+                        if (sectionsPatch) {
+                            return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sectionsPatch, transaction); // eslint-disable-line max-len
+                        } else if (survey.sectionCount) {
+                            return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
+                        }
+                        return null;
+                    });
             });
     }
 
