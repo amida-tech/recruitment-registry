@@ -185,6 +185,18 @@ const patchComparators = {
         });
         Object.assign(survey, { questions: patchedQuestions });
     },
+    addChoices(spec, survey, surveyPatch, patchedSurvey) {
+        const { questionIndex, newChoiceCount } = spec;
+        const question = survey.questions[questionIndex];
+        const choices = question.choices;
+        const patchedQuestion = patchedSurvey.questions[questionIndex];
+        const patchedChoices = patchedQuestion.choices;
+        expect(choices.length + newChoiceCount).to.equal(patchedChoices.length);
+        const questionPatch = surveyPatch.questions[questionIndex];
+        comparator.question(questionPatch, patchedQuestion);
+        choices.length = 0;
+        choices.push(...patchedChoices);
+    },
 };
 
 module.exports = class SurveyPatchGenerator {

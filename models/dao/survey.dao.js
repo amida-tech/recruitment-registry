@@ -106,23 +106,36 @@ const findPatchedQuestionPropers = function (questions, questionsPatchMap, force
     return result;
 };
 
-const createQuestionChoicesMap = function (questions) {
-    return questions.reduce((r, question) => {
+const createQuestionChoicesMap = function (questions, newChoices) {
+    const result = questions.reduce((r, question) => {
         const id = question.id;
         if (id) {
             const choices = question.choices;
             if (choices) {
-                r[id] = choices;
+                r[id] = choices.filter(ch => ch.id);
             }
         }
         return r;
     }, {});
+    if (newChoices) {
+        newChoices.forEach((choice) => {
+            const questionId = choice.questionId;
+            let choices = result[questionId];
+            if (!choices) {
+                choices = {};
+                result[questionId] = choices;
+            }
+            choices.push(choice);
+        });
+    }
+    return result;
 };
 
-const formSurveyQuestionsPatch = function (questionsPatch, questionsPatchMap, questions) {
+const formSurveyQuestionsPatch = function (input) {
+    const { questionsPatch, questions, newChoices } = input;
     let dirty = false;
     let dirtyEnableWhen = false;
-    const questionChoices = createQuestionChoicesMap(questionsPatch);
+    const questionChoices = createQuestionChoicesMap(questionsPatch, newChoices);
     const questionsMap = questions.reduce((r, question) => {
         r[question.id] = question;
         return r;
@@ -596,7 +609,7 @@ module.exports = class SurveyDAO extends Translatable {
         }, []);
         const patchedQuestionPropers = findPatchedQuestionPropers(questions, questionsPatchMap, surveyPatch.forceQuestions); // eslint-disable-line max-len
         return this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)
-            .then(() => {
+            .then(({ newChoices } = {}) => {
                 if (removedQuestionIds.length) {
                     if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
                         return RRError.reject('surveyChangeQuestionWhenPublished');
@@ -606,7 +619,7 @@ module.exports = class SurveyDAO extends Translatable {
                     dirty,
                     dirtyEnableWhen,
                     surveyQuestionsPatch,
-                } = formSurveyQuestionsPatch(questionsPatch, questionsPatchMap, questions);
+                } = formSurveyQuestionsPatch({ questionsPatch, questions, newChoices });
                 const surveyId = survey.id;
                 if (!dirty && !dirtyEnableWhen) {
                     return this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction);

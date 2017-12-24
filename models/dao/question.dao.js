@@ -638,7 +638,16 @@ module.exports = class QuestionDAO extends Translatable {
                 const { question, patch } = pair;
                 return this.comparePatchQuestionTx(question, patch, language, tx);
             });
-            return SPromise.all(pxs);
+            return SPromise.all(pxs)
+                .then((result) => {
+                    const flatResult = result.reduce((r, { newChoices }) => {
+                        if (newChoices && newChoices.length) {
+                            r.newChoices.push(...newChoices);
+                        }
+                        return r;
+                    }, { newChoices: [] });
+                    return flatResult;
+                });
         }
         return SPromise.resolve();
     }
