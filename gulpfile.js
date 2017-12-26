@@ -1,50 +1,26 @@
-let gulp = require('gulp');
-let plato = require('es6-plato');
-let filename = require('./readAnalysisFile.js');;
+'use strict';
 
-let src = filename.includes('.js') ? `./${filename}` : `./${filename}/**`;
+const gulp = require('gulp');
+const plato = require('es6-plato');
+const lintRules = require('./.eslintrc.js');
+const filename = require('./readAnalysisFile.js');
 
-let outputDir = `./artifacts/${filename}`;
+const src = filename.includes('.js') ? `./${filename}` : `./${filename}/**`;
 
-let lintRules = {
-  'rules': {
-    'indent': [2,'tab'],
-    'quotes': [2,'single'],
-    'semi': [2,'always'],
-    'no-console' : [1],
-    'curly': ['error'],
-    'no-dupe-keys': 2,
-    'func-names': [1, 'always']
-  },
-  'env': {
-    'es6': true
-  },
-  'globals':['require'],
-  'parserOptions' : {
-    'sourceType': 'module',
-    'ecmaFeatures': {
-      'jsx': true,
-      'modules': true
-    }
-  }
-};
+const outputDir = `./artifacts/${filename}`;
 
+const complexityRules = {};
 
-let complexityRules = {
-
-};
-
-let platoArgs = {
+const platoArgs = {
     title: 'Recruitment Registry Code Analysis',
     eslint: lintRules,
-    complexity: complexityRules
+    complexity: complexityRules,
 };
 
 function analysis() {
-  if (src.includes('node_modules')) {
-    return
-  }
-  return plato.inspect(src, outputDir, platoArgs);
+    if (!src.includes('node_modules')) {
+      plato.inspect(src, outputDir, platoArgs);
+    }
 }
 
 gulp.task('analysis', analysis);

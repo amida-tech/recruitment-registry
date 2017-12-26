@@ -27,4 +27,7 @@ migration/sequelize-meta.json
 # OS specifics
 *.DS_Store
 
+# Static Code Analysis
+/artifacts
+
 tmp/*
