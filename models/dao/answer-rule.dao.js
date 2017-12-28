@@ -1,11 +1,14 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 const Base = require('./base');
 const answerCommon = require('./answer-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
+
+const Op = Sequelize.Op;
 
 module.exports = class AnswerRuleDAO extends Base {
     getSurveyAnswerRules({ surveyId }) {
@@ -42,7 +45,7 @@ module.exports = class AnswerRuleDAO extends Base {
                     return ruleInfo;
                 });
                 return AnswerRuleValue.findAll({
-                    where: { ruleId: { $in: ruleIds } },
+                    where: { ruleId: { [Op.in]: ruleIds } },
                     attributes: ['ruleId', 'questionChoiceId', 'value'],
                     raw: true,
                     include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }],
@@ -115,7 +118,7 @@ module.exports = class AnswerRuleDAO extends Base {
                 }
                 const ruleIds = answerRules.map(answerRule => answerRule.id);
                 return AnswerRuleValue.findAll({
-                    where: { ruleId: { $in: ruleIds } },
+                    where: { ruleId: { [Op.in]: ruleIds } },
                     attributes: ['ruleId', 'questionChoiceId', 'value'],
                     raw: true,
                     order: ['id'],

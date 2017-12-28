@@ -1,6 +1,9 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 module.exports = class SurveyIdentifierDAO extends Base {
     createSurveyIdentifier(surveyIdentifier, transaction) {
@@ -12,7 +15,7 @@ module.exports = class SurveyIdentifierDAO extends Base {
     getIdentifiersBySurveyId(type, ids) {
         const SurveyIdentifier = this.db.SurveyIdentifier;
         return SurveyIdentifier.findAll({
-            where: { type, id: { $in: ids } },
+            where: { type, id: { [Op.in]: ids } },
             attributes: ['surveyId', 'identifier'],
             raw: true,
         })

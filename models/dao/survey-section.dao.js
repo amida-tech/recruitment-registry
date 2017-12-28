@@ -1,9 +1,12 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
 const SPromise = require('../../lib/promise');
+
+const Op = Sequelize.Op;
 
 module.exports = class SectionDAO extends Base {
     constructor(db, dependencies) {
@@ -97,7 +100,7 @@ module.exports = class SectionDAO extends Base {
                     return r;
                 }, []);
                 return this.db.SurveySectionQuestion.findAll({
-                    where: { surveySectionId: { $in: ids } },
+                    where: { surveySectionId: { [Op.in]: ids } },
                     raw: true,
                     order: ['line'],
                     attributes: ['surveySectionId', 'questionId'],

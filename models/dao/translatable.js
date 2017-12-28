@@ -1,8 +1,11 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 module.exports = class Translatable extends Base {
     constructor(db, tableName, parentIdField, textFields = ['text'], optionals = {}) {
@@ -55,7 +58,7 @@ module.exports = class Translatable extends Base {
         const parentIdField = this.parentIdField;
         const ids = inputs.map(input => input.id);
         const language = inputLanguage || 'en';
-        const where = { language, [parentIdField]: { $in: ids } };
+        const where = { language, [parentIdField]: { [Op.in]: ids } };
         return Table.destroy({ where, transaction })
             .then(() => {
                 const records = inputs.map(input => this.createRecord(input, language));

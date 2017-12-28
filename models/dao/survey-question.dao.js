@@ -1,6 +1,9 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 const updateQuestionSectionDependency = function (parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
@@ -57,7 +60,7 @@ module.exports = class SurveyQuestionsDAO extends Base {
                 }
                 const ids = sections.map(({ id }) => id);
                 return this.db.SurveySectionQuestion.findAll({
-                    where: { surveySectionId: { $in: ids } },
+                    where: { surveySectionId: { [Op.in]: ids } },
                     raw: true,
                     order: ['line'],
                     attributes: ['surveySectionId', 'questionId'],

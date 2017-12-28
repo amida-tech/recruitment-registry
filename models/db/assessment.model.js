@@ -3,6 +3,7 @@
 module.exports = function assessment(sequelize, Sequelize, schema) {
     const tableName = 'assessment';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
@@ -34,7 +35,7 @@ module.exports = function assessment(sequelize, Sequelize, schema) {
         deletedAt: 'deletedAt',
         indexes: [{
             fields: ['group'],
-            where: { deleted_at: { $eq: null } },
+            where: { deleted_at: { [Op.eq]: null } },
         }],
         paranoid: true,
     });

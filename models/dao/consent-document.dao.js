@@ -1,10 +1,13 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
+
+const Op = Sequelize.Op;
 
 module.exports = class ConsentDocumentDAO extends Translatable {
     constructor(db, dependencies) {
@@ -75,7 +78,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
             query.transaction = options.transaction;
         }
         if (typeIds && typeIds.length) {
-            query.where = { typeId: { $in: typeIds } };
+            query.where = { typeId: { [Op.in]: typeIds } };
         }
         if (Object.prototype.hasOwnProperty.call(options, 'paranoid')) {
             query.paranoid = options.paranoid;

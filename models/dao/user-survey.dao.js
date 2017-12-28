@@ -1,8 +1,11 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 const comparators = {
     exists(answers) {
@@ -127,7 +130,7 @@ module.exports = class UserSurveyDAO extends Base {
         const where = {
             questionId: null,
             sectionId: null,
-            answerSurveyId: { $ne: null },
+            answerSurveyId: { [Op.ne]: null },
         };
         const result = new Set();
         const attributes = ['id', 'logic', 'surveyId', 'answerQuestionId', 'answerSurveyId'];
@@ -146,7 +149,7 @@ module.exports = class UserSurveyDAO extends Base {
                 }
                 const ruleIds = answerRules.map(r => r.id);
                 return this.db.AnswerRuleValue.findAll({
-                    where: { ruleId: { $in: ruleIds } },
+                    where: { ruleId: { [Op.in]: ruleIds } },
                     attributes: ['ruleId', 'questionChoiceId', 'value'],
                     raw: true,
                 })
@@ -179,7 +182,7 @@ module.exports = class UserSurveyDAO extends Base {
                 if (surveys.length) {
                     const ids = surveys.map(survey => survey.id);
                     return this.db.UserSurvey.findAll({
-                        where: { userId, surveyId: { $in: ids } },
+                        where: { userId, surveyId: { [Op.in]: ids } },
                         raw: true,
                         attributes: ['surveyId', 'status'],
                     })

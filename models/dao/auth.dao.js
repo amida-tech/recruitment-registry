@@ -1,8 +1,11 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const RRError = require('../../lib/rr-error');
 
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 module.exports = class UserDAO extends Base {
     getUser({ id, username }) {
@@ -19,7 +22,7 @@ module.exports = class UserDAO extends Base {
         const sequelize = this.db.sequelize;
         return User.findOne({
             where: {
-                $or: [
+                [Op.or]: [
                         { username },
                     {
                         $and: [{

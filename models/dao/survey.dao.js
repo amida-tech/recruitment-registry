@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const answerCommon = require('./answer-common');
@@ -10,6 +11,8 @@ const importUtil = require('../../import/import-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
+
+const Op = Sequelize.Op;
 
 const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 
@@ -512,7 +515,7 @@ module.exports = class SurveyDAO extends Translatable {
     removeSurveyQuestions(surveyId, questionIds, transaction) {
         if (questionIds.length) {
             const where = {
-                surveyId, questionId: { $in: questionIds },
+                surveyId, questionId: { [Op.in]: questionIds },
             };
             return this.db.AnswerRule.destroy({ where, transaction })
                 .then(() => this.db.Answer.destroy({ where, transaction }));
@@ -776,7 +779,7 @@ module.exports = class SurveyDAO extends Translatable {
                 options.where.status = status;
             }
             if (ids) {
-                options.where.id = { $in: ids };
+                options.where.id = { [Op.in]: ids };
             }
         }
         if (language) {
@@ -800,7 +803,7 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 const surveyIds = surveys.map(({ id }) => id);
                 return this.db.SurveyConsent.findAll({
-                    where: { surveyId: { $in: surveyIds } },
+                    where: { surveyId: { [Op.in]: surveyIds } },
                     raw: true,
                     attributes: ['surveyId', 'consentTypeId'],
                     order: ['consent_type_id'],

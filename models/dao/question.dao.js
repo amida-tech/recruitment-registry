@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
@@ -7,6 +8,8 @@ const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
+
+const Op = Sequelize.Op;
 
 const cleanDBQuestion = function (question) {
     const result = _.omitBy(question, _.isNil);
@@ -302,7 +305,7 @@ module.exports = class QuestionDAO extends Translatable {
                 where.common = true;
             }
             if (ids) {
-                where.id = { $in: ids };
+                where.id = { [Op.in]: ids };
             }
             options.where = where;
         }

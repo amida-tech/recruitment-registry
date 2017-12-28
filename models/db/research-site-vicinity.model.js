@@ -3,6 +3,7 @@
 module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
     const tableName = 'research_site_vicinity';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         researchSiteId: {
             type: Sequelize.INTEGER,
@@ -36,6 +37,6 @@ module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };
