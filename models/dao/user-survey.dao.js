@@ -83,7 +83,7 @@ module.exports = class UserSurveyDAO extends Base {
 
     disabledSurveysOnAnswers(surveyAnswerRules, userId) {
         const ruleSourceSet = new Set();
-        const $or = _.values(surveyAnswerRules).reduce((r, rules) => {
+        const or = _.values(surveyAnswerRules).reduce((r, rules) => {
             rules.forEach((rule) => {
                 const { answerSurveyId: surveyId, answerQuestionId: questionId } = rule;
                 const key = `${surveyId}-${questionId}`;
@@ -94,7 +94,7 @@ module.exports = class UserSurveyDAO extends Base {
             });
             return r;
         }, []);
-        const where = { userId, $or };
+        const where = { userId, [Op.or]: or };
         const attributes = ['surveyId', 'questionId', 'questionChoiceId', 'value'];
         return this.db.Answer.findAll({ where, attributes, raw: true })
             .then(records => records.reduce((r, record) => {

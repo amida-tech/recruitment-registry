@@ -1,5 +1,9 @@
 'use strict';
 
+const Sequelize = require('sequelize');
+
+const Op = Sequelize.Op;
+
 module.exports = function Table(sequelize, DataTypes) {
     return sequelize.define('choice_set', {
         reference: {
@@ -20,7 +24,7 @@ module.exports = function Table(sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ unique: true, fields: ['reference'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['reference'], where: { deleted_at: { [Op.eq]: null } } }],
         paranoid: true,
     });
 };

@@ -24,6 +24,7 @@ module.exports = function sequelizeGenerator(prependSearchPath, inputDbName) {
             idle: config.db.poolIdle,
         },
         logging: message => logger.info(message),
+        operatorsAliases: false,
     };
 
     const { name, user, pass } = config.db;

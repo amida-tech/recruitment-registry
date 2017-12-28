@@ -115,9 +115,9 @@ module.exports = class Translatable extends Base {
         if (language === 'en') {
             _.set(options, 'where.language', 'en');
         } else {
-            _.set(options, 'where.language.$in', ['en', language]);
+            _.set(options, 'where.language', { [Op.in]: ['en', language] });
         }
-        _.set(options, `where.${parentIdField}.$in`, ids);
+        _.set(options, `where.${parentIdField}`, { [Op.in]: ids });
         return Table.findAll(options)
             .then((records) => {
                 if (language === 'en') {

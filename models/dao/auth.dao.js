@@ -25,7 +25,7 @@ module.exports = class UserDAO extends Base {
                 [Op.or]: [
                         { username },
                     {
-                        $and: [{
+                        [Op.and]: [{
                             username: sequelize.fn('lower', sequelize.col('email')),
                         }, {
                             username: sequelize.fn('lower', username),
