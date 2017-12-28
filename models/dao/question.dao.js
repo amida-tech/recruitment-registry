@@ -325,7 +325,7 @@ module.exports = class QuestionDAO extends Translatable {
             if (!options.where) { options.where = {}; }
             options.where.isIdentifying = false;
         }
-        Object.assign(options, { raw: true, order: 'id' });
+        Object.assign(options, { raw: true, order: ['id'] });
         return Question.findAll(options);
     }
 

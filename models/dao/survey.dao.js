@@ -763,7 +763,7 @@ module.exports = class SurveyDAO extends Translatable {
         if (opt.admin && scope !== 'export') {
             attributes.push('authorId');
         }
-        const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
+        const options = { raw: true, attributes, order: order || ['id'], paranoid: !history };
         if (groupId || version || (status !== 'all') || ids) {
             options.where = {};
             if (groupId) {
