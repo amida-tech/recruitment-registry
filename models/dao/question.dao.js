@@ -631,7 +631,7 @@ module.exports = class QuestionDAO extends Translatable {
                     const opts = { force: patch.force, language };
                     return this.questionChoice.patchChoicesForQuestion(id, chs, chsPatch, tx, opts);
                 }
-                return null;
+                return {};
             });
     }
 

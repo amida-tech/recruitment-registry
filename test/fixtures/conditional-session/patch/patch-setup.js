@@ -92,5 +92,19 @@ module.exports = [{
         logic: 'equals',
         relativeIndex: 2,
         choiceIndex: 6,
+    }, {
+        questionIndex: 4,
+        purpose: 'patchQuestion',
+        patch: {
+            text: 'patch_4_6',
+            instruction: 'instruction_4, 6',
+        },
+    }, {
+        questionIndex: 0,
+        purpose: 'patchQuestion',
+        patch: {
+            text: 'patch_0_6',
+            instruction: null,
+        },
     }],
 }];

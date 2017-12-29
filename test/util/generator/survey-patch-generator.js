@@ -70,6 +70,11 @@ const specHandler = {
     patchQuestion(patch, generator, spec) {
         const question = patch.questions[spec.questionIndex];
         Object.assign(question, spec.patch);
+        Object.keys(spec.patch).forEach((key) => {
+            if (spec.patch[key] === null) {
+                delete question[key];
+            }
+        });
     },
     patchQuestionChoice(patch, generator, spec) {
         const question = patch.questions[spec.questionIndex];
@@ -162,6 +167,11 @@ const patchComparators = {
         const patchedQuestionFields = _.pick(patchedSurvey.questions[spec.questionIndex], keys);
         expect(questionFields).not.deep.equal(patchedQuestionFields);
         Object.assign(question, spec.patch);
+        keys.forEach((key) => {
+            if (spec.patch[key] === null) {
+                delete question[key];
+            }
+        });
     },
     patchQuestionChoice(spec, survey, surveyPatch, patchedSurvey) {
         const question = survey.questions[spec.questionIndex];

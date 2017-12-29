@@ -22,7 +22,7 @@ const surveyCommon = require('./util/survey-common');
 const questionCommon = require('./util/question-common');
 const conditionalSession = require('./fixtures/conditional-session/patch');
 
-describe('survey (patch complete) unit', function surveyPatchUnit() {
+describe('survey (patch complete) integration', function surveyPatchUnit() {
     const rrSuperTest = new RRSuperTest();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
