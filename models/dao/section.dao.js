@@ -9,9 +9,11 @@ const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
+const textFields = ['name', 'description'];
+
 module.exports = class SectionDAO extends Translatable {
     constructor(db) {
-        super(db, 'SectionText', 'sectionId', ['name', 'description'], { name: true, description: true });
+        super(db, 'SectionText', 'sectionId', textFields, { name: true, description: true });
         this.db = db;
     }
 
@@ -57,6 +59,39 @@ module.exports = class SectionDAO extends Translatable {
         return this.db.Section.findAll({ raw: true, attributes })
             .then(sections => sections.map(section => _.omitBy(section, _.isNil)))
             .then(sections => this.updateAllTexts(sections, options.language));
+    }
+
+    comparePatchSectionTx(section, patch, language, transaction) {
+        const id = section.id;
+        return SPromise.resolve()
+            .then(() => {
+                const sectionText = _.pick(section, textFields);
+                const patchText = _.pick(patch, textFields);
+                if (!_.isEqual(sectionText, patchText)) {
+                    Object.assign(patchText, { id, language });
+                    return this.createTextTx(patchText, transaction);
+                }
+                return null;
+            })
+            .then(() => {
+                let { meta } = patch;
+                if (!_.isEqual(section.meta, meta)) {
+                    meta = meta || null;
+                    return this.db.Section.update({ meta }, { where: { id }, transaction });
+                }
+                return null;
+            });
+    }
+
+    patchSectionPairsTx(pairs, language, transaction) {
+        if (pairs && pairs.length) {
+            const pxs = pairs.map((pair) => {
+                const { object, patch } = pair;
+                return this.comparePatchSectionTx(object, patch, language, transaction);
+            });
+            return SPromise.all(pxs);
+        }
+        return SPromise.resolve();
     }
 
     exportSections() {

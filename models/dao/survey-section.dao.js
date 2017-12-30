@@ -14,10 +14,19 @@ module.exports = class SectionDAO extends Base {
         Object.assign(this, dependencies);
     }
 
-    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) { // eslint-disable-line max-len
+    auxCreateSectionTx({ name, description, sectionId }, transaction) {
+        if (sectionId) {
+            return SPromise.resolve(sectionId);
+        }
         return this.section.createSectionTx({ name, description }, transaction)
-            .then(({ id: sectionId }) => {
-                const parentId = parentIndex === null || parentIndex === undefined ? null : ids[parentIndex].id; // eslint-disable-line max-len
+            .then(({ id }) => id);
+    }
+
+    createSurveySectionTx(surveySection, ids, transaction) {
+        const { surveyId, parentQuestionId, line, parentIndex } = surveySection;
+        return this.auxCreateSectionTx(surveySection)
+            .then((sectionId) => {
+                const parentId = _.isNil(parentIndex) ? null : ids[parentIndex].id;
                 const record = { surveyId, sectionId, parentId, line };
                 if (parentQuestionId) {
                     record.parentQuestionId = parentQuestionId;
@@ -35,10 +44,13 @@ module.exports = class SectionDAO extends Base {
             return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
         }
         return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
-            .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => { // eslint-disable-line max-len
+            .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, sectionId }) => { // eslint-disable-line max-len
                 const record = { name, surveyId, line, parentIndex };
                 if (questionIndex !== undefined) {
                     record.parentQuestionId = surveyQuestionIds[questionIndex];
+                }
+                if (sectionId) {
+                    record.sectionId = sectionId;
                 }
                 if (r === null) {
                     return this.createSurveySectionTx(record, [], transaction);

@@ -7,6 +7,7 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 
 const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const CSG = require('./util/generator/conditional-survey-generator');
 const Answerer = require('./util/generator/answerer');
 const QuestionGenerator = require('./util/generator/question-generator');
@@ -15,11 +16,14 @@ const History = require('./util/history');
 const SharedSpec = require('./util/shared-spec');
 const surveyCommon = require('./util/survey-common');
 const questionCommon = require('./util/question-common');
+const choiceSetCommon = require('./util/choice-set-common');
 const conditionalSession = require('./fixtures/conditional-session/patch');
+const choiceSets = require('./fixtures/example/choice-set');
 
 describe('survey (patch complete) unit', function surveyPatchUnit() {
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
+    const hxChoiceSet = new History();
 
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();
@@ -34,12 +38,22 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
 
     const tests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
+    const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     const shared = new SharedSpec(generator);
 
     let surveyCount = 0;
 
     before(shared.setUpFn());
+
+    choiceSets.forEach((choiceSet, index) => {
+        it(`create choice set ${index}`, choiceSetTests.createChoiceSetFn(choiceSet));
+        it(`get choice set ${index}`, choiceSetTests.getChoiceSetFn(index));
+    });
+
+    it('set comparator choice map', () => {
+        comparator.updateChoiceSetMap(choiceSets);
+    });
 
     _.range(10).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());

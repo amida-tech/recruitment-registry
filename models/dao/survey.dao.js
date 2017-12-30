@@ -7,6 +7,7 @@ const answerCommon = require('./answer-common');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+const dbUtil = require('../../lib/db-util');
 const importUtil = require('../../import/import-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
@@ -92,17 +93,13 @@ const translateEnableWhen = function (parent, questions, questionChoices, noThro
     }
 };
 
-const findPatchedQuestionPropers = function (questions, questionsPatchMap, force) {
-    const result = questions.reduce((r, question) => {
-        const id = question.id;
-        const questionPatch = questionsPatchMap[id];
-        if (questionPatch) {
-            const questionProper = _.omit(question, ['required', 'enableWhen']);
-            const questionPatchProper = _.omit(questionPatch, ['required', 'enableWhen']);
-            if (!_.isEqual(questionProper, questionPatchProper)) {
-                questionPatchProper.force = force;
-                r.push({ patch: questionPatchProper, question: questionProper });
-            }
+const findPatchedQuestionPropers = function (matchedQuestions, force) {
+    const result = matchedQuestions.reduce((r, { object, patch }) => {
+        const questionProper = _.omit(object, ['required', 'enableWhen']);
+        const questionPatchProper = _.omit(patch, ['required', 'enableWhen']);
+        if (!_.isEqual(questionProper, questionPatchProper)) {
+            questionPatchProper.force = force;
+            r.push({ patch: questionPatchProper, question: questionProper });
         }
         return r;
     }, []);
@@ -589,29 +586,33 @@ module.exports = class SurveyDAO extends Translatable {
 
     patchSurveyQuestions(survey, surveyPatch, transaction) {
         const language = surveyPatch.language || 'en';
+
         const {
             sections: sectionsPatch,
             questions: questionsPatch,
         } = this.flattenHierarchy(surveyPatch);
+
         if (!questionsPatch) {
             return RRError.reject('surveyNoQuestions');
         }
-        const { questions } = this.flattenHierarchy(survey);
-        const questionsPatchMap = questionsPatch.reduce((r, question) => {
-            const questionId = question.id;
-            if (questionId) {
-                r[questionId] = question;
-            }
-            return r;
-        }, {});
-        const removedQuestionIds = questions.reduce((r, { id }) => {
-            if (!questionsPatchMap[id]) {
-                r.push(id);
-            }
-            return r;
-        }, []);
-        const patchedQuestionPropers = findPatchedQuestionPropers(questions, questionsPatchMap, surveyPatch.forceQuestions); // eslint-disable-line max-len
-        return this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)
+
+        const { questions, sections } = this.flattenHierarchy(survey);
+
+        const {
+            removed: removedQuestionIds,
+            matches: matchedQuestions,
+        } = dbUtil.compareToPatches(questions, questionsPatch);
+
+        const forceQxs = surveyPatch.forceQuestions;
+        const patchedQuestionPropers = findPatchedQuestionPropers(matchedQuestions, forceQxs);
+
+        const {
+            // removed: removedSectionIds,
+            matches: matchedSections,
+        } = dbUtil.compareToPatches(sections || [], sectionsPatch || []);
+
+        return this.section.patchSectionPairsTx(matchedSections, language, transaction)
+            .then(() => this.question.patchQuestionPairsTx(patchedQuestionPropers, language, transaction)) // eslint-disable-line max-len
             .then(({ newChoices } = {}) => {
                 if (removedQuestionIds.length) {
                     if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
