@@ -47,6 +47,14 @@ module.exports = class SurveyQuestionsDAO extends Base {
             });
     }
 
+    createSurveyQuestionsTx({ surveyId, questions }, transaction) {
+        const records = questions.map(({ id: questionId, required }, line) => {
+            const record = { surveyId, questionId, required: Boolean(required), line };
+            return record;
+        });
+        return this.db.SurveyQuestion.bulkCreate(records, { transaction });
+    }
+
     addDependency(surveyId, questions) {
         return this.db.SurveySection.findAll({
             where: { surveyId },

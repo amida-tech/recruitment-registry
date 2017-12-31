@@ -110,7 +110,7 @@ const findPatchedQuestionPropers = function (matchedQuestions, force) {
         const questionPatchProper = _.omit(patch, ['required', 'enableWhen']);
         if (!_.isEqual(questionProper, questionPatchProper)) {
             questionPatchProper.force = force;
-            r.push({ patch: questionPatchProper, question: questionProper });
+            r.push({ patch: questionPatchProper, object: questionProper });
         }
         return r;
     }, []);
@@ -441,42 +441,35 @@ module.exports = class SurveyDAO extends Translatable {
                 return questions;
             })
             .then(questions => this.createRulesForQuestions(surveyId, questions, transaction))
-            .then(questions => SPromise.all(questions.map((qx, line) => {
-                const required = Boolean(qx.required);
-                const record = { questionId: qx.id, surveyId, line, required };
-                return this.db.SurveyQuestion.create(record, { transaction });
-            }))
+            .then(questions => this.surveyQuestion.createSurveyQuestionsTx({ surveyId, questions }, transaction) // eslint-disable-line max-len
                 .then(() => questions));
     }
 
-    updateSurveyTx(inputId, survey, transaction) {
+    updateSurveyTx(id, survey, transaction) {
         const { sections, questions } = this.flattenHierarchy(survey);
         if (!questions.length) {
             return RRError.reject('surveyNoQuestions');
         }
-        const record = { id: inputId, name: survey.name, description: survey.description };
+        const record = { id, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
-            .then(({ id }) => this.createRulesForSurvey(id, survey, transaction))
-            .then(({ id }) => this.createSurveyQuestionsTx(questions, sections, id, transaction)
-                .then((qxs) => {
-                    const questionIds = qxs.map(question => question.id);
-                    return { questionIds, surveyId: id };
-                }))
-            .then(({ questionIds, surveyId }) => {
+            .then(() => this.createRulesForSurvey(id, survey, transaction))
+            .then(() => this.createSurveyQuestionsTx(questions, sections, id, transaction)
+                .then(qxs => qxs.map(question => question.id)))
+            .then((questionIds) => {
                 if (sections) {
-                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction) // eslint-disable-line max-len
-                        .then(sectionIds => this.createRulesForSections(surveyId, sections, sectionIds, transaction)) // eslint-disable-line max-len
-                        .then(() => surveyId);
+                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(id, questionIds, sections, transaction) // eslint-disable-line max-len
+                        .then(sectionIds => this.createRulesForSections(id, sections, sectionIds, transaction)) // eslint-disable-line max-len
+                        .then(() => id);
                 }
-                return surveyId;
+                return id;
             })
-            .then((surveyId) => {
+            .then(() => {
                 if (survey.identifier) {
                     const { type, value: identifier } = survey.identifier;
-                    return this.surveyIdentifier.createSurveyIdentifier({ type, identifier, surveyId }, transaction) // eslint-disable-line max-len
-                        .then(() => surveyId);
+                    return this.surveyIdentifier.createSurveyIdentifier({ type, identifier, surveyId: id }, transaction) // eslint-disable-line max-len
+                        .then(() => id);
                 }
-                return surveyId;
+                return id;
             });
     }
 
@@ -618,7 +611,11 @@ module.exports = class SurveyDAO extends Translatable {
                             .then((questionIds) => {
                                 if (sections) {
                                     return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction); // eslint-disable-line max-len
-                                } else if (survey.sectionCount) {
+                                }
+                                return null;
+                            })
+                            .then(() => {
+                                if (!sections && survey.sectionCount) {
                                     return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
                                 }
                                 return null;
@@ -697,7 +694,11 @@ module.exports = class SurveyDAO extends Translatable {
                     .then((questionIds) => {
                         if (sectionsPatch) {
                             return this.patchSurveySections(surveyId, questionIds, sectionsPatch, sections, transaction); // eslint-disable-line max-len
-                        } else if (sections) {
+                        }
+                        return null;
+                    })
+                    .then(() => {
+                        if (!sectionsPatch && sections) {
                             return this.surveySection.deleteSurveySectionsTx(surveyId, transaction);
                         }
                         return null;
