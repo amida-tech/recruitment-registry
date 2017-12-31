@@ -20,16 +20,17 @@ const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 const translateRuleChoices = function (ruleParent, choices, noThrow) {
     const choiceText = _.get(ruleParent, 'answer.choiceText');
     const rawChoices = _.get(ruleParent, 'answer.choices');
-    if (choiceText || rawChoices) {
+    const code = _.get(ruleParent, 'answer.code');
+    if (choiceText || rawChoices || (code && choices)) {
         if (!choices) {
-            return RRError.reject('surveyRuleChoiceForNonChoice');
+            throw new RRError('surveyRuleChoiceForNonChoice');
         }
         const p = ruleParent.answer;
         if (choiceText) {
             const serverChoice = choices.find(choice => choice.text === choiceText);
             if (!serverChoice) {
                 if (!noThrow) {
-                    return RRError.reject('surveyRuleChoiceTextNotFound', choiceText);
+                    throw new RRError('surveyRuleChoiceTextNotFound', choiceText);
                 }
                 return null;
             }
@@ -54,6 +55,16 @@ const translateRuleChoices = function (ruleParent, choices, noThrow) {
                     delete r.text;
                 }
             });
+        }
+        if (code) {
+            const serverChoice = choices.find(choice => choice.code === code);
+            if (serverChoice) {
+                const choice = serverChoice.choice;
+                if (choice) {
+                    p.choice = choice;
+                    delete p.code;
+                }
+            }
         }
         return ruleParent;
     }
@@ -185,6 +196,38 @@ const formSurveyQuestionsPatch = function (input) {
     }, []);
     dirtyEnableWhen = dirtyEnableWhen || dirty;
     return { surveyQuestionsPatch, dirty, dirtyEnableWhen };
+};
+
+const formSurveySectionEnableWhenPatch = function (sections, sectionsPatch) {
+    const sectionsMap = dbUtil.makeMapById(sections);
+    const result = sectionsPatch.map((sectionPatch) => {
+        const id = sectionPatch.id;
+        if (!id) {
+            return sectionPatch;
+        }
+        const section = sectionsMap[id];
+        if (!section) {
+            return sectionPatch;
+        }
+        let enableWhenPatch = sectionPatch.enableWhen;
+        if (!enableWhenPatch) {
+            if (section.enableWhen) {
+                return Object.assign({ enableWhen: [] }, sectionPatch);
+            }
+            return sectionPatch;
+        }
+        enableWhenPatch = enableWhenPatch.map(ewp => _.omit(ewp, 'id'));
+        let enableWhen = section.enableWhen;
+        if (!enableWhen) {
+            return sectionPatch;
+        }
+        enableWhen = enableWhen.map(ewp => _.omit(ewp, 'id'));
+        if (_.isEqual(enableWhen, enableWhenPatch)) {
+            return _.omit(sectionPatch, 'enableWhen');
+        }
+        return sectionPatch;
+    });
+    return result;
 };
 
 module.exports = class SurveyDAO extends Translatable {
@@ -584,6 +627,25 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
+    patchSurveySections(surveyId, questionIds, sectionsPatch, sections, transaction) {
+        const pxs = sectionsPatch.map((section) => {
+            const sectionId = section.id;
+            if (sectionId) {
+                const sectionWithId = Object.assign({ sectionId }, section);
+                return SPromise.resolve(sectionWithId);
+            }
+            return this.section.createSectionTx(section, transaction)
+                .then(({ id }) => Object.assign({ sectionId: id }, section));
+        });
+        return SPromise.all(pxs)
+            .then((records) => {
+                const enableWhensPatch = formSurveySectionEnableWhenPatch(sections, sectionsPatch);
+                const sectionIds = records.map(({ sectionId }) => sectionId);
+                return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, records, transaction)  // eslint-disable-line max-len
+                    .then(() => this.createRulesForSections(surveyId, enableWhensPatch, sectionIds, transaction)); // eslint-disable-line max-len
+            });
+    }
+
     patchSurveyQuestions(survey, surveyPatch, transaction) {
         const language = surveyPatch.language || 'en';
 
@@ -634,9 +696,9 @@ module.exports = class SurveyDAO extends Translatable {
                     .then(qxs => qxs.map(question => question.id))
                     .then((questionIds) => {
                         if (sectionsPatch) {
-                            return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sectionsPatch, transaction); // eslint-disable-line max-len
-                        } else if (survey.sectionCount) {
-                            return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
+                            return this.patchSurveySections(surveyId, questionIds, sectionsPatch, sections, transaction); // eslint-disable-line max-len
+                        } else if (sections) {
+                            return this.surveySection.deleteSurveySectionsTx(surveyId, transaction);
                         }
                         return null;
                     });

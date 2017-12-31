@@ -32,6 +32,11 @@ module.exports = class SectionDAO extends Translatable {
             });
     }
 
+    createSectionsTx(sections, transaction) {
+        const pxs = sections.map(section => this.createSectionsTx(section, transaction));
+        return SPromise.all(pxs).then((results => results.map(({ id }) => id)));
+    }
+
     createSection(section) {
         return this.transaction(transaction => this.createSectionTx(section, transaction));
     }

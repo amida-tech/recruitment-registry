@@ -314,7 +314,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         const { surveyLevel, purpose: surveyLevelPurpose } = conditionalInfo;
         if (surveyLevel && surveyLevelPurpose === 'completeSurvey') {
             this.incrementIndex();
-            return conditionalInfo.survey;
+            return _.cloneDeep(conditionalInfo.survey);
         }
         const survey = super.newSurvey({ noSection: true });
         if (surveyLevel) {

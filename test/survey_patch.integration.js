@@ -20,12 +20,16 @@ const History = require('./util/history');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const questionCommon = require('./util/question-common');
+const choiceSetCommon = require('./util/choice-set-common');
 const conditionalSession = require('./fixtures/conditional-session/patch');
+const choiceSets = require('./fixtures/example/choice-set');
+const comparator = require('./util/comparator');
 
 describe('survey (patch complete) integration', function surveyPatchUnit() {
     const rrSuperTest = new RRSuperTest();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
+    const hxChoiceSet = new History();
 
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();
@@ -40,6 +44,7 @@ describe('survey (patch complete) integration', function surveyPatchUnit() {
 
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
     const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
+    const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     const shared = new SharedIntegration(rrSuperTest, generator);
 
@@ -48,6 +53,15 @@ describe('survey (patch complete) integration', function surveyPatchUnit() {
     before(shared.setUpFn());
 
     it('login as super', shared.loginFn(config.superUser));
+
+    choiceSets.forEach((choiceSet, index) => {
+        it(`create choice set ${index}`, choceSetTests.createChoiceSetFn(choiceSet));
+        it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));
+    });
+
+    it('set comparator choice map', () => {
+        comparator.updateChoiceSetMap(choiceSets);
+    });
 
     _.range(10).forEach((index) => {
         it(`create question ${index}`, questionTests.createQuestionFn());

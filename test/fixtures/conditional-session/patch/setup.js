@@ -1,6 +1,6 @@
 'use strict';
 
-// const surveys = require('../../example/survey');
+const surveys = require('../../example/survey');
 
 module.exports = [{
     surveyIndex: 0,
@@ -76,9 +76,9 @@ module.exports = [{
     questionIndex: 3,
     type: 'choice',
     choiceCount: 5,
-// }, { // Survey 7
-//     purpose: 'completeSurvey',
-//     surveyIndex: 7,
-//     survey: surveys.travelSurvey,
-//     surveyLevel: true,
+}, { // Survey 7
+    purpose: 'completeSurvey',
+    surveyIndex: 7,
+    survey: surveys.travelSurvey,
+    surveyLevel: true,
 }];

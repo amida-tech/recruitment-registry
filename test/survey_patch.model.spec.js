@@ -64,9 +64,9 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
         it(`create survey ${surveyCount}`, tests.createSurveyFn());
         it(`get survey ${surveyCount}`, tests.getSurveyFn(surveyCount));
         it(`patch survey ${surveyCount} as is`, tests.patchSameSurveyFn(surveyCount));
-        it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount, { noSectionId: true }));
+        it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount));
         it(`patch survey ${surveyCount} same conditions`, tests.patchSameSurveyEnableWhenFn(surveyCount));
-        it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount, { noSectionId: true }));
+        it(`verify survey ${surveyCount}`, tests.verifySurveyFn(surveyCount));
         it('list surveys', tests.listSurveysFn());
         surveyCount += 1;
     });
@@ -121,7 +121,7 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
             it(`patch meta ${metaIndex} to survey ${index}`,
                 tests.patchSurveyFn(index, { meta }, { complete: true }));
 
-            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
+            it(`verify survey ${index}`, tests.verifySurveyFn(index));
         });
     });
 
@@ -132,7 +132,7 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
             it(`patch name/description to survey ${index}`,
                 tests.patchSurveyFn(index, { name, description }, { complete: true }));
 
-            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
+            it(`verify survey ${index}`, tests.verifySurveyFn(index));
         });
     });
 
