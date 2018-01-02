@@ -144,23 +144,19 @@ const createQuestionChoicesMap = function (questions, newChoices) {
 
 const formSurveyQuestionsPatch = function (input) {
     const { questionsPatch, questions, newChoices } = input;
-    let dirty = false;
-    let dirtyEnableWhen = false;
     const questionChoices = createQuestionChoicesMap(questionsPatch, newChoices);
     const questionsMap = questions.reduce((r, question) => {
         r[question.id] = question;
         return r;
     }, {});
-    const surveyQuestionsPatch = questionsPatch.map((questionPatch, index) => {
+    const surveyQuestionsPatch = questionsPatch.map((questionPatch) => {
         const id = questionPatch.id;
         if (!id) {
-            dirty = true;
             return questionPatch;
         }
         const question = questionsMap[id];
         const required = questionPatch.required || false;
         if (!question) {
-            dirty = true;
             const result = { id, required };
             if (questionPatch.enableWhen) {
                 result.enableWhen = questionPatch.enableWhen;
@@ -168,12 +164,9 @@ const formSurveyQuestionsPatch = function (input) {
             return result;
         }
         const result = { id, required };
-        dirty = dirty || (required !== question.required);
-        dirty = dirty || ((questions[index] && questions[index].id) !== id);
         let enableWhenPatch = questionPatch.enableWhen;
         if (!enableWhenPatch) {
             if (question.enableWhen) {
-                dirtyEnableWhen = true;
                 result.enableWhen = [];
             }
             return result;
@@ -183,7 +176,6 @@ const formSurveyQuestionsPatch = function (input) {
         let enableWhen = question.enableWhen;
         if (!enableWhen) {
             result.enableWhen = enableWhenPatch;
-            dirtyEnableWhen = true;
             return result;
         }
         enableWhen = enableWhen.map(ewp => _.omit(ewp, 'id'));
@@ -191,11 +183,9 @@ const formSurveyQuestionsPatch = function (input) {
             return result;
         }
         result.enableWhen = enableWhenPatch;
-        dirtyEnableWhen = true;
         return result;
     }, []);
-    dirtyEnableWhen = dirtyEnableWhen || dirty;
-    return { surveyQuestionsPatch, dirty, dirtyEnableWhen };
+    return surveyQuestionsPatch;
 };
 
 const formSurveySectionEnableWhenPatch = function (sections, sectionsPatch) {
@@ -428,7 +418,7 @@ module.exports = class SurveyDAO extends Translatable {
         return ({ id });
     }
 
-    auxCreateSurveyQuestionsTx(questions, sections, surveyId, transaction) {
+    createEnableWhensTx({ surveyId, questions, sections }, transaction) {
         const questionChoices = questions.reduce((r, question) => {
             const choices = question.choices;
             if (choices) {
@@ -457,15 +447,22 @@ module.exports = class SurveyDAO extends Translatable {
                 .then(() => idedSections));
     }
 
-    createSurveyArraysTx(surveyId, questions, sections, transaction) {
+    createSurveyArraysTx({ surveyId, questions, sections, questionChoices }, transaction) {
         return this.createSurveyQuestionsTx(surveyId, questions, transaction)
             .then((idedQuestions) => {
                 if (!sections) {
                     return { idedQuestions };
                 }
+                const qchs = questionChoices || questions.reduce((r, question) => {
+                    const choices = question.choices;
+                    if (choices) {
+                        r[question.id] = choices;
+                    }
+                    return r;
+                }, {});
                 const questionIds = idedQuestions.map(({ id }) => id);
                 return this.createSurveySectionsTx(surveyId, sections, questionIds, transaction)
-                    .then(idedSections => ({ idedSections, idedQuestions }));
+                    .then(idedSections => ({ idedSections, idedQuestions, questionChoices: qchs }));
             });
     }
 
@@ -477,9 +474,19 @@ module.exports = class SurveyDAO extends Translatable {
         const record = { id, name: survey.name, description: survey.description };
         return this.createTextTx(record, transaction)
             .then(() => this.createRulesForSurvey(id, survey, transaction))
-            .then(() => this.createSurveyArraysTx(id, questions, sections, transaction))
-            .then(({ idedQuestions, idedSections }) => this.auxCreateSurveyQuestionsTx(idedQuestions, idedSections, id, transaction) // eslint-disable-line max-len
-                .then(() => idedSections))
+            .then(() => {
+                const payload = { surveyId: id, questions, sections };
+                return this.createSurveyArraysTx(payload, transaction);
+            })
+            .then(({ idedQuestions, idedSections }) => {
+                const payload = {
+                    surveyId: id,
+                    questions: idedQuestions,
+                    sections: idedSections,
+                };
+                return this.createEnableWhensTx(payload, transaction)
+                    .then(() => idedSections);
+            })
             .then((idedSections) => {
                 if (idedSections) {
                     const sectionIds = idedSections.map(idedSection => idedSection.id);
@@ -631,8 +638,18 @@ module.exports = class SurveyDAO extends Translatable {
                         }
                         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
                             .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)) // eslint-disable-line max-len
-                            .then(() => this.createSurveyArraysTx(surveyId, questions, sections, transaction)) // eslint-disable-line max-len
-                            .then(({ idedQuestions, idedSections }) => this.auxCreateSurveyQuestionsTx(idedQuestions, idedSections, surveyId, transaction)) // eslint-disable-line max-len
+                            .then(() => {
+                                const payload = { surveyId, questions, sections };
+                                return this.createSurveyArraysTx(payload, transaction);
+                            })
+                            .then(({ idedQuestions, idedSections }) => {
+                                const payload = {
+                                    surveyId,
+                                    questions: idedQuestions,
+                                    sections: idedSections,
+                                };
+                                return this.createEnableWhensTx(payload, transaction);
+                            })
                             .then(() => {
                                 if (!sections && survey.sectionCount) {
                                     return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
@@ -688,20 +705,28 @@ module.exports = class SurveyDAO extends Translatable {
                         return RRError.reject('surveyChangeQuestionWhenPublished');
                     }
                 }
-                const {
-                    dirty,
-                    dirtyEnableWhen,
-                    surveyQuestionsPatch,
-                } = formSurveyQuestionsPatch({ questionsPatch, questions, newChoices });
                 const surveyId = survey.id;
-                if (!dirty && !dirtyEnableWhen) {
-                    return this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction);
-                }
                 return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
                     .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)) // eslint-disable-line max-len
-                    .then(() => this.createSurveyArraysTx(surveyId, surveyQuestionsPatch, sectionsPatch, transaction)) // eslint-disable-line max-len
-                    .then(({ idedQuestions, idedSections }) => this.auxCreateSurveyQuestionsTx(idedQuestions, idedSections, surveyId, transaction) // eslint-disable-line max-len
-                        .then(() => idedSections))
+                    .then(() => {
+                        const questionChoices = createQuestionChoicesMap(questionsPatch, newChoices); // eslint-disable-line max-len
+                        const payload = {
+                            surveyId,
+                            questions: questionsPatch,
+                            sections: sectionsPatch,
+                            questionChoices,
+                        };
+                        return this.createSurveyArraysTx(payload, transaction);
+                    })
+                    .then(({ idedQuestions, idedSections }) => {
+                        const payload = {
+                            surveyId,
+                            questions: formSurveyQuestionsPatch({ questionsPatch: idedQuestions, questions, newChoices }), // eslint-disable-line max-len
+                            sections: idedSections,
+                        };
+                        return this.createEnableWhensTx(payload, transaction)
+                            .then(() => idedSections);
+                    })
                     .then((idedSections) => {
                         if (idedSections) {
                             const enableWhensPatch = formSurveySectionEnableWhenPatch(sections, sectionsPatch); // eslint-disable-line max-len
