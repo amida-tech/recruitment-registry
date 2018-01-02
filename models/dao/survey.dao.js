@@ -394,7 +394,7 @@ module.exports = class SurveyDAO extends Translatable {
             }, []);
             return SPromise.all(promises).then(() => questions);
         }
-        return questions;
+        return SPromise.resolve(questions);
     }
 
     createRulesForSections(surveyId, sections, sectionIds, transaction) {
@@ -412,7 +412,7 @@ module.exports = class SurveyDAO extends Translatable {
             }, []);
             return SPromise.all(promises).then(() => sections);
         }
-        return sections;
+        return SPromise.resolve(sections);
     }
 
     createSurveyEnableWhen(surveyId, enableWhen, transaction) {
@@ -428,28 +428,39 @@ module.exports = class SurveyDAO extends Translatable {
         return ({ id });
     }
 
-    createSurveyQuestionsTx(inputQuestions, sections, surveyId, transaction) {
+    auxCreateSurveyQuestionsTx(questions, sections, surveyId, transaction) {
+        const questionChoices = questions.reduce((r, question) => {
+            const choices = question.choices;
+            if (choices) {
+                r[question.id] = choices;
+            }
+            return r;
+        }, {});
+        questions.forEach(r => translateEnableWhen(r, questions, questionChoices));
+        if (sections) {
+            sections.forEach(r => translateEnableWhen(r, questions, questionChoices));
+        }
+        return this.createRulesForQuestions(surveyId, questions, transaction)
+            .then(() => this.surveyQuestion.createSurveyQuestionsTx({ surveyId, questions }, transaction) // eslint-disable-line max-len
+                .then(() => questions.map(({ id }) => id)))
+            .then((questionIds) => {
+                if (sections) {
+                    return this.surveySection.createIndexedSurveySectionsTx(surveyId, questionIds, sections, transaction)  // eslint-disable-line max-len
+                        .then(() => sections);
+                }
+                return null;
+            });
+    }
+
+    createSurveyQuestionsTx(inputQuestions, inputSections, surveyId, transaction) {
         return this.createNewQuestionsTx(_.cloneDeep(inputQuestions), transaction)
             .then((questions) => {
-                const questionChoices = questions.reduce((r, question) => {
-                    const choices = question.choices;
-                    if (choices) {
-                        r[question.id] = choices;
-                    }
-                    return r;
-                }, {});
-                return { questions, questionChoices };
-            })
-            .then(({ questions, questionChoices }) => {
-                questions.forEach(r => translateEnableWhen(r, questions, questionChoices));
-                if (sections) {
-                    sections.forEach(r => translateEnableWhen(r, questions, questionChoices));
+                if (inputSections) {
+                    return this.createNewSectionsTx(_.cloneDeep(inputSections), transaction)
+                        .then(sections => this.auxCreateSurveyQuestionsTx(questions, sections, surveyId, transaction)); // eslint-disable-line max-len
                 }
-                return questions;
-            })
-            .then(questions => this.createRulesForQuestions(surveyId, questions, transaction))
-            .then(questions => this.surveyQuestion.createSurveyQuestionsTx({ surveyId, questions }, transaction) // eslint-disable-line max-len
-                .then(() => questions.map(({ id }) => id)));
+                return this.auxCreateSurveyQuestionsTx(questions, null, surveyId, transaction);
+            });
     }
 
     updateSurveyTx(id, survey, transaction) {
@@ -461,12 +472,10 @@ module.exports = class SurveyDAO extends Translatable {
         return this.createTextTx(record, transaction)
             .then(() => this.createRulesForSurvey(id, survey, transaction))
             .then(() => this.createSurveyQuestionsTx(questions, sections, id, transaction))
-            .then((questionIds) => {
-                if (sections) {
-                    return this.createNewSectionsTx(sections, transaction)
-                        .then(idedSections => this.surveySection.createIndexedSurveySectionsTx(id, questionIds, idedSections, transaction) // eslint-disable-line max-len
-                            .then(() => idedSections.map(idedSection => idedSection.id))
-                            .then(sectionIds => this.createRulesForSections(id, sections, sectionIds, transaction))) // eslint-disable-line max-len
+            .then((idedSections) => {
+                if (idedSections) {
+                    const sectionIds = idedSections.map(idedSection => idedSection.id);
+                    return this.createRulesForSections(id, idedSections, sectionIds, transaction)
                         .then(() => id);
                 }
                 return id;
@@ -615,13 +624,6 @@ module.exports = class SurveyDAO extends Translatable {
                         return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
                             .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)) // eslint-disable-line max-len
                             .then(() => this.createSurveyQuestionsTx(questions, sections, surveyId, transaction)) // eslint-disable-line max-len
-                            .then((questionIds) => {
-                                if (sections) {
-                                    return this.createNewSectionsTx(sections, transaction)
-                                        .then(idedSections => this.surveySection.createIndexedSurveySectionsTx(surveyId, questionIds, idedSections, transaction)); // eslint-disable-line max-len
-                                }
-                                return null;
-                            })
                             .then(() => {
                                 if (!sections && survey.sectionCount) {
                                     return this.surveySection.deleteSurveySectionsTx(surveyId, transaction); // eslint-disable-line max-len
@@ -689,9 +691,11 @@ module.exports = class SurveyDAO extends Translatable {
                 return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
                     .then(() => this.removeSurveyQuestions(surveyId, removedQuestionIds, transaction)) // eslint-disable-line max-len
                     .then(() => this.createSurveyQuestionsTx(surveyQuestionsPatch, sectionsPatch, surveyId, transaction)) // eslint-disable-line max-len
-                    .then((questionIds) => {
-                        if (sectionsPatch) {
-                            return this.patchSurveySections(surveyId, questionIds, sectionsPatch, sections, transaction); // eslint-disable-line max-len
+                    .then((idedSections) => {
+                        if (idedSections) {
+                            const enableWhensPatch = formSurveySectionEnableWhenPatch(sections, sectionsPatch); // eslint-disable-line max-len
+                            const sectionIds = idedSections.map(({ id }) => id);
+                            return this.createRulesForSections(surveyId, enableWhensPatch, sectionIds, transaction); // eslint-disable-line max-len
                         }
                         return null;
                     })
