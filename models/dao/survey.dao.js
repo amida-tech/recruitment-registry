@@ -171,6 +171,9 @@ const formSurveyQuestionsPatch = function (input) {
 };
 
 const formSurveySectionEnableWhenPatch = function (sections, sectionsPatch) {
+    if (!sections) {
+        return sectionsPatch;
+    }
     const sectionsMap = dbUtil.makeMapById(sections);
     const result = sectionsPatch.map((sectionPatch) => {
         const id = sectionPatch.id;
@@ -398,18 +401,6 @@ module.exports = class SurveyDAO extends Translatable {
                         answerSurveyId: p.surveyId || null,
                     }, baseObject);
                     return this.db.AnswerRule.create(answerRule, { transaction })
-                        .then(({ id }) => {
-                            const code = p.answer && p.answer.code;
-                            if ((code !== null) && (code !== undefined)) {
-                                return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction) // eslint-disable-line max-len
-                                    .then((choiceId) => {
-                                        p.answer.choice = choiceId;
-                                        delete p.answer.code;
-                                        return { id };
-                                    });
-                            }
-                            return ({ id });
-                        })
                         .then(({ id }) => this.createRuleAnswerValue(id, p.answer, transaction));
                 });
                 return SPromise.all(promises);
@@ -463,7 +454,14 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createEnableWhensTx({ surveyId, questions, sections }, transaction) {
-        return this.createRulesForQuestions(surveyId, questions, transaction);
+        return this.createRulesForQuestions(surveyId, questions, transaction)
+            .then(() => {
+                if (sections) {
+                    const sectionIds = sections.map(({ id }) => id);
+                    return this.createRulesForSections(surveyId, sections, sectionIds, transaction); // eslint-disable-line max-len
+                }
+                return null;
+            });
     }
 
     createSurveyQuestionsTx(surveyId, questions, tx) {
@@ -569,16 +567,7 @@ module.exports = class SurveyDAO extends Translatable {
                     questions: idedQuestions,
                     sections: idedSections,
                 };
-                return this.createEnableWhensTx(payload, transaction)
-                    .then(() => idedSections);
-            })
-            .then((idedSections) => {
-                if (idedSections) {
-                    const sectionIds = idedSections.map(idedSection => idedSection.id);
-                    return this.createRulesForSections(id, idedSections, sectionIds, transaction)
-                        .then(() => id);
-                }
-                return id;
+                return this.createEnableWhensTx(payload, transaction);
             })
             .then(() => {
                 if (survey.identifier) {
@@ -797,18 +786,9 @@ module.exports = class SurveyDAO extends Translatable {
                         const payload = {
                             surveyId,
                             questions: formSurveyQuestionsPatch({ questionsPatch: idedQuestions, questions }), // eslint-disable-line max-len
-                            sections: idedSections,
+                            sections: formSurveySectionEnableWhenPatch(sections, idedSections),
                         };
-                        return this.createEnableWhensTx(payload, transaction)
-                            .then(() => idedSections);
-                    })
-                    .then((idedSections) => {
-                        if (idedSections) {
-                            const enableWhensPatch = formSurveySectionEnableWhenPatch(sections, sectionsPatch); // eslint-disable-line max-len
-                            const sectionIds = idedSections.map(({ id }) => id);
-                            return this.createRulesForSections(surveyId, enableWhensPatch, sectionIds, transaction); // eslint-disable-line max-len
-                        }
-                        return null;
+                        return this.createEnableWhensTx(payload, transaction);
                     })
                     .then(() => {
                         if (!sectionsPatch && sections) {
