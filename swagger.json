@@ -5301,6 +5301,21 @@
                     "type": "string",
                     "format": "date"
                 },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "numberValue": {
                     "type": "number"
                 },
@@ -5408,6 +5423,21 @@
                         },
                         "max": {
                             "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
                         }
                     },
                     "minProperties": 1,

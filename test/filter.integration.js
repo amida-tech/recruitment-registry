@@ -27,7 +27,7 @@ describe('filter integration', function filterIntegration() {
 
     it('login as super', shared.loginFn(config.superUser));
 
-    ['choice', 'choices', 'integer'].forEach((type) => {
+    ['choice', 'choices', 'integer', 'date'].forEach((type) => {
         _.range(count, count + 8).forEach((index) => {
             it(`create question ${index}`, qxTests.createQuestionFn({ type }));
             it(`get question ${index}`, qxTests.getQuestionFn(index));

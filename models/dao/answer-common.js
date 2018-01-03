@@ -8,7 +8,6 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value) { return { textValue: value }; },
-        date(value) { return { dateValue: value }; },
         year(value) { return { yearValue: value }; },
         month(value) { return { monthValue: value }; },
         day(value) { return { dayValue: value }; },
@@ -27,6 +26,20 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
                 integerRange.min = parseInt(min, 10);
             }
             return { integerRange };
+        },
+        date(value) {
+            if (value.indexOf(':') < 0) {
+                return { dateValue: value };
+            }
+            const [min, max] = value.split(':');
+            const dateRange = {};
+            if (max) {
+                dateRange.max = max;
+            }
+            if (min) {
+                dateRange.min = min;
+            }
+            return { dateRange };
         },
         float(value) { return { floatValue: parseFloat(value) }; },
         bloodPressure(value) {
@@ -209,6 +222,11 @@ const answerValueToDBFormat = {
     integerRange(value) {
         const max = (value.max === 0) ? '0' : (value.max || '');
         const min = (value.min === 0) ? '0' : (value.min || '');
+        return { value: `${min}:${max}` };
+    },
+    dateRange(value) {
+        const max = (value.max || '');
+        const min = (value.min || '');
         return { value: `${min}:${max}` };
     },
     filename(value) {

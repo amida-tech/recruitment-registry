@@ -106,6 +106,18 @@ const integerRangeCondition = function (min, max) {
     return { [Op.gt]: minValue };
 };
 
+const dateRangeCondition = function (min, max) {
+    const minValue = min || null;
+    const maxValue = max || null;
+    if (max && min) {
+        return { [Op.gt]: minValue, [Op.lt]: maxValue };
+    }
+    if (max) {
+        return { [Op.lt]: maxValue };
+    }
+    return { [Op.gt]: minValue };
+};
+
 const searchParticipantConditionMaker = {
     integer(dao, answer) {
         const value = answer.value;
@@ -136,6 +148,15 @@ const searchParticipantConditionMaker = {
     },
     choiceRef(dao, answer) {
         return { question_choice_id: answer.questionChoiceId };
+    },
+    date(dao, answer) {
+        const value = answer.value;
+        if (value.indexOf(':') < 0) {
+            return { value };
+        }
+        const [min, max] = value.split(':');
+        const condition = dateRangeCondition(min, max);
+        return { value: condition };
     },
 };
 
