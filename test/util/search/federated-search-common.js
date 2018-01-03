@@ -105,7 +105,7 @@ const SpecTests = class FederatedSearchSpecTests extends Tests {
         this.modelsdb0 = generator('public', 'recregone');
         this.modelsdb1 = generator('public', 'recregtwo');
         this.initMessage = 'sync models';
-        const partialOptions = { surveyCount: 4, noSync: true };
+        const partialOptions = { surveyCount: 6, noSync: true };
         this.searchTestsMap = this.schemas.reduce((r, schema, index) => {
             const m = this.models[schema];
             const opt = Object.assign({ offset: index * 7 }, partialOptions);
@@ -139,7 +139,7 @@ const IntegrationTests = class FederatedSearchSpecTests extends Tests {
         }, {});
         this.rrSuperTest = this.rrSuperTests.current;
         this.initMessage = 'initialize app';
-        const partialOptions = { surveyCount: 4 };
+        const partialOptions = { surveyCount: 6 };
         this.searchTestsMap = this.schemas.reduce((r, schema, index) => {
             const rrSuperTest = this.rrSuperTests[schema];
             const opt = Object.assign({ offset: index * 7, noSync: true }, partialOptions);

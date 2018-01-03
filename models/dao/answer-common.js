@@ -28,6 +28,20 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
             }
             return { integerRange };
         },
+        date(value) {
+            if (value.indexOf(':') < 0) {
+                return { dateValue: value };
+            }
+            const [min, max] = value.split(':');
+            const dateRange = {};
+            if (max) {
+                dateRange.max = max;
+            }
+            if (min) {
+                dateRange.min = min;
+            }
+            return { dateRange };
+        },
         float(value) { return { floatValue: parseFloat(value) }; },
         bloodPressure(value) {
             const pieces = value.split('-');
@@ -209,6 +223,11 @@ const answerValueToDBFormat = {
     integerRange(value) {
         const max = (value.max === 0) ? '0' : (value.max || '');
         const min = (value.min === 0) ? '0' : (value.min || '');
+        return { value: `${min}:${max}` };
+    },
+    dateRange(value) {
+        const max = (value.max || '');
+        const min = (value.min || '');
         return { value: `${min}:${max}` };
     },
     filename(value) {

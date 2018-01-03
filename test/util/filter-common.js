@@ -122,6 +122,7 @@ const IntegrationTests = class FilterIntegrationTests extends FilterTests {
         const hxQuestion = this.hxQuestion;
         return function createFilter() {
             const filter = filterGenerator.newFilter(hxQuestion);
+            console.log(filter);
             return rrSuperTest.post('/filters', filter, 201)
                 .then(res => hxFilter.push(filter, res.body));
         };

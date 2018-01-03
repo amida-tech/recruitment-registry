@@ -103,6 +103,18 @@ const integerRangeCondition = function (min, max) {
     return { $gt: minValue };
 };
 
+const dateRangeCondition = function (min, max) {
+    const minValue = min ? min : null;
+    const maxValue = max ? max : null;
+    if (max && min) {
+        return { $gt: minValue, $lt: maxValue };
+    }
+    if (max) {
+        return { $lt: maxValue };
+    }
+    return { $gt: minValue };
+};
+
 const searchParticipantConditionMaker = {
     integer(dao, answer) {
         const value = answer.value;
@@ -133,6 +145,15 @@ const searchParticipantConditionMaker = {
     },
     choiceRef(dao, answer) {
         return { question_choice_id: answer.questionChoiceId };
+    },
+    date(dao, answer) {
+        const value = answer.value;
+        if (value.indexOf(':') < 0) {
+            return { value };
+        }
+        const [min, max] = value.split(':');
+        const condition = dateRangeCondition(min, max);
+        return { value: condition };
     },
 };
 
@@ -595,7 +616,7 @@ module.exports = class AnswerDAO extends Base {
                     const condition = Object.assign({ question_id: question.id }, qxCondsAll);
                     where.$or.push(condition);
                 });
-
+                
                 // find users with a matching answer for each question
                 // (i.e., users who match all criteria)
                 const include = [{ model: this.db.User, as: 'user', attributes: [] }];
