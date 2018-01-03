@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const queryrize = require('../../lib/queryrize');
@@ -7,6 +8,8 @@ const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
 const Translatable = require('./translatable');
+
+const Op = Sequelize.Op;
 
 const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sql');
 
@@ -136,7 +139,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             order: ['line'],
         };
         if (questionIds) {
-            options.where = { questionId: { $in: questionIds } };
+            options.where = { questionId: { [Op.in]: questionIds } };
         }
         const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll(options)
@@ -151,7 +154,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             order: ['choiceSetId', 'line'],
         };
         if (choiceSetIds) {
-            options.where = { questionId: { $in: choiceSetIds } };
+            options.where = { questionId: { [Op.in]: choiceSetIds } };
         }
         const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll(options)
@@ -178,7 +181,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         if (force) {
             return SPromise.resolve();
         }
-        const where = { where: { questionChoiceId: { $in: ids } } };
+        const where = { where: { questionChoiceId: { [Op.in]: ids } } };
         if (transaction) {
             where.transaction = transaction;
         }
@@ -206,7 +209,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     deleteQuestionChoicesTx(ids, force, transaction) {
-        const where = { where: { questionChoiceId: { $in: ids } }, transaction };
+        const where = { where: { questionChoiceId: { [Op.in]: ids } }, transaction };
         return this.validateForDelete(ids, force, transaction)
             .then(() => this.db.Answer.destroy(where))          // TODO V
             .then(() => this.db.FilterAnswer.destroy(where))    // Empty filters should be removed
@@ -214,7 +217,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             .then(() => this.db.AnswerIdentifier.destroy(where))
             .then(() => this.db.QuestionChoiceText.destroy(where))
             .then(() => {
-                const options = { where: { id: { $in: ids } }, transaction };
+                const options = { where: { id: { [Op.in]: ids } }, transaction };
                 return this.db.QuestionChoice.destroy(options);
             });
     }
@@ -333,7 +336,11 @@ module.exports = class QuestionChoiceDAO extends Translatable {
                 if (!newChoices.length) {
                     return null;
                 }
-                return this.createQuestionChoicesTx(newChoices, transaction, language);
-            });
+                return this.createQuestionChoicesTx(newChoices, transaction, language)
+                    .then((ids) => {
+                        newChoices.forEach((r, index) => Object.assign(r, { id: ids[index] }));
+                    });
+            })
+            .then(() => ({ deletedIds, newChoices }));
     }
 };

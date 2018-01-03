@@ -14,8 +14,13 @@ const specialQuestionGenerator = {
         return surveyGenerator.questionGenerator.newMultiQuestion(options);
     },
     type(surveyGenerator, questionInfo) {
-        const type = questionInfo.type;
-        return surveyGenerator.questionGenerator.newQuestion({ type });
+        const { type, choiceCount } = questionInfo;
+        const options = { type };
+        if (choiceCount) {
+            options.choiceCount = choiceCount;
+        }
+        const question = surveyGenerator.questionGenerator.newQuestion(options);
+        return question;
     },
     enableWhen(surveyGenerator, questionInfo, index) {
         const { type, relativeIndex, logic } = questionInfo;
@@ -309,7 +314,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         const { surveyLevel, purpose: surveyLevelPurpose } = conditionalInfo;
         if (surveyLevel && surveyLevelPurpose === 'completeSurvey') {
             this.incrementIndex();
-            return conditionalInfo.survey;
+            return _.cloneDeep(conditionalInfo.survey);
         }
         const survey = super.newSurvey({ noSection: true });
         if (surveyLevel) {

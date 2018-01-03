@@ -199,7 +199,8 @@ module.exports = class Answerer {
         this.answerIndex += 1;
         if (type === 'choice') {
             const choices = question.oneOfChoices || question.choices.map(choice => choice.text);
-            if (options.choiceIndex) {
+            const choiceIndex = options.choiceIndex;
+            if (choiceIndex || choiceIndex === 0) {
                 return { choiceText: choices[options.choiceIndex] };
             }
             return { choiceText: this.selectChoice(choices) };

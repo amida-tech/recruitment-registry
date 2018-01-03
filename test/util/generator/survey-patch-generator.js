@@ -9,7 +9,7 @@ const expect = chai.expect;
 
 const specHandler = {
     enableWhenRaw(patch, generator, spec) {
-        const { questionIndex, relativeIndex, logic } = spec;
+        const { questionIndex, relativeIndex, logic, choiceIndex } = spec;
         const ruleQuestionIndex = questionIndex - relativeIndex;
         const rule = { questionIndex: ruleQuestionIndex, logic };
         const enableWhen = [rule];
@@ -17,7 +17,8 @@ const specHandler = {
         question.enableWhen = enableWhen;
         if (logic === 'equals' || logic === 'not-equals') {
             const ruleQuestion = patch.questions[ruleQuestionIndex];
-            rule.answer = generator.answerer.answerRawQuestion(ruleQuestion);
+            const options = { choiceIndex };
+            rule.answer = generator.answerer.answerRawQuestion(ruleQuestion, options);
         }
     },
     enableWhen(patch, generator, spec) {
@@ -69,6 +70,11 @@ const specHandler = {
     patchQuestion(patch, generator, spec) {
         const question = patch.questions[spec.questionIndex];
         Object.assign(question, spec.patch);
+        Object.keys(spec.patch).forEach((key) => {
+            if (spec.patch[key] === null) {
+                delete question[key];
+            }
+        });
     },
     patchQuestionChoice(patch, generator, spec) {
         const question = patch.questions[spec.questionIndex];
@@ -86,6 +92,13 @@ const specHandler = {
             return questions[index];
         });
         Object.assign(patch, { questions: newQuestions });
+    },
+    addChoices(patch, generator, spec) {
+        const { questionIndex, newChoiceCount } = spec;
+        const questionGenerator = generator.generator.questionGenerator;
+        const newChoices = questionGenerator.newChoices(newChoiceCount);
+        const newQxChoices = newChoices.map(ch => ({ text: ch }));
+        patch.questions[questionIndex].choices.push(...newQxChoices);
     },
 };
 
@@ -154,6 +167,11 @@ const patchComparators = {
         const patchedQuestionFields = _.pick(patchedSurvey.questions[spec.questionIndex], keys);
         expect(questionFields).not.deep.equal(patchedQuestionFields);
         Object.assign(question, spec.patch);
+        keys.forEach((key) => {
+            if (spec.patch[key] === null) {
+                delete question[key];
+            }
+        });
     },
     patchQuestionChoice(spec, survey, surveyPatch, patchedSurvey) {
         const question = survey.questions[spec.questionIndex];
@@ -176,6 +194,18 @@ const patchComparators = {
             expect(questions[index]).to.deep.equal(patchedQuestions[newIndex]);
         });
         Object.assign(survey, { questions: patchedQuestions });
+    },
+    addChoices(spec, survey, surveyPatch, patchedSurvey) {
+        const { questionIndex, newChoiceCount } = spec;
+        const question = survey.questions[questionIndex];
+        const choices = question.choices;
+        const patchedQuestion = patchedSurvey.questions[questionIndex];
+        const patchedChoices = patchedQuestion.choices;
+        expect(choices.length + newChoiceCount).to.equal(patchedChoices.length);
+        const questionPatch = surveyPatch.questions[questionIndex];
+        comparator.question(questionPatch, patchedQuestion);
+        choices.length = 0;
+        choices.push(...patchedChoices);
     },
 };
 

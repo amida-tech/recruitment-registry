@@ -1,6 +1,6 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
+/* eslint no-param-reassign: 0, max-len: 0, no-restricted-syntax: 0 */
 
 const chai = require('chai');
 const _ = require('lodash');
@@ -189,6 +189,57 @@ const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections
     throw new Error('Surveys should have either sections or questions.');
 };
 
+const iterSections = function* iterSections(parent) {
+    const sections = parent.sections;
+    if (sections) {
+        for (const section of sections) {
+            yield section;
+            yield* iterSections(section);
+        }
+        return;
+    }
+    const questions = parent.questions;
+    if (questions) {
+        for (const question of questions) {
+            yield* iterSections(question);
+        }
+    }
+};
+
+const iterQuestions = function* iterQuestions(parent) {
+    const sections = parent.sections;
+    if (sections) {
+        for (const section of sections) {
+            yield* iterQuestions(section);
+        }
+        return;
+    }
+    const questions = parent.questions;
+    if (questions) {
+        for (const question of questions) {
+            yield question;
+            yield* iterQuestions(question);
+        }
+    }
+};
+
+const dualForEachIter = function (leftIter, rightIter, callback) {
+    const leftArray = Array.from(leftIter);
+    const rightArray = Array.from(rightIter);
+    const zipped = _.zip(leftArray, rightArray);
+    zipped.forEach(([left, right], index) => {
+        callback(left, right, index);
+    });
+};
+
+const dualForEachQuestion = function (left, right, callback) {
+    dualForEachIter(iterQuestions(left), iterQuestions(right), callback);
+};
+
+const dualForEachSection = function (left, right, callback) {
+    dualForEachIter(iterSections(left), iterSections(right), callback);
+};
+
 const Tests = class SurveyTests {
     constructor(generator, hxSurvey, hxQuestion) {
         this.generator = generator;
@@ -251,17 +302,19 @@ const Tests = class SurveyTests {
         return function patchSameEnableWhen() {
             const survey = _.cloneDeep(self.hxSurvey.server(index));
             const client = self.hxSurvey.client(index);
-            const { questions } = models.survey.flattenHierarchy(survey);
-            const { questions: clientQuestions } = models.survey.flattenHierarchy(client);
-            clientQuestions.forEach((clientQuestion, questionIndex) => {
-                const enableWhen = clientQuestion.enableWhen;
+            const callback = (clientParent, serverParent) => {
+                const enableWhen = clientParent.enableWhen;
                 if (enableWhen) {
-                    const question = questions[questionIndex];
-                    if (question) {
-                        question.enableWhen = enableWhen;
+                    const code = _.get(enableWhen[0], 'answer.code'); // ignore code for now
+                    if (!code) {
+                        serverParent.enableWhen = enableWhen;
                     }
+                    return;
                 }
-            });
+                delete serverParent.enableWhen;
+            };
+            dualForEachQuestion(client, survey, callback);
+            dualForEachSection(client, survey, callback);
             const patch = _.omit(survey, ['id', 'authorId']);
             patch.complete = true;
             return self.patchSurveyPx(survey.id, patch);
@@ -277,7 +330,6 @@ const Tests = class SurveyTests {
             patch.complete = true;
             delete patch.id;
             delete patch.authorId;
-            // console.log(JSON.stringify(patch, undefined, 4));
             return self.patchSurveyPx(id, patch);
         };
     }

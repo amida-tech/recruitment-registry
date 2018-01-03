@@ -5299,6 +5299,34 @@
                     "type": "string",
                     "format": "date"
                 },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "yearRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "$ref": "#/definitions/answerYearValue"
+                        },
+                        "max": {
+                            "$ref": "#/definitions/answerYearValue"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "numberValue": {
                     "type": "number"
                 },
@@ -5313,19 +5341,6 @@
                         },
                         "max": {
                             "type": "integer"
-                        }
-                    },
-                    "minProperties": 1,
-                    "additionalProperties": false
-                },
-                "yearRange": {
-                    "type": "object",
-                    "properties": {
-                        "min": {
-                            "$ref": "#/definitions/answerYearValue"
-                        },
-                        "max": {
-                            "$ref": "#/definitions/answerYearValue"
                         }
                     },
                     "minProperties": 1,
@@ -5418,6 +5433,21 @@
                         },
                         "max": {
                             "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
                         }
                     },
                     "minProperties": 1,

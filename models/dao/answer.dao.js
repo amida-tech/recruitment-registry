@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
@@ -13,6 +14,8 @@ const registryCommon = require('./registry-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
+
+const Op = Sequelize.Op;
 
 const fedQxChoiceQuery = queryrize.readQuerySync('federated-question-choice-select.sql');
 
@@ -95,12 +98,24 @@ const integerRangeCondition = function (min, max) {
     const minValue = min ? parseInt(min, 10) : null;
     const maxValue = max ? parseInt(max, 10) : null;
     if (max && min) {
-        return { $gt: minValue, $lt: maxValue };
+        return { [Op.gt]: minValue, [Op.lt]: maxValue };
     }
     if (max) {
-        return { $lt: maxValue };
+        return { [Op.lt]: maxValue };
     }
-    return { $gt: minValue };
+    return { [Op.gt]: minValue };
+};
+
+const dateRangeCondition = function (min, max) {
+    const minValue = min || null;
+    const maxValue = max || null;
+    if (max && min) {
+        return { [Op.gt]: minValue, [Op.lt]: maxValue };
+    }
+    if (max) {
+        return { [Op.lt]: maxValue };
+    }
+    return { [Op.gt]: minValue };
 };
 
 const searchParticipantConditionMaker = {
@@ -136,6 +151,15 @@ const searchParticipantConditionMaker = {
     },
     choiceRef(dao, answer) {
         return { question_choice_id: answer.questionChoiceId };
+    },
+    date(dao, answer) {
+        const value = answer.value;
+        if (value.indexOf(':') < 0) {
+            return { value };
+        }
+        const [min, max] = value.split(':');
+        const condition = dateRangeCondition(min, max);
+        return { value: condition };
     },
 };
 
@@ -300,7 +324,7 @@ module.exports = class AnswerDAO extends Base {
                     });
                     if (remainingRequired.size) {
                         const ids = [...remainingRequired];
-                        const where = Object.assign({ questionId: { $in: ids } }, masterId);
+                        const where = Object.assign({ questionId: { [Op.in]: ids } }, masterId);
                         return Answer.findAll({
                             raw: true,
                             where,
@@ -348,7 +372,7 @@ module.exports = class AnswerDAO extends Base {
             .then(() => this.updateStatus(masterId, status, transaction))
             .then(() => {
                 const ids = _.map(answers, 'questionId');
-                const where = { questionId: { $in: ids } };
+                const where = { questionId: { [Op.in]: ids } };
                 Object.assign(where, masterId);
                 return this.db.Answer.destroy({ where, transaction });
             })
@@ -366,13 +390,13 @@ module.exports = class AnswerDAO extends Base {
         scope = scope || 'survey'; // eslint-disable-line no-param-reassign
         const where = {};
         if (ids) {
-            where.id = { $in: ids };
+            where.id = { [Op.in]: ids };
         }
         if (userId) {
             where.userId = userId;
         }
         if (userIds) {
-            where.userId = { $in: userIds };
+            where.userId = { [Op.in]: userIds };
         }
         if (surveyId) {
             where.surveyId = surveyId;
@@ -381,7 +405,7 @@ module.exports = class AnswerDAO extends Base {
             where.assessmentId = assessmentId;
         }
         if (scope === 'history-only') {
-            where.deletedAt = { $ne: null };
+            where.deletedAt = { [Op.ne]: null };
         }
         const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
         if (scope === 'export' || ((scope !== 'assessment' && !surveyId))) {
@@ -532,7 +556,7 @@ module.exports = class AnswerDAO extends Base {
         const QuestionChoice = this.db.QuestionChoice;
         const createdAtColumn = this.timestampColumn('answer', 'created');
         return Answer.findAll({
-            where: { id: { $in: ids } },
+            where: { id: { [Op.in]: ids } },
             attributes: [
                 'id', 'userId', 'surveyId', 'questionId',
                 'questionChoiceId', 'value', createdAtColumn,
@@ -569,14 +593,14 @@ module.exports = class AnswerDAO extends Base {
         }
 
         return this.db.Question.findAll({
-            where: { id: { $in: questionIds } },
+            where: { id: { [Op.in]: questionIds } },
             raw: true,
             attributes: ['id', 'type'],
         })
             .then(records => new Map(records.map(r => [r.id, r.type])))
             .then((typeMap) => {
                 // find answers that match one of the search criteria
-                const where = { $or: [] };
+                const where = { [Op.or]: [] };
                 criteria.questions.forEach((question) => {
                     const qxConds = [];
                     answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
@@ -591,12 +615,12 @@ module.exports = class AnswerDAO extends Base {
                         }
                         qxConds.push(qxCond);
                     });
-                    let qxCondsAll = qxConds.length > 1 ? { $or: qxConds } : qxConds[0];
+                    let qxCondsAll = qxConds.length > 1 ? { [Op.or]: qxConds } : qxConds[0];
                     if (question.exclude) {
-                        qxCondsAll = { $not: qxCondsAll };
+                        qxCondsAll = { [Op.not]: qxCondsAll };
                     }
                     const condition = Object.assign({ question_id: question.id }, qxCondsAll);
-                    where.$or.push(condition);
+                    where[Op.or].push(condition);
                 });
 
                 // find users with a matching answer for each question
@@ -646,7 +670,7 @@ module.exports = class AnswerDAO extends Base {
         }, []);
         return this.db.AnswerIdentifier.findAll({
             raw: true,
-            where: { identifier: { $in: identifiers }, type: 'federated' },
+            where: { identifier: { [Op.in]: identifiers }, type: 'federated' },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
         })
             .then((records) => {
@@ -654,7 +678,7 @@ module.exports = class AnswerDAO extends Base {
                 const texts = federatedCriteria.map(r => r.questionText);
                 const sequelize = this.db.sequelize;
                 const fn = sequelize.fn('lower', sequelize.col('text'));
-                const where = sequelize.where(fn, { $in: texts });
+                const where = sequelize.where(fn, { [Op.in]: texts });
                 return this.db.QuestionText.findAll({
                     where, raw: true, attributes: ['questionId', 'text'],
                 })
@@ -740,7 +764,7 @@ module.exports = class AnswerDAO extends Base {
         const questionIds = questions.map(({ id }) => id);
         return this.db.AnswerIdentifier.findAll({
             raw: true,
-            where: { questionId: { $in: questionIds }, type: 'federated' },
+            where: { questionId: { [Op.in]: questionIds }, type: 'federated' },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
         })
             .then((records) => {
@@ -765,7 +789,7 @@ module.exports = class AnswerDAO extends Base {
                 if (qxIds.length) {
                     return this.db.QuestionText.findAll({
                         raw: true,
-                        where: { questionId: { $in: qxIds } },
+                        where: { questionId: { [Op.in]: qxIds } },
                         attributes: ['questionId', 'text'],
                     })
                         .then((r) => {
@@ -790,7 +814,7 @@ module.exports = class AnswerDAO extends Base {
                 if (qxChoiceIds.length) {
                     return this.db.QuestionChoiceText.findAll({
                         raw: true,
-                        where: { questionChoiceId: { $in: qxChoiceIds } },
+                        where: { questionChoiceId: { [Op.in]: qxChoiceIds } },
                         attributes: ['questionChoiceId', 'text'],
                     })
                         .then((r) => {
@@ -872,7 +896,7 @@ module.exports = class AnswerDAO extends Base {
         const uniqQuestionIds = [...questionIdSet];
         return this.db.AnswerIdentifier.findAll({
             raw: true,
-            where: { questionId: { $in: uniqQuestionIds }, type: 'federated' },
+            where: { questionId: { [Op.in]: uniqQuestionIds }, type: 'federated' },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
         })
             .then((records) => {
@@ -928,7 +952,7 @@ module.exports = class AnswerDAO extends Base {
                 const uniqQuestionIds = [...questionIdSet];
                 return this.db.QuestionText.findAll({
                     raw: true,
-                    where: { questionId: { $in: uniqQuestionIds }, language_code: 'en' },
+                    where: { questionId: { [Op.in]: uniqQuestionIds }, language_code: 'en' },
                     attributes: ['questionId', 'text'],
                 })
                     .then((records) => {
@@ -958,7 +982,7 @@ module.exports = class AnswerDAO extends Base {
                 }
                 return this.db.QuestionChoiceText.findAll({
                     raw: true,
-                    where: { questionChoiceId: { $in: questionChoiceIds }, language_code: 'en' },
+                    where: { questionChoiceId: { [Op.in]: questionChoiceIds }, language_code: 'en' },
                     attributes: ['questionChoiceId', 'text'],
                 })
                     .then((records) => {

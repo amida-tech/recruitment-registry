@@ -77,4 +77,34 @@ module.exports = [{
         purpose: 'arrange',
         arrangement: [2, 3, 4, 'n', 6, 1, 0, 'n'],
     }],
+}, { // ^8, v 9
+    surveyIndex: 6,
+    mods: [{
+        purpose: 'patchSurvey',
+        patch: { forceQuestions: true },
+    }, {
+        purpose: 'addChoices',
+        questionIndex: 3,
+        newChoiceCount: 4,
+    }, {
+        questionIndex: 5,
+        purpose: 'enableWhenRaw',
+        logic: 'equals',
+        relativeIndex: 2,
+        choiceIndex: 6,
+    }, {
+        questionIndex: 4,
+        purpose: 'patchQuestion',
+        patch: {
+            text: 'patch_4_6',
+            instruction: 'instruction_4, 6',
+        },
+    }, {
+        questionIndex: 0,
+        purpose: 'patchQuestion',
+        patch: {
+            text: 'patch_0_6',
+            instruction: null,
+        },
+    }],
 }];

@@ -3,6 +3,7 @@
 module.exports = function filterAnswer(sequelize, Sequelize, schema) {
     const tableName = 'filter_answer';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         filterId: {
             type: Sequelize.INTEGER,
@@ -62,6 +63,6 @@ module.exports = function filterAnswer(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ fields: ['filter_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ fields: ['filter_id'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };

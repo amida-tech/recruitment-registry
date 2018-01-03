@@ -3,6 +3,7 @@
 module.exports = function questionChoiceText(sequelize, Sequelize, schema) {
     const tableName = 'question_choice_text';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         questionChoiceId: {
             type: Sequelize.INTEGER,
@@ -50,7 +51,7 @@ module.exports = function questionChoiceText(sequelize, Sequelize, schema) {
         indexes: [{
             name: 'question_choice_text_lower_text_key',
             fields: [sequelize.fn('lower', sequelize.col('text'))],
-            where: { deleted_at: { $eq: null }, language_code: 'en' },
+            where: { deleted_at: { [Op.eq]: null }, language_code: 'en' },
         }],
     });
 };

@@ -3,6 +3,7 @@
 module.exports = function surveySection(sequelize, Sequelize, schema) {
     const tableName = 'survey_section';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         surveyId: {
             type: Sequelize.INTEGER,
@@ -69,7 +70,7 @@ module.exports = function surveySection(sequelize, Sequelize, schema) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { [Op.eq]: null } } }],
         paranoid: true,
     });
 };

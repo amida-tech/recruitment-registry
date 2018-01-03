@@ -1,6 +1,9 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 const updateQuestionSectionDependency = function (parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
@@ -44,6 +47,14 @@ module.exports = class SurveyQuestionsDAO extends Base {
             });
     }
 
+    createSurveyQuestionsTx({ surveyId, questions }, transaction) {
+        const records = questions.map(({ id: questionId, required }, line) => {
+            const record = { surveyId, questionId, required: Boolean(required), line };
+            return record;
+        });
+        return this.db.SurveyQuestion.bulkCreate(records, { transaction });
+    }
+
     addDependency(surveyId, questions) {
         return this.db.SurveySection.findAll({
             where: { surveyId },
@@ -57,7 +68,7 @@ module.exports = class SurveyQuestionsDAO extends Base {
                 }
                 const ids = sections.map(({ id }) => id);
                 return this.db.SurveySectionQuestion.findAll({
-                    where: { surveySectionId: { $in: ids } },
+                    where: { surveySectionId: { [Op.in]: ids } },
                     raw: true,
                     order: ['line'],
                     attributes: ['surveySectionId', 'questionId'],

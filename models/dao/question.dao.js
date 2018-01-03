@@ -1,5 +1,6 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
@@ -7,6 +8,8 @@ const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
+
+const Op = Sequelize.Op;
 
 const cleanDBQuestion = function (question) {
     const result = _.omitBy(question, _.isNil);
@@ -302,7 +305,7 @@ module.exports = class QuestionDAO extends Translatable {
                 where.common = true;
             }
             if (ids) {
-                where.id = { $in: ids };
+                where.id = { [Op.in]: ids };
             }
             options.where = where;
         }
@@ -325,7 +328,7 @@ module.exports = class QuestionDAO extends Translatable {
             if (!options.where) { options.where = {}; }
             options.where.isIdentifying = false;
         }
-        Object.assign(options, { raw: true, order: 'id' });
+        Object.assign(options, { raw: true, order: ['id'] });
         return Question.findAll(options);
     }
 
@@ -628,17 +631,26 @@ module.exports = class QuestionDAO extends Translatable {
                     const opts = { force: patch.force, language };
                     return this.questionChoice.patchChoicesForQuestion(id, chs, chsPatch, tx, opts);
                 }
-                return null;
+                return {};
             });
     }
 
     patchQuestionPairsTx(pairs, language, tx) {
         if (pairs && pairs.length) {
             const pxs = pairs.map((pair) => {
-                const { question, patch } = pair;
-                return this.comparePatchQuestionTx(question, patch, language, tx);
+                const { object, patch } = pair;
+                return this.comparePatchQuestionTx(object, patch, language, tx);
             });
-            return SPromise.all(pxs);
+            return SPromise.all(pxs)
+                .then((result) => {
+                    const flatResult = result.reduce((r, { newChoices }) => {
+                        if (newChoices && newChoices.length) {
+                            r.newChoices.push(...newChoices);
+                        }
+                        return r;
+                    }, { newChoices: [] });
+                    return flatResult;
+                });
         }
         return SPromise.resolve();
     }

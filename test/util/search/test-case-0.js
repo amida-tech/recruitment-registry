@@ -34,6 +34,16 @@ const answerSequence = [{ // user 0, survey 0
     }],
 }, {                      // user 0, survey 2
     userIndex: 0,
+    surveyIndex: 5,
+    answerInfo: [{
+        questionType: 'date',
+        value: '1999-02-02',
+    }, {
+        questionType: 'choices',
+        choiceIndices: [2, 3, 4],
+    }],
+}, {                  // user 0, survey 5
+    userIndex: 0,
     surveyIndex: 2,
     answerInfo: [{
         questionType: 'multichoice',
@@ -252,6 +262,22 @@ const searchCases = [{
     }],
 }, {
     count: 1,
+    userIndices: [0],
+    answers: [{
+        surveyIndex: 5,
+        answerInfo: [{
+            questionType: 'date',
+            rangeValue: { min: '1999-02-01', max: '1999-02-03' },
+        }],
+    }, {
+        surveyIndex: 5,
+        answerInfo: [{
+            questionType: 'choices',
+            choiceIndices: [2, 3],
+        }],
+    }],
+}, {
+    count: 1,
     userIndices: [1],
     answers: [{
         surveyIndex: 1,
@@ -404,4 +430,3 @@ module.exports = {
     searchCases,
     emptyCase: searchCases[3],
 };
-
