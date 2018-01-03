@@ -68,7 +68,7 @@ describe('survey (patch complete) integration', function surveyPatchUnit() {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    _.range(8).forEach(() => {
+    _.range(12).forEach(() => {
         it(`create survey ${surveyCount}`, tests.createSurveyFn());
         it(`get survey ${surveyCount}`, tests.getSurveyFn(surveyCount));
         it(`patch survey ${surveyCount} as is`, tests.patchSameSurveyFn(surveyCount));

@@ -81,4 +81,16 @@ module.exports = [{
     surveyIndex: 7,
     survey: surveys.travelSurvey,
     surveyLevel: true,
+}, { // Survey 8
+    surveyIndex: 8,
+    purpose: 'type',
+    questionIndex: 3,
+    type: 'choices',
+    choiceCount: 8,
+}, {
+    surveyIndex: 8,
+    purpose: 'enableWhen',
+    questionIndex: 5,
+    logic: 'equals',
+    relativeIndex: 2,
 }];

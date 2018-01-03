@@ -20,8 +20,14 @@ const missingChoicesQuery = queryrize.readQuerySync('missing-choices.sql');
 
 const translateRuleChoices = function (ruleParent, choices) {
     const choiceText = _.get(ruleParent, 'answer.choiceText');
-    const rawChoices = _.get(ruleParent, 'answer.choices');
+    let rawChoices = _.get(ruleParent, 'answer.choices');
     const code = _.get(ruleParent, 'answer.code');
+    if (rawChoices) {
+        rawChoices = rawChoices.filter(choice => choice.text);
+        if (!rawChoices.length) {
+            rawChoices = null;
+        }
+    }
     if (choiceText || rawChoices || code) {
         if (!choices) {
             throw new RRError('surveyRuleChoiceForNonChoice');
@@ -48,6 +54,9 @@ const translateRuleChoices = function (ruleParent, choices) {
                 if (id) {
                     r.id = id;
                     delete r.text;
+                    if (Object.keys(r).length === 1) {
+                        r.boolValue = true;
+                    }
                 }
             });
         }
@@ -238,7 +247,14 @@ const findEnableWhenMissingChoices = function (parents, questionChoices, existin
             if (!answer) {
                 return;
             }
-            const { choiceText, choices, code } = answer;
+            const { choiceText, code } = answer;
+            let choices = answer.choices;
+            if (choices) {
+                choices = choices.filter(choice => choice.text);
+                if (!choices.length) {
+                    choices = null;
+                }
+            }
             if (!(choiceText || choices || code)) {
                 return;
             }
@@ -252,8 +268,8 @@ const findEnableWhenMissingChoices = function (parents, questionChoices, existin
             }
             if (choices) {
                 choices.forEach((choice) => {
-                    if (choice.choiceText) {
-                        r.texts.add(`'${choice.choiceText}'`);
+                    if (choice.text) {
+                        r.texts.add(`'${choice.text}'`);
                     }
                 });
             }
