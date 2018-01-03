@@ -1,10 +1,13 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const moment = require('moment');
 const _ = require('lodash');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
+
+const Op = Sequelize.Op;
 
 const attributes = [
     'id', 'username', 'email', 'role', 'firstname', 'lastname', 'institution', 'createdAt',
@@ -41,9 +44,9 @@ module.exports = class UserDAO extends Base {
     }
 
     listUsers(options = {}) {
-        let role = options.role ? options.role : { $in: ['clinician', 'participant'] };
+        let role = options.role ? options.role : { [Op.in]: ['clinician', 'participant'] };
         if (role === 'all') {
-            role = { $in: ['admin', 'clinician', 'participant'] };
+            role = { [Op.in]: ['admin', 'clinician', 'participant'] };
         }
         const where = { role };
         return this.db.User.findAll({ raw: true, where, attributes, order: ['username'] })

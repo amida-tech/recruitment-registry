@@ -3,17 +3,10 @@
 /* eslint no-param-reassign: 0, max-len: 0 */
 
 const _ = require('lodash');
-const models = require('../../../../models');
+const models = require('../../../models');
 
-const SurveyGenerator = require('../survey-generator');
-const Answerer = require('../answerer');
-
-const conditionalSetup = require('./conditional-setup');
-const requiredOverrides = require('./required-overrides');
-const errorAnswerSetup = require('./error-answer-setup');
-const passAnswerSetup = require('./pass-answer-setup');
-const userSurveysSetup = require('./user-surveys-setup');
-const choiceSets = require('./choice-sets');
+const SurveyGenerator = require('./survey-generator');
+const Answerer = require('./answerer');
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -21,14 +14,29 @@ const specialQuestionGenerator = {
         return surveyGenerator.questionGenerator.newMultiQuestion(options);
     },
     type(surveyGenerator, questionInfo) {
-        const type = questionInfo.type;
-        return surveyGenerator.questionGenerator.newQuestion({ type });
+        const { type, choiceCount } = questionInfo;
+        const options = { type };
+        if (choiceCount) {
+            options.choiceCount = choiceCount;
+        }
+        const question = surveyGenerator.questionGenerator.newQuestion(options);
+        return question;
     },
     enableWhen(surveyGenerator, questionInfo, index) {
         const { type, relativeIndex, logic } = questionInfo;
         const question = surveyGenerator.questionGenerator.newQuestion({ type });
         const questionIndex = index - relativeIndex;
         const enableWhen = [{ questionIndex, logic }];
+        question.enableWhen = enableWhen;
+        return question;
+    },
+    enableWhenMulti(surveyGenerator, questionInfo, index) {
+        const { type, rules } = questionInfo;
+        const question = surveyGenerator.questionGenerator.newQuestion({ type });
+        const enableWhen = rules.map(({ relativeIndex, logic }) => {
+            const questionIndex = index - relativeIndex;
+            return { questionIndex, logic };
+        });
         question.enableWhen = enableWhen;
         return question;
     },
@@ -153,8 +161,19 @@ const questionSurveyManipulator = {
     enableWhen(survey, questionInfo, generator) {
         const questionIndex = questionInfo.questionIndex;
         const question = survey.questions[questionIndex];
-        const sourceIndex = question.enableWhen[0].questionIndex;
-        generator.addAnswer(question.enableWhen[0], question.enableWhen[0], survey.questions[sourceIndex]);
+        const rule = question.enableWhen[0];
+        const sourceIndex = rule.questionIndex;
+        generator.addAnswer(rule, questionInfo, survey.questions[sourceIndex]);
+    },
+    enableWhenMulti(survey, questionInfo, generator) {
+        const questionIndex = questionInfo.questionIndex;
+        const question = survey.questions[questionIndex];
+        const enableWhen = question.enableWhen;
+        questionInfo.rules.forEach((ruleInfo, index) => {
+            const sourceIndex = question.enableWhen[index].questionIndex;
+            const rule = enableWhen[index];
+            generator.addAnswer(rule, ruleInfo, survey.questions[sourceIndex]);
+        });
     },
     questionSection(survey, questionInfo, generator) {
         const { questionIndex, logic, count } = questionInfo;
@@ -170,11 +189,15 @@ const questionSurveyManipulator = {
 };
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
-    constructor({ questionGenerator, answerer, hxSurvey } = {}) {
+    constructor(options = {}) {
+        const {
+            questionGenerator, answerer, hxSurvey,
+            setup, requiredOverrides, counts,
+        } = options;
         super(questionGenerator);
         this.answerer = answerer || new Answerer();
         this.hxSurvey = hxSurvey;
-        this.conditionalMap = conditionalSetup.reduce((r, questionInfo) => {
+        this.conditionalMap = setup.reduce((r, questionInfo) => {
             const { surveyIndex, purpose, questionIndex } = questionInfo;
             if (surveyIndex === undefined) {
                 throw new Error('No survey index specified');
@@ -195,10 +218,14 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             survey[questionIndex] = questionInfo;
             return r;
         }, {});
-        this.counts = [0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+        this.counts = counts;
+        this.requiredOverrides = requiredOverrides;
     }
 
     count() {
+        if (!this.counts) {
+            return 8;
+        }
         const surveyIndex = this.currentIndex();
         return this.counts[surveyIndex];
     }
@@ -208,24 +235,22 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return !(surveyLevel && purpose.startsWith('surveyEnableWhen'));
     }
 
-    numOfCases() {
-        return this.counts.length;
-    }
-
     addAnswer(rule, questionInfo, question) {
         const logic = questionInfo.logic;
         if (logic === 'equals' || logic === 'not-equals') {
-            rule.answer = this.answerer.answerRawQuestion(question);
+            const options = _.pick(questionInfo, 'choiceIndex');
+            rule.answer = this.answerer.answerRawQuestion(question, options);
         }
     }
 
-    getRequiredOverride(key) { // eslint-disable-line class-methods-use-this
-        return requiredOverrides[key];
+    getRequiredOverride(key) {
+        return this.requiredOverrides[key];
     }
 
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
-        const questionInfo = this.conditionalMap[surveyIndex][index];
+        const conditionalInfo = this.conditionalMap[surveyIndex];
+        const questionInfo = conditionalInfo && conditionalInfo[index];
         let question;
         if (questionInfo) {
             const purpose = questionInfo.purpose;
@@ -240,22 +265,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             question.required = requiredOverride;
         }
         return question;
-    }
-
-    static conditionalErrorSetup() {
-        return errorAnswerSetup;
-    }
-
-    static conditionalPassSetup() {
-        return passAnswerSetup;
-    }
-
-    static conditionalUserSurveysSetup() {
-        return userSurveysSetup;
-    }
-
-    static getChoiceSets() {
-        return choiceSets;
     }
 
     answersWithConditions({
@@ -296,13 +305,16 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return answers;
     }
 
-    newSurvey() {
+    newSurvey(options = {}) {
         const surveyIndex = this.currentIndex();
         const conditionalInfo = this.conditionalMap[surveyIndex + 1];
+        if (!conditionalInfo) {
+            return super.newSurvey(options);
+        }
         const { surveyLevel, purpose: surveyLevelPurpose } = conditionalInfo;
         if (surveyLevel && surveyLevelPurpose === 'completeSurvey') {
             this.incrementIndex();
-            return conditionalInfo.survey;
+            return _.cloneDeep(conditionalInfo.survey);
         }
         const survey = super.newSurvey({ noSection: true });
         if (surveyLevel) {

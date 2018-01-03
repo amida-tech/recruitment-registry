@@ -1,8 +1,11 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 const comparators = {
     exists(answers) {
@@ -80,7 +83,7 @@ module.exports = class UserSurveyDAO extends Base {
 
     disabledSurveysOnAnswers(surveyAnswerRules, userId) {
         const ruleSourceSet = new Set();
-        const $or = _.values(surveyAnswerRules).reduce((r, rules) => {
+        const or = _.values(surveyAnswerRules).reduce((r, rules) => {
             rules.forEach((rule) => {
                 const { answerSurveyId: surveyId, answerQuestionId: questionId } = rule;
                 const key = `${surveyId}-${questionId}`;
@@ -91,7 +94,7 @@ module.exports = class UserSurveyDAO extends Base {
             });
             return r;
         }, []);
-        const where = { userId, $or };
+        const where = { userId, [Op.or]: or };
         const attributes = ['surveyId', 'questionId', 'questionChoiceId', 'value'];
         return this.db.Answer.findAll({ where, attributes, raw: true })
             .then(records => records.reduce((r, record) => {
@@ -127,7 +130,7 @@ module.exports = class UserSurveyDAO extends Base {
         const where = {
             questionId: null,
             sectionId: null,
-            answerSurveyId: { $ne: null },
+            answerSurveyId: { [Op.ne]: null },
         };
         const result = new Set();
         const attributes = ['id', 'logic', 'surveyId', 'answerQuestionId', 'answerSurveyId'];
@@ -146,7 +149,7 @@ module.exports = class UserSurveyDAO extends Base {
                 }
                 const ruleIds = answerRules.map(r => r.id);
                 return this.db.AnswerRuleValue.findAll({
-                    where: { ruleId: { $in: ruleIds } },
+                    where: { ruleId: { [Op.in]: ruleIds } },
                     attributes: ['ruleId', 'questionChoiceId', 'value'],
                     raw: true,
                 })
@@ -179,7 +182,7 @@ module.exports = class UserSurveyDAO extends Base {
                 if (surveys.length) {
                     const ids = surveys.map(survey => survey.id);
                     return this.db.UserSurvey.findAll({
-                        where: { userId, surveyId: { $in: ids } },
+                        where: { userId, surveyId: { [Op.in]: ids } },
                         raw: true,
                         attributes: ['surveyId', 'status'],
                     })

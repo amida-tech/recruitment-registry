@@ -36,7 +36,7 @@ module.exports = class CohortDAO extends Base {
 
     getFilterAnswers(filterId) {
         const where = { filterId };
-        const order = [this.qualifiedCol('filter_answer', 'id')];
+        const order = ['id'];
         const attributes = ['questionId', 'exclude', 'questionChoiceId', 'value'];
         const findOptions = { raw: true, where, attributes, order };
         return this.db.FilterAnswer.findAll(findOptions);
@@ -145,7 +145,7 @@ module.exports = class CohortDAO extends Base {
         })
             .then(({ federated, local, count }) => {
                 const where = { cohortId: id };
-                const order = [this.qualifiedCol('cohort_answer', 'id')];
+                const order = ['id'];
                 return answerCommon.getFilterAnswers(this, this.db.CohortAnswer, { where, order })
                     .then(questions => this.processCohort({ questions }, count, federated, local));
             });
@@ -157,7 +157,7 @@ module.exports = class CohortDAO extends Base {
 
     listCohorts() {
         const findOptions = this.findOptions();
-        findOptions.order = [this.qualifiedCol('cohort', 'created_at')];
+        findOptions.order = ['created_at'];
         return this.db.Cohort.findAll(findOptions);
     }
 };

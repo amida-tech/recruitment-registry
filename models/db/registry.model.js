@@ -3,6 +3,7 @@
 module.exports = function registry(sequelize, Sequelize, schema) {
     const tableName = 'registry';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
@@ -34,7 +35,7 @@ module.exports = function registry(sequelize, Sequelize, schema) {
         indexes: ['name', 'url', 'schema'].map(field => ({
             unique: true,
             fields: [field],
-            where: { deleted_at: { $eq: null } },
+            where: { deleted_at: { [Op.eq]: null } },
         })),
         paranoid: true,
     });

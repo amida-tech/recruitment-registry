@@ -1,6 +1,7 @@
 'use strict';
 
 const filter = function (queryInterface, Sequelize) {
+    const Op = Sequelize.Op;
     return queryInterface.createTable('filter', {
         id: {
             type: Sequelize.INTEGER,
@@ -29,11 +30,12 @@ const filter = function (queryInterface, Sequelize) {
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };
 
 const filterAnswer = function (queryInterface, Sequelize) {
+    const Op = Sequelize.Op;
     return queryInterface.createTable('filter_answer', {
         id: {
             type: Sequelize.INTEGER,
@@ -95,7 +97,7 @@ const filterAnswer = function (queryInterface, Sequelize) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ fields: ['filter_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ fields: ['filter_id'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };
 
@@ -218,16 +220,17 @@ const questionCommon = function (queryInterface, Sequelize) {
 
 module.exports = {
     up(queryInterface, Sequelize) {
+        const Op = Sequelize.Op;
         return filter(queryInterface, Sequelize)
             .then(() => queryInterface.addIndex('filter', ['name'], {
                 indexName: 'filter_name',
                 unique: true,
-                where: { deleted_at: { $eq: null } },
+                where: { deleted_at: { [Op.eq]: null } },
             }))
             .then(() => filterAnswer(queryInterface, Sequelize))
             .then(() => queryInterface.addIndex('filter_answer', ['filter_id'], {
                 indexName: 'filter_answer_filter_id',
-                where: { deleted_at: { $eq: null } },
+                where: { deleted_at: { [Op.eq]: null } },
             }))
             .then(() => cohort(queryInterface, Sequelize))
             .then(() => cohortAnswer(queryInterface, Sequelize))

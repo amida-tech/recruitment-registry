@@ -261,20 +261,20 @@ const searchCases = [{
         }],
     }],
 }, {
-  count: 1,
-  userIndices: [0],
-  answers: [{
-          surveyIndex: 5,
-          answerInfo: [{
-              questionType: 'date',
-              rangeValue: { min: '1999-02-01', max: '1999-02-03' },
-            }]
-      },{
-          surveyIndex: 5,
-          answerInfo: [{
-              questionType: 'choices',
-              choiceIndices: [2, 3],
-            }],
+    count: 1,
+    userIndices: [0],
+    answers: [{
+        surveyIndex: 5,
+        answerInfo: [{
+            questionType: 'date',
+            rangeValue: { min: '1999-02-01', max: '1999-02-03' },
+        }],
+    }, {
+        surveyIndex: 5,
+        answerInfo: [{
+            questionType: 'choices',
+            choiceIndices: [2, 3],
+        }],
     }],
 }, {
     count: 1,

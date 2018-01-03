@@ -22,6 +22,7 @@ const sequelizeOptions = {
     },
     logging: message => logger.info(message),
     schema: config.db.schema,
+    operatorsAliases: false,
 };
 
 if (config.db.schema !== 'public') {

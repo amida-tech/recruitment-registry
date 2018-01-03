@@ -3,6 +3,7 @@
 module.exports = function assessmentAnswer(sequelize, Sequelize, schema) {
     const tableName = 'assessment_answer';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         assessmentId: {
             type: Sequelize.INTEGER,
@@ -36,6 +37,6 @@ module.exports = function assessmentAnswer(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['assessment_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['assessment_id'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };

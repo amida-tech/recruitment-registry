@@ -8,7 +8,6 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value) { return { textValue: value }; },
-        date(value) { return { dateValue: value }; },
         year(value) { return { yearValue: value }; },
         month(value) { return { monthValue: value }; },
         day(value) { return { dayValue: value }; },

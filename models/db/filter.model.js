@@ -3,6 +3,7 @@
 module.exports = function filter(sequelize, Sequelize, schema) {
     const tableName = 'filter';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
@@ -28,6 +29,6 @@ module.exports = function filter(sequelize, Sequelize, schema) {
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };

@@ -194,11 +194,15 @@ module.exports = class Answerer {
         return { questionId: question.id, answer };
     }
 
-    answerRawQuestion(question) {
+    answerRawQuestion(question, options = {}) {
         const type = _.camelCase(question.type);
         this.answerIndex += 1;
         if (type === 'choice') {
             const choices = question.oneOfChoices || question.choices.map(choice => choice.text);
+            const choiceIndex = options.choiceIndex;
+            if (choiceIndex || choiceIndex === 0) {
+                return { choiceText: choices[options.choiceIndex] };
+            }
             return { choiceText: this.selectChoice(choices) };
         }
         if (type === 'choices') {

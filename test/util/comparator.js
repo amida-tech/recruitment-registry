@@ -14,7 +14,8 @@ let choiceSetMap;
 
 const comparator = {
     enableWhen(client, server, options = {}) {
-        if (client.enableWhen && server.enableWhen) {
+        if (client.enableWhen || server.enableWhen) {
+            expect(!!server.enableWhen).to.equal(!!client.enableWhen.length);
             expect(server.enableWhen.length).to.equal(client.enableWhen.length);
             client.enableWhen.forEach((clientRule, index) => {
                 const serverRule = server.enableWhen[index];

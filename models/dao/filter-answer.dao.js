@@ -28,7 +28,7 @@ module.exports = class FilterAnswerDAO extends Base {
 
     getFilterAnswers(filterId) {
         const where = { filterId };
-        const order = [this.qualifiedCol('filter_answer', 'id')];
+        const order = ['id'];
         return answerCommon.getFilterAnswers(this, this.db.FilterAnswer, { where, order });
     }
 

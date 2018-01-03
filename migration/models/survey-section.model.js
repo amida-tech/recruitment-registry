@@ -1,5 +1,9 @@
 'use strict';
 
+const Sequelize = require('sequelize');
+
+const Op = Sequelize.Op;
+
 module.exports = function Table(sequelize, DataTypes) {
     return sequelize.define('survey_section', {
         surveyId: {
@@ -66,7 +70,7 @@ module.exports = function Table(sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { [Op.eq]: null } } }],
         paranoid: true,
     });
 };

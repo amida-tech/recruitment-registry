@@ -3,6 +3,7 @@
 module.exports = function surveyConsent(sequelize, Sequelize, schema) {
     const tableName = 'survey_consent';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         surveyId: {
             type: Sequelize.INTEGER,
@@ -62,7 +63,7 @@ module.exports = function surveyConsent(sequelize, Sequelize, schema) {
         indexes: [{
             unique: true,
             fields: ['survey_id', 'consent_type_id', 'action'],
-            where: { deleted_at: { $eq: null } },
+            where: { deleted_at: { [Op.eq]: null } },
         }],
     });
 };

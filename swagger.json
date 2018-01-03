@@ -4197,6 +4197,43 @@
             },
             "minItems": 1
         },
+        "rulePatch": {
+            "type": "object",
+            "required": ["logic"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "logic": {
+                    "type": "string"
+                },
+                "answer": {
+                    "$ref": "#/definitions/newRuleAnswer"
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "minProperties": 2,
+            "additionalProperties": false
+        },
+        "enableWhenPatch": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/rulePatch"
+            },
+            "minItems": 1
+        },
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
@@ -4274,6 +4311,86 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/newSurveyQuestion"
+            },
+            "minItems": 1
+        },
+        "surveyQuestionPatch": {
+            "type": "object",
+            "description": "Describes a patch to a question.",
+            "required": ["required"],
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "isIdentifying": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenPatch"
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "instruction": {
+                    "type": "string"
+                },
+                "common": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "$ref": "#/definitions/questionType"
+                },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    },
+                    "minItems": 1
+                },
+                "maxCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetReference": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                 "meta": {
+                    "$ref": "#/definitions/questionMeta"
+                },
+                "oneOfChoices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/choicePatch"
+                    },
+                    "minItems": 1
+                }
+            },
+            "minProperties": 2,
+            "additionalProperties": false
+        },
+        "surveyQuestionsPatch": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyQuestionPatch"
             },
             "minItems": 1
         },
@@ -4590,6 +4707,9 @@
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenPatch"
+                },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
@@ -4600,12 +4720,15 @@
                     }
                 },
                 "questions": {
-                    "$ref": "#/definitions/newSurveyQuestions"
+                    "$ref": "#/definitions/surveyQuestionsPatch"
                 },
                 "forceStatus": {
                     "type": "boolean"
                 },
                 "forceQuestions": {
+                    "type": "boolean"
+                },
+                "complete": {
                     "type": "boolean"
                 }
             },
@@ -5589,6 +5712,33 @@
             "type": "object",
             "required": ["text"],
             "properties": {
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/definitions/choiceType"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
+                }
+            },
+            "additionalProperties": false
+        },
+        "choicePatch": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "text": {
                     "type": "string",
                     "minLength": 1

@@ -46,20 +46,6 @@ describe('survey unit', function surveyUnit() {
             });
     });
 
-    const verifySurveyFn = function (index, { noSectionId } = {}) {
-        return function verifySurvey() {
-            const expected = hxSurvey.server(index);
-            const surveyId = hxSurvey.id(index);
-            return models.survey.getSurvey(surveyId)
-                .then((survey) => {
-                    if (noSectionId) {
-                        surveyCommon.removeSurveySectionIds(survey);
-                    }
-                    expect(survey).to.deep.equal(expected);
-                });
-        };
-    };
-
     const patchSurveyMetaFn = function (index) {
         return function patchSurveyMeta() {
             const surveyId = hxSurvey.id(index);
@@ -139,16 +125,16 @@ describe('survey unit', function surveyUnit() {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
         it(`patch survey ${index} (meta)`, patchSurveyMetaFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`revert patched survey back ${index} (meta)`, revertPatchedSurveyMetaFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`patch survey ${index} (text)`, patchSurveyTextFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`revert patched survey text back ${index} (text)`, revertPatchedSurveyTextFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         if (index > 0) {
             it(`patch survey ${index} from survey ${index - 1} (questions/sections)`, patchSurveyQuestionsSectionsFn(index, index - 1));
-            it(`verify survey ${index}`, verifySurveyFn(index, { noSectionId: true }));
+            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
             it(`revert patched survey ${index} back (question/sections)`, revertPatchedSurveyQuestionSectionsFn(index));
             it(`get survey ${index}`, tests.getSurveyFn(index));
         }
@@ -168,43 +154,27 @@ describe('survey unit', function surveyUnit() {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
-    it('error: change published survey to draft status', (function errorChangePublishedToDraftFn(index) {
-        return function errorChangePublishedToDraft() {
-            const id = hxSurvey.id(index);
-            return models.survey.patchSurvey(id, { status: 'draft' })
-                .then(shared.throwingHandler, shared.expectedErrorHandler('surveyPublishedToDraftUpdate'));
-        };
-    }(surveyCount - 4)));
+    it('error: change published survey to draft status',
+        tests.errorStatusChangeFn(surveyCount - 4, 'draft', { errorKey: 'surveyPublishedToDraftUpdate' }));
 
-    it('error: retire draft survey', (function errorRetireDraftFn(index) {
-        return function errorRetireDraft() {
-            const id = hxSurvey.id(index);
-            return models.survey.patchSurvey(id, { status: 'retired' })
-                .then(shared.throwingHandler, shared.expectedErrorHandler('surveyDraftToRetiredUpdate'));
-        };
-    }(surveyCount - 7)));
+    it('error: retire draft survey',
+        tests.errorStatusChangeFn(surveyCount - 7, 'retired', { errorKey: 'surveyDraftToRetiredUpdate' }));
 
-    it('error: patch retired survey', (function errorPatchRetiredFn(index) {
-        return function errorPatchRetired() {
-            const id = hxSurvey.id(index);
-            return models.survey.patchSurvey(id, { status: 'retired' })
-                .then(shared.throwingHandler, shared.expectedErrorHandler('surveyRetiredStatusUpdate'));
-        };
-    }(surveyCount - 2)));
+    it('error: patch retired survey',
+        tests.errorStatusChangeFn(surveyCount - 2, 'retired', { errorKey: 'surveyRetiredStatusUpdate' }));
 
-    [
-        ['draft', 'published', surveyCount - 9],
-        ['published', 'retired', surveyCount - 6],
-    ].forEach(([status, updateStatus, index]) => {
-        it(`update survey ${index} status ${status} to ${updateStatus}`, function updateSurvey() {
-            const id = hxSurvey.id(index);
-            return models.survey.patchSurvey(id, { status: updateStatus })
-                .then(() => { hxSurvey.server(index).status = updateStatus; });
-        });
+    it(`publish draft survey ${surveyCount - 9}`,
+        tests.patchSurveyFn(surveyCount - 9, { status: 'published' }));
+
+    it(`retire published survey ${surveyCount - 6}`,
+        tests.patchSurveyFn(surveyCount - 6, { status: 'retired' }));
+
+    [surveyCount - 6].forEach((index) => {
+        it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
     });
 
     [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach((index) => {
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
     });
 
     it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));

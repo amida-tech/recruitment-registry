@@ -1,6 +1,6 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
+/* eslint no-param-reassign: 0, max-len: 0, no-restricted-syntax: 0 */
 
 const chai = require('chai');
 const _ = require('lodash');
@@ -8,6 +8,8 @@ const _ = require('lodash');
 const models = require('../../models');
 const comparator = require('./comparator');
 const History = require('./history');
+const errHandlerSpec = require('./err-handler-spec');
+const PatchGenerator = require('./generator/survey-patch-generator');
 
 const expect = chai.expect;
 
@@ -187,11 +189,180 @@ const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections
     throw new Error('Surveys should have either sections or questions.');
 };
 
-const SpecTests = class SurveySpecTests {
+const iterSections = function* iterSections(parent) {
+    const sections = parent.sections;
+    if (sections) {
+        for (const section of sections) {
+            yield section;
+            yield* iterSections(section);
+        }
+        return;
+    }
+    const questions = parent.questions;
+    if (questions) {
+        for (const question of questions) {
+            yield* iterSections(question);
+        }
+    }
+};
+
+const iterQuestions = function* iterQuestions(parent) {
+    const sections = parent.sections;
+    if (sections) {
+        for (const section of sections) {
+            yield* iterQuestions(section);
+        }
+        return;
+    }
+    const questions = parent.questions;
+    if (questions) {
+        for (const question of questions) {
+            yield question;
+            yield* iterQuestions(question);
+        }
+    }
+};
+
+const dualForEachIter = function (leftIter, rightIter, callback) {
+    const leftArray = Array.from(leftIter);
+    const rightArray = Array.from(rightIter);
+    const zipped = _.zip(leftArray, rightArray);
+    zipped.forEach(([left, right], index) => {
+        callback(left, right, index);
+    });
+};
+
+const dualForEachQuestion = function (left, right, callback) {
+    dualForEachIter(iterQuestions(left), iterQuestions(right), callback);
+};
+
+const dualForEachSection = function (left, right, callback) {
+    dualForEachIter(iterSections(left), iterSections(right), callback);
+};
+
+const Tests = class SurveyTests {
     constructor(generator, hxSurvey, hxQuestion) {
         this.generator = generator;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion || new History(); // not updated in all creates.
+        const answerer = generator.answerer;
+        this.patchGenerator = new PatchGenerator({ hxSurvey, answerer, generator });
+    }
+
+    verifySurveyFn(index, { noSectionId } = {}) {
+        const self = this;
+        const hxSurvey = this.hxSurvey;
+        return function verifySurvey() {
+            const expected = _.cloneDeep(hxSurvey.server(index));
+            const surveyId = hxSurvey.id(index);
+            return self.getSurveyPx(surveyId)
+                .then((survey) => {
+                    if (noSectionId) {
+                        removeSurveySectionIds(expected);
+                        removeSurveySectionIds(survey);
+                    }
+                    expect(survey).to.deep.equal(expected);
+                });
+        };
+    }
+
+    patchSurveyFn(index, patch, options = {}) {
+        const self = this;
+        return function patchSurvey() {
+            const survey = self.hxSurvey.server(index);
+            Object.assign(survey, patch);
+            _.forOwn(patch, (value, key) => {
+                if (value === null) {
+                    delete survey[key];
+                }
+            });
+            let payload;
+            if (options.complete) {
+                payload = _.cloneDeep(_.omit(survey, ['id', 'authorId']));
+                payload.complete = true;
+            } else {
+                payload = patch;
+            }
+            return self.patchSurveyPx(survey.id, payload);
+        };
+    }
+
+    patchSameSurveyFn(index) {
+        const self = this;
+        return function patchSameSurvey() {
+            const survey = self.hxSurvey.server(index);
+            const patch = _.omit(_.cloneDeep(survey), ['id', 'authorId']);
+            patch.complete = true;
+            return self.patchSurveyPx(survey.id, patch);
+        };
+    }
+
+    patchSameSurveyEnableWhenFn(index) {
+        const self = this;
+        return function patchSameEnableWhen() {
+            const survey = _.cloneDeep(self.hxSurvey.server(index));
+            const client = self.hxSurvey.client(index);
+            const callback = (clientParent, serverParent) => {
+                const enableWhen = clientParent.enableWhen;
+                if (enableWhen) {
+                    const code = _.get(enableWhen[0], 'answer.code'); // ignore code for now
+                    if (!code) {
+                        serverParent.enableWhen = enableWhen;
+                    }
+                    return;
+                }
+                delete serverParent.enableWhen;
+            };
+            dualForEachQuestion(client, survey, callback);
+            dualForEachSection(client, survey, callback);
+            const patch = _.omit(survey, ['id', 'authorId']);
+            patch.complete = true;
+            return self.patchSurveyPx(survey.id, patch);
+        };
+    }
+
+    patchSurveyFromSpecFn(spec) {
+        const self = this;
+        return function patchSurveyFromSpec() {
+            const patch = self.patchGenerator.generateSurveyPatch(spec);
+            const index = spec.surveyIndex;
+            const id = self.hxSurvey.id(index);
+            patch.complete = true;
+            delete patch.id;
+            delete patch.authorId;
+            return self.patchSurveyPx(id, patch);
+        };
+    }
+
+    getSurveyFromSpecFn(spec) {
+        const self = this;
+        return function getSurveyFromSpec() {
+            const surveyId = self.hxSurvey.id(spec.surveyIndex);
+            return self.getSurveyPx(surveyId)
+                .then((survey) => {
+                    self.patchGenerator.compareAndReplace(spec, survey);
+                });
+        };
+    }
+
+    errorStatusChangeFn(index, status, options, complete) {
+        const self = this;
+        const hxSurvey = this.hxSurvey;
+        return function errorStatusChange() {
+            const id = hxSurvey.id(index);
+            const patch = { status };
+            if (complete) {
+                Object.assign({ complete }, hxSurvey.server(index), patch);
+            }
+            return self.errorPatchSurveyPx(id, patch, options);
+        };
+    }
+};
+
+const SpecTests = class SurveySpecTests extends Tests {
+    constructor(generator, hxSurvey, hxQuestion) {
+        super(generator, hxSurvey, hxQuestion);
+        this.models = models;
     }
 
     createSurveyFn(options) {
@@ -262,14 +433,26 @@ const SpecTests = class SurveySpecTests {
                 });
         };
     }
+
+    getSurveyPx(id) {
+        return this.models.survey.getSurvey(id);
+    }
+
+    patchSurveyPx(id, patch) {
+        return this.models.survey.patchSurvey(id, patch);
+    }
+
+    errorPatchSurveyPx(id, patch, options) {
+        const errHandler = errHandlerSpec.expectedErrorHandlerFn(options.errorKey);
+        return this.models.survey.patchSurvey(id, patch)
+            .then(errHandlerSpec.throwingHandler, errHandler);
+    }
 };
 
-const IntegrationTests = class SurveyIntegrationTests {
+const IntegrationTests = class SurveyIntegrationTests extends Tests {
     constructor(rrSuperTest, generator, hxSurvey, hxQuestion) {
+        super(generator, hxSurvey, hxQuestion);
         this.rrSuperTest = rrSuperTest;
-        this.generator = generator;
-        this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion || new History(); // not updated in all creates.
     }
 
     createSurveyFn(options = {}) {
@@ -329,21 +512,6 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
-    verifySurveyFn(index, { noSectionId } = {}) {
-        const rrSuperTest = this.rrSuperTest;
-        const hxSurvey = this.hxSurvey;
-        return function verifySurvey() {
-            const server = hxSurvey.server(index);
-            return rrSuperTest.get(`/surveys/${server.id}`, true, 200)
-                .then((res) => {
-                    if (noSectionId) {
-                        removeSurveySectionIds(res.body);
-                    }
-                    expect(res.body).to.deep.equal(server);
-                });
-        };
-    }
-
     deleteSurveyFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
@@ -380,6 +548,21 @@ const IntegrationTests = class SurveyIntegrationTests {
                     return res;
                 });
         };
+    }
+
+    getSurveyPx(id) {
+        return this.rrSuperTest.get(`/surveys/${id}`, true, 200)
+            .then(res => res.body);
+    }
+
+    patchSurveyPx(id, patch) {
+        return this.rrSuperTest.patch(`/surveys/${id}`, patch, 204);
+    }
+
+    errorPatchSurveyPx(id, patch, options) {
+        const errKey = options.errorKey;
+        return this.rrSuperTest.patch(`/surveys/${id}`, patch, options.statusCode)
+            .then(res => errHandlerSpec.verifyErrorMessage(res, errKey));
     }
 };
 

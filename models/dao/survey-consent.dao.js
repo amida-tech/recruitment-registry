@@ -1,7 +1,10 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
+
+const Op = Sequelize.Op;
 
 module.exports = class SurveyConsentDAO extends Base {
     constructor(db, dependencies) {
@@ -37,7 +40,7 @@ module.exports = class SurveyConsentDAO extends Base {
             return r;
         }, []);
         const Consent = this.db.Consent;
-        return Consent.findAll({ raw: true, where: { id: { $in: consentIds } }, attributes: ['id', 'name'] })
+        return Consent.findAll({ raw: true, where: { id: { [Op.in]: consentIds } }, attributes: ['id', 'name'] })
             .then(consents => new Map(consents.map(consent => [consent.id, consent.name])))
             .then((consentMap) => {
                 surveyConsents.forEach((r) => {
