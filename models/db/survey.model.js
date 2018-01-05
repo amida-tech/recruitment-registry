@@ -1,5 +1,7 @@
 'use strict';
 
+const names = require('../const-names');
+
 module.exports = function survey(sequelize, Sequelize, schema) {
     const tableName = 'survey';
     const modelName = `${schema}_${tableName}`;
@@ -48,6 +50,18 @@ module.exports = function survey(sequelize, Sequelize, schema) {
                 },
                 key: 'id',
             },
+        },
+        type: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+            references: {
+                model: {
+                    schema,
+                    tableName: 'survey_type',
+                },
+                key: 'name',
+            },
+            defaultValue: names.defaultSurveyType,
         },
     }, {
         freezeTableName: true,

@@ -7,6 +7,7 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const models = require('../../models');
+const constNames = require('../../models/const-names');
 
 const expect = chai.expect;
 
@@ -170,6 +171,9 @@ const comparator = {
         }
         if (!expected.status) {
             expected.status = 'published';
+        }
+        if (!expected.type) {
+            expected.type = constNames.defaultSurveyType;
         }
         this.enableWhen(expected, server);
         const serverSurveyQuestions = models.survey.getQuestions(server);

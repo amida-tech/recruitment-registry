@@ -98,6 +98,7 @@ describe('user survey integration', () => {
                     const expected = _.cloneDeep(hxSurvey.listServers());
                     expected.forEach((userSurvey, index) => {
                         userSurvey.status = statusList[index];
+                        delete userSurvey.type;
                         if (userSurvey.description === undefined) {
                             delete userSurvey.description;
                         }
@@ -330,6 +331,7 @@ describe('user survey integration', () => {
                     const expected = _.cloneDeep(list);
                     expected.forEach((userSurvey, index) => {
                         userSurvey.status = statusList[index];
+                        delete userSurvey.type;
                         if (userSurvey.description === undefined) {
                             delete userSurvey.description;
                         }

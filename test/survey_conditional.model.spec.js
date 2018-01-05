@@ -149,6 +149,7 @@ describe('conditional survey unit', function surveyConditionalUnit() {
                     const expectedAll = _.cloneDeep(hxSurvey.listServers());
                     expectedAll.forEach((r, index) => {
                         r.status = statusMap[index] || 'new';
+                        delete r.type;
                         if (r.description === undefined) {
                             delete r.description;
                         }

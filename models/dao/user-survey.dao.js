@@ -4,6 +4,7 @@ const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
+const constNames = require('../const-names');
 
 const Op = Sequelize.Op;
 
@@ -177,7 +178,9 @@ module.exports = class UserSurveyDAO extends Base {
     }
 
     listUserSurveys(userId, options) {
-        return this.survey.listSurveys(options)
+        const type = constNames.defaultSurveyType;
+        const listSurveysOptions = Object.assign({ type }, options);
+        return this.survey.listSurveys(listSurveysOptions)
             .then((surveys) => {
                 if (surveys.length) {
                     const ids = surveys.map(survey => survey.id);

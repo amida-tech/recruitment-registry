@@ -1,3 +1,11 @@
 'use strict';
 
-exports.smtpTypes = ['reset-password', 'cohort-csv'];
+const smtpTypes = ['reset-password', 'cohort-csv'];
+
+const surveyTypes = ['normal', 'feedback'];
+
+module.exports = {
+    smtpTypes,
+    surveyTypes,
+    defaultSurveyType: surveyTypes[0],
+};

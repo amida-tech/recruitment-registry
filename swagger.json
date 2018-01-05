@@ -4474,6 +4474,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "type": {
+                    "$ref": "#/definitions/surveyType"
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -4654,6 +4657,9 @@
                     "type": "string",
                      "minLength": 1
                 },
+                "type": {
+                    "$ref": "#/definitions/surveyType"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -4700,6 +4706,9 @@
                 "name": {
                     "type": "string",
                      "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/definitions/surveyType"
                 },
                 "description": {
                     "type": "string"
@@ -4837,6 +4846,9 @@
             "properties": {
                 "id": {
                     "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/surveyType"
                 },
                 "name": {
                     "type": "string"
@@ -7330,6 +7342,10 @@
             "items": {
                 "$ref": "#/definitions/file"
             }
+        },
+        "surveyType": {
+            "type": "string",
+            "enum": ["normal", "feedback"]
         },
         "answerTextValue": {
             "type": "string",

@@ -929,9 +929,12 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     listSurveys(opt = {}) {
-        const { scope, language, history, order, groupId, version, ids } = opt;
+        const { scope, language, history, order, groupId, version, ids, type } = opt;
         const status = opt.status || 'published';
         const attributes = (status === 'all') ? ['id', 'status'] : ['id'];
+        if (!type) {
+            attributes.push('type');
+        }
         if (scope === 'version-only' || scope === 'version') {
             attributes.push('groupId');
             attributes.push('version');
@@ -940,7 +943,7 @@ module.exports = class SurveyDAO extends Translatable {
             attributes.push('authorId');
         }
         const options = { raw: true, attributes, order: order || ['id'], paranoid: !history };
-        if (groupId || version || (status !== 'all') || ids) {
+        if (groupId || version || (status !== 'all') || ids || type) {
             options.where = {};
             if (groupId) {
                 options.where.groupId = groupId;
@@ -953,6 +956,9 @@ module.exports = class SurveyDAO extends Translatable {
             }
             if (ids) {
                 options.where.id = { [Op.in]: ids };
+            }
+            if (type) {
+                options.where.type = type;
             }
         }
         if (language) {
@@ -1029,7 +1035,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        const attributes = ['id', 'meta', 'status'];
+        const attributes = ['id', 'meta', 'status', 'type'];
         if (options.admin) {
             attributes.push('authorId');
         }

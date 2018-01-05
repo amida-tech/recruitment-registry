@@ -17,6 +17,7 @@ const answerRuleValue = require('./answer-rule-value.model');
 const surveyQuestion = require('./survey-question.model');
 const answerType = require('./answer-type.model');
 const answer = require('./answer.model');
+const surveyType = require('./survey-type.model');
 const survey = require('./survey.model');
 const profileSurvey = require('./profile-survey.model');
 const surveyText = require('./survey-text.model');
@@ -139,6 +140,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const File = file(sequelize, Sequelize, schema);
     const SmtpType = smtpType(sequelize, Sequelize, schema);
     const AssessmentAnswer = assessmentAnswer(sequelize, Sequelize, schema);
+    const SurveyType = surveyType(sequelize, Sequelize, schema);
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
@@ -288,6 +290,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         File,
         AssessmentAnswer,
         SmtpType,
+        SurveyType,
         schema,
     };
 };
