@@ -14,27 +14,13 @@ const researchSiteExamples = require('./test/fixtures/example/research-site-demo
 
 const gapDemoSurveySeed = require('./test/util/gap-demo-survey-seed');
 const gapDemoSurveys = require('./test/fixtures/example/gap-demo-survey');
-
-const survey = {
-    name: 'Alzheimer',
-    questions: [
-        {
-            text: 'Zip Code',
-            required: true,
-            type: 'zip',
-        }, {
-            text: 'Year of Birth',
-            required: true,
-            type: 'year',
-        },
-    ],
-};
+const exampleSurveys = require('./test/fixtures/example/survey');
 
 const schema = appGenerator.extractSchema(config.db.schema) || 'public';
 const models = modelsGenerator(schema);
 
 const initializeData = function (m) {
-    return m.profileSurvey.createProfileSurvey(survey)
+    return m.profileSurvey.createProfileSurvey(exampleSurveys.zipYOBProfileSurvey)
         .then(() => consentSeed(consentExample, m))
         .then(() => researchSiteSeed(researchSiteExamples, m))
         .then(() => gapDemoSurveySeed(gapDemoSurveys, m));

@@ -5170,8 +5170,7 @@
                     "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5268,8 +5267,7 @@
                     "maxProperties": 2
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5311,6 +5309,19 @@
                         "max": {
                             "type": "string",
                             "format": "date"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "yearRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "$ref": "#/definitions/answerYearValue"
+                        },
+                        "max": {
+                            "$ref": "#/definitions/answerYearValue"
                         }
                     },
                     "minProperties": 1,
@@ -5365,8 +5376,7 @@
                     "additionalProperties": false
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5443,6 +5453,19 @@
                     "minProperties": 1,
                     "additionalProperties": false
                 },
+                "yearRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "$ref": "#/definitions/answerYearValue"
+                        },
+                        "max": {
+                            "$ref": "#/definitions/answerYearValue"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "floatValue": {
                     "type": "number"
                 },
@@ -5473,8 +5496,7 @@
                     "additionalProperties": false
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5508,8 +5530,7 @@
                     "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5581,8 +5602,7 @@
                     "additionalProperties": false
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -7334,6 +7354,10 @@
         "answerTextValue": {
             "type": "string",
             "pattern": "^[^\\s]+(\\s+[^\\s]+)*$"
+        },
+        "answerYearValue": {
+            "type": "string",
+            "pattern": "^\\d{4}$"
         }
     }
 }
