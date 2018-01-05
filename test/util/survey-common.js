@@ -305,10 +305,7 @@ const Tests = class SurveyTests {
             const callback = (clientParent, serverParent) => {
                 const enableWhen = clientParent.enableWhen;
                 if (enableWhen) {
-                    const code = _.get(enableWhen[0], 'answer.code'); // ignore code for now
-                    if (!code) {
-                        serverParent.enableWhen = enableWhen;
-                    }
+                    serverParent.enableWhen = enableWhen;
                     return;
                 }
                 delete serverParent.enableWhen;
