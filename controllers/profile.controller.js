@@ -13,7 +13,7 @@ exports.createProfile = function createProfile(req, res) {
 
             const token = tokener.createJWT(record);
             res.cookie('rr-jwt-token', token, { httpOnly: true });
-            res.status(201).json({ id: user.id });
+            res.status(201).json({ id: record.id });
         })
         .catch(shared.handleError(res));
 };

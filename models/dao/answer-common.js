@@ -8,7 +8,20 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value) { return { textValue: value }; },
-        year(value) { return { yearValue: value }; },
+        year(value) {
+            if (value.indexOf(':') < 0) {
+                return { yearValue: value };
+            }
+            const [min, max] = value.split(':');
+            const yearRange = {};
+            if (max) {
+                yearRange.max = max;
+            }
+            if (min) {
+                yearRange.min = min;
+            }
+            return { yearRange };
+        },
         month(value) { return { monthValue: value }; },
         day(value) { return { dayValue: value }; },
         bool(value) { return { boolValue: value === 'true' }; },
@@ -222,6 +235,11 @@ const answerValueToDBFormat = {
     integerRange(value) {
         const max = (value.max === 0) ? '0' : (value.max || '');
         const min = (value.min === 0) ? '0' : (value.min || '');
+        return { value: `${min}:${max}` };
+    },
+    yearRange(value) {
+        const max = value.max || '';
+        const min = value.min || '';
         return { value: `${min}:${max}` };
     },
     dateRange(value) {

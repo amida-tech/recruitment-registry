@@ -356,6 +356,26 @@ const travelSurvey = {
     }],
 };
 
+const zipYOBProfileSurvey = {
+    name: 'Alzheimer',
+    questions: [
+        {
+            text: 'Zip Code',
+            required: true,
+            type: 'zip',
+        }, {
+            text: 'Year of Birth',
+            required: true,
+            type: 'year',
+        },
+    ],
+};
+
+const booleanOnly = {
+    name: 'BooleanOnly',
+    questions: [{ text: 'i am in', type: 'bool', required: true, isIdentifying: false }],
+};
+
 module.exports = {
     example,
     exampleAnswer,
@@ -367,4 +387,6 @@ module.exports = {
     alzheimerReanswer,
     textOnlySurvey,
     travelSurvey,
+    zipYOBProfileSurvey,
+    booleanOnly,
 };

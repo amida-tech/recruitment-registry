@@ -131,6 +131,9 @@ const searchParticipantConditionMaker = {
         const condition = integerRangeCondition(min, max);
         return { value: dao.db.sequelize.where(fn, condition) };
     },
+    year(dao, answer) {
+        return searchParticipantConditionMaker.integer(dao, answer);
+    },
     text(dao, answer) {
         return { value: answer.value };
     },
