@@ -4350,7 +4350,7 @@
                 "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newSection"
+                        "$ref": "#/definitions/sectionPatch"
                     },
                     "minItems": 1
                 },
@@ -4412,6 +4412,33 @@
                 },
                 "enableWhen": {
                     "$ref": "#/definitions/newEnableWhen"
+                }
+            },
+            "maxProperties": 4,
+            "additionalProperties": false
+        },
+        "sectionPatch": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/surveyQuestionsPatch"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sectionPatch"
+                    }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenPatch"
                 }
             },
             "maxProperties": 4,
@@ -4716,7 +4743,7 @@
                 "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newSection"
+                        "$ref": "#/definitions/sectionPatch"
                     }
                 },
                 "questions": {
