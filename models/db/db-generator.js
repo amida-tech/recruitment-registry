@@ -56,6 +56,7 @@ const cohortAnswer = require('./cohort-answer.model');
 const file = require('./file.model');
 const smtpType = require('./smtp-type.model');
 const assessmentAnswer = require('./assessment-answer.model');
+const feedbackSurvey = require('./feedback-survey');
 
 const questionBelongsTo = function () {
     const result = {
@@ -141,6 +142,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const SmtpType = smtpType(sequelize, Sequelize, schema);
     const AssessmentAnswer = assessmentAnswer(sequelize, Sequelize, schema);
     const SurveyType = surveyType(sequelize, Sequelize, schema);
+    const FeedbackSurvey = feedbackSurvey(sequelize, Sequelize, schema);
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
@@ -291,6 +293,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         AssessmentAnswer,
         SmtpType,
         SurveyType,
+        FeedbackSurvey,
         schema,
     };
 };
