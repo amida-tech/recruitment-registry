@@ -414,6 +414,16 @@ const SpecTests = class SurveySpecTests extends Tests {
         };
     }
 
+    errorDeleteSurveyFn(index, errorKey) {
+        const hxSurvey = this.hxSurvey;
+        const errHandler = errHandlerSpec.expectedErrorHandlerFn(errorKey);
+        return function errorDeleteSurvey() {
+            const id = hxSurvey.id(index);
+            return models.survey.deleteSurvey(id)
+                .then(errHandlerSpec.throwingHandler, errHandler);
+        };
+    }
+
     listSurveysFn(options, count = -1) {
         const hxSurvey = this.hxSurvey;
         return function listSurveys() {
@@ -512,13 +522,22 @@ const IntegrationTests = class SurveyIntegrationTests extends Tests {
     deleteSurveyFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function deleteSurvey(done) {
+        return function deleteSurvey() {
             const id = hxSurvey.id(index);
-            rrSuperTest.delete(`/surveys/${id}`, 204)
+            return rrSuperTest.delete(`/surveys/${id}`, 204)
                 .expect(() => {
                     hxSurvey.remove(index);
-                })
-                .end(done);
+                });
+        };
+    }
+
+    errorDeleteSurveyFn(index, errorKey) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function errorDeleteSurvey() {
+            const id = hxSurvey.id(index);
+            return rrSuperTest.delete(`/surveys/${id}`, 400)
+                .then(res => errHandlerSpec.verifyErrorMessage(res, errorKey));
         };
     }
 

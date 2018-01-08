@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 const chai = require('chai');
 const _ = require('lodash');
 
@@ -72,6 +70,18 @@ const FeedbackSurveyHistory = class {
             sortedResult.push({ feedbackSurveyId });
         }
         return sortedResult;
+    }
+
+    updateSurveyDeleted(index) {
+        if (this.default === index) {
+            this.default = null;
+        }
+        delete this.surveyAssigned[index];
+        _.forOwn(this.surveyAssigned, (value, key) => {
+            if (value === index) {
+                delete this.surveyAssigned[key];
+            }
+        });
     }
 };
 
@@ -149,6 +159,10 @@ const BaseTests = class BaseTests {
                     expect(result).to.deep.equal(expected);
                 });
         };
+    }
+
+    updateHistoryWhenSurveyDeleted(index) {
+        this.hxFeedbackSurvey.updateSurveyDeleted(index);
     }
 };
 

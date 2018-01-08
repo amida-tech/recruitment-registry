@@ -95,17 +95,41 @@ describe('feedback survey unit', function feedbackSurveyUnit() {
 
     verifyCase(tests, 2);
 
-    it('delete feedback survey for 1', tests.deleteFeedbackSurveyFn(2));
+    it('delete feedback survey for 2', tests.deleteFeedbackSurveyFn(2));
 
     verifyCase(tests, 2);
 
-    it('delete feedback survey for 1', tests.deleteFeedbackSurveyFn(0));
+    it('delete feedback survey for 0', tests.deleteFeedbackSurveyFn(0));
 
     verifyCase(tests, 0);
 
     it('delete default feedback survey', tests.deleteFeedbackSurveyFn());
 
-    verifyCase(tests, 5);
+    verifyCase(tests, 3);
+
+    it('set feedback survey 11 as default', tests.createFeedbackSurveyFn(11));
+
+    verifyCase(tests);
 
     it('verify user 0 user survey list', userSurveyTests.verifyUserSurveyListFn(0));
+
+    [10, 11].forEach((index) => {
+        it(`error: delete feedback survey ${index}`,
+            surveyTests.errorDeleteSurveyFn(index, 'surveyNoDeleteFeedback'));
+    });
+
+    it('set feedback survey 10 for survey 2', tests.createFeedbackSurveyFn(10, 2));
+
+    verifyCase(tests, 2);
+
+    [2, 13].forEach((index) => {
+        it(`delete survey ${index}`, function deleteSurvey() {
+            return surveyTests.deleteSurveyFn(index)()
+                .then(() => tests.updateHistoryWhenSurveyDeleted(index));
+        });
+    });
+
+    it('list feedback surveys', tests.listFeedbackSurveysFn());
+
+    it('verify user 1 user survey list', userSurveyTests.verifyUserSurveyListFn(1));
 });

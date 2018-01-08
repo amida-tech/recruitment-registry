@@ -13,6 +13,9 @@ module.exports = class FeedbackSurveyDAO extends Base {
     constructor(db, dependencies) {
         super(db);
         Object.assign(this, dependencies);
+
+        const cbDeleteSurvey = options => this.beforeSurveyDestroy(options);
+        db.Survey.addHook('beforeBulkDestroy', 'feedbackSurvey', cbDeleteSurvey);
     }
 
     validateCreateFeedbackSurvey({ feedbackSurveyId, surveyId }, transaction) {
@@ -94,5 +97,18 @@ module.exports = class FeedbackSurveyDAO extends Base {
         const order = ['surveyId'];
         return this.db.FeedbackSurvey.findAll({ raw: true, attributes, order })
             .then(result => result.map(r => _.omitBy(r, _.isNil)));
+    }
+
+    beforeSurveyDestroy(options) {
+        const { where: whereSurvey, transaction } = options;
+        const where = { feedbackSurveyId: whereSurvey.id };
+        return this.db.FeedbackSurvey.count({ where, transaction })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('surveyNoDeleteFeedback');
+                }
+                const whereLinked = { surveyId: whereSurvey.id };
+                return this.db.FeedbackSurvey.destroy({ where: whereLinked, transaction });
+            });
     }
 };

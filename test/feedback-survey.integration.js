@@ -122,7 +122,7 @@ describe('feedback survey integration', function feedbackSurveyiIntegration() {
     it('logout as user 1', shared.logoutFn());
 
     it('login as super', shared.loginFn(config.superUser));
-    it('delete feedback survey for 1', tests.deleteFeedbackSurveyFn(2));
+    it('delete feedback survey for 2', tests.deleteFeedbackSurveyFn(2));
     it('list feedback surveys', tests.listFeedbackSurveysFn());
     it('logout as super', shared.logoutFn());
 
@@ -131,7 +131,7 @@ describe('feedback survey integration', function feedbackSurveyiIntegration() {
     it('logout as user 2', shared.logoutFn());
 
     it('login as super', shared.loginFn(config.superUser));
-    it('delete feedback survey for 1', tests.deleteFeedbackSurveyFn(0));
+    it('delete feedback survey for 0', tests.deleteFeedbackSurveyFn(0));
     it('list feedback surveys', tests.listFeedbackSurveysFn());
     it('logout as super', shared.logoutFn());
 
@@ -145,10 +145,47 @@ describe('feedback survey integration', function feedbackSurveyiIntegration() {
     it('logout as super', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
-    verifyCase(tests, 5);
+    verifyCase(tests, 3);
     it('logout as user 1', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+    it('set feedback survey 11 as default', tests.createFeedbackSurveyFn(11));
+    it('list feedback surveys', tests.listFeedbackSurveysFn());
+    it('logout as super', shared.logoutFn());
 
     it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('verify user 2 user survey list', userSurveyTests.verifyUserSurveyListFn(2));
     it('logout as user 2', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    [10, 11].forEach((index) => {
+        it(`error: delete feedback survey ${index}`,
+            surveyTests.errorDeleteSurveyFn(index, 'surveyNoDeleteFeedback'));
+    });
+
+    it('set feedback survey 10 for survey 2', tests.createFeedbackSurveyFn(10, 2));
+
+    it('logout as super', shared.logoutFn());
+
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+    verifyCase(tests, 2);
+    it('logout as user 0', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    [2, 13].forEach((index) => {
+        it(`delete survey ${index}`, function deleteSurvey() {
+            return surveyTests.deleteSurveyFn(index)()
+                .then(() => tests.updateHistoryWhenSurveyDeleted(index));
+        });
+    });
+
+    it('list feedback surveys', tests.listFeedbackSurveysFn());
+
+    it('logout as super', shared.logoutFn());
+
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('verify user 1 user survey list', userSurveyTests.verifyUserSurveyListFn(1));
+    it('logout as user 1', shared.logoutFn());
 });
