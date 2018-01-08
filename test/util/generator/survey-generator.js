@@ -5,6 +5,7 @@
 const _ = require('lodash');
 
 const QuestionGenerator = require('./question-generator');
+const constNames = require('../../../models/const-names');
 
 const questionTypes = QuestionGenerator.questionTypes();
 
@@ -92,6 +93,9 @@ module.exports = class SurveyGenerator {
                 saveProgress: metaIndex === 2,
             };
         }
+        if (surveyIndex % 4 !== 1) {
+            result.type = constNames.defaultSurveyType;
+        }
         return result;
     }
 
@@ -99,6 +103,9 @@ module.exports = class SurveyGenerator {
         const result = this.newBody();
         if (options.status) {
             result.status = options.status;
+        }
+        if (options.type) {
+            result.type = options.type;
         }
         const sectionType = options.noSection ? 0 : this.sectionType();
         let count = this.count();

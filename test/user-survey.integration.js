@@ -19,6 +19,7 @@ const SharedIntegration = require('./util/shared-integration');
 const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 const surveyCommon = require('./util/survey-common');
+const userSurveyCommon = require('./util/user-survey-common');
 
 const expect = chai.expect;
 
@@ -33,7 +34,8 @@ describe('user survey integration', () => {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
-    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
+    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
+    const tests = new userSurveyCommon.IntegrationTests(rrSuperTest, { hxSurvey });
 
     before(shared.setUpFn());
 
@@ -90,30 +92,11 @@ describe('user survey integration', () => {
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'new'));
     it('logout as user 1', shared.logoutFn());
 
-    const verifyUserSurveyListFn = function (statusList) {
-        return function verifyUserSurveyList(done) {
-            rrSuperTest.get('/user-surveys', true, 200)
-                .expect((res) => {
-                    const userSurveys = res.body;
-                    const expected = _.cloneDeep(hxSurvey.listServers());
-                    expected.forEach((userSurvey, index) => {
-                        userSurvey.status = statusList[index];
-                        delete userSurvey.type;
-                        if (userSurvey.description === undefined) {
-                            delete userSurvey.description;
-                        }
-                    });
-                    expect(userSurveys).to.deep.equal(expected);
-                })
-                .end(done);
-        };
-    };
-
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
-    it('verify user 0 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
+    it('verify user 0 user survey list', tests.verifyUserSurveyListFn(['new', 'new', 'new']));
     it('logout as user 0', shared.logoutFn());
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
-    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
+    it('verify user 1 user survey list', tests.verifyUserSurveyListFn(['new', 'new', 'new']));
     it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
@@ -122,7 +105,7 @@ describe('user survey integration', () => {
             rrSuperTest.get(`/user-surveys/${surveyId}`, true, 200)
                 .expect((res) => {
                     const userSurvey = res.body;
-                    const survey = hxSurvey.server(surveyIndex);
+                    const survey = _.omit(hxSurvey.server(surveyIndex), 'authorId');
                     const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
@@ -143,7 +126,7 @@ describe('user survey integration', () => {
                 .expect((res) => {
                     const userSurveyAnswers = res.body;
                     if (includeSurvey) {
-                        const survey = hxSurvey.server(surveyIndex);
+                        const survey = _.omit(hxSurvey.server(surveyIndex), 'authorId');
                         expect(userSurveyAnswers.survey).to.deep.equal(survey);
                     } else {
                         expect(userSurveyAnswers.survey).to.equal(undefined);
@@ -271,7 +254,7 @@ describe('user survey integration', () => {
     it('verify user 0 survey 0 status', verifyStatusFn(0, 'completed'));
     it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'completed'));
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
-    it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'new', 'new']));
+    it('verify user 0 user survey list', tests.verifyUserSurveyListFn(['completed', 'new', 'new']));
     it('logout as user 0', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -280,7 +263,7 @@ describe('user survey integration', () => {
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
-    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list', tests.verifyUserSurveyListFn(['new', 'in-progress', 'new']));
     it('logout as user 1', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -289,7 +272,7 @@ describe('user survey integration', () => {
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
-    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list', tests.verifyUserSurveyListFn(['new', 'in-progress', 'new']));
     it('logout as user 1', shared.logoutFn());
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
@@ -298,7 +281,7 @@ describe('user survey integration', () => {
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
-    it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'in-progress', 'new']));
+    it('verify user 0 user survey list', tests.verifyUserSurveyListFn(['completed', 'in-progress', 'new']));
     it('logout as user 0', shared.logoutFn());
 
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
@@ -307,7 +290,7 @@ describe('user survey integration', () => {
     it('verify user 1 survey 0 status', verifyStatusFn(0, 'new'));
     it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
-    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
+    it('verify user 1 user survey list', tests.verifyUserSurveyListFn(['new', 'in-progress', 'new']));
     it('logout as user 1', shared.logoutFn());
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
@@ -316,7 +299,7 @@ describe('user survey integration', () => {
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'completed'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
-    it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'completed', 'new']));
+    it('verify user 0 user survey list', tests.verifyUserSurveyListFn(['completed', 'completed', 'new']));
     it('logout as user 0', shared.logoutFn());
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
@@ -332,6 +315,7 @@ describe('user survey integration', () => {
                     expected.forEach((userSurvey, index) => {
                         userSurvey.status = statusList[index];
                         delete userSurvey.type;
+                        delete userSurvey.authorId;
                         if (userSurvey.description === undefined) {
                             delete userSurvey.description;
                         }
@@ -348,7 +332,7 @@ describe('user survey integration', () => {
             rrSuperTest.get(`/user-surveys/${surveyId}`, true, 200, { language })
                 .expect((res) => {
                     const userSurvey = res.body;
-                    const survey = hxSurvey.translatedServer(surveyIndex, language);
+                    const survey = _.omit(hxSurvey.translatedServer(surveyIndex, language), 'authorId');
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
                     }
@@ -368,7 +352,7 @@ describe('user survey integration', () => {
             rrSuperTest.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
                 .expect((res) => {
                     const userSurveyAnswers = res.body;
-                    const survey = hxSurvey.translatedServer(surveyIndex, language);
+                    const survey = _.omit(hxSurvey.translatedServer(surveyIndex, language), 'authorId');
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
                     }

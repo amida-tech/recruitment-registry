@@ -79,5 +79,7 @@
 	"cohortZipFileNotGenerated": "Cohort csv file cannot be zipped.",
 	"cohortS3NoZipUpload": "S3 Upload error ({{$0}})",
 	"answerInvalidAssesSurveys": "Survey assigned to assessment is not unique.",
-	"answerInvalidSurveyInAsses": "Survey does not belong to assessment."
+	"answerInvalidSurveyInAsses": "Survey does not belong to assessment.",
+	"feedbackSurveyNoDeletedDefault": "Invalid id(s) for feedback survey and/or linked survey.",
+	"feedbackSurveyNoWrongType": "Wrong type(s) for feedback survey and/or linked survey."
 }

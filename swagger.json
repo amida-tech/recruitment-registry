@@ -3958,6 +3958,144 @@
                     }
                 }
             }
+        },
+        "/default-feedback-survey": {
+            "x-swagger-router-controller": "default-feedback-survey.controller",
+            "post": {
+                "summary": "Creates default feedback survey.",
+                "operationId": "createDefaultFeedbackSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "defaultFeedbackSurvey",
+                    "in": "body",
+                    "description": "Id of the default feedback survey",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newDefaultFeedbackSurvey"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete default feedback survey.",
+                "description": "Delete default feedback survey.",
+                "operationId": "deleteDefaultFeedbackSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/feedback-surveys": {
+            "x-swagger-router-controller": "feedback-survey.controller",
+            "post": {
+                "summary": "Creates feedback survey for a survey.",
+                "operationId": "createFeedbackSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "feedbackSurvey",
+                    "in": "body",
+                    "description": "Ids of survey and the associated feedback survey",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newFeedbackSurvey"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lists feedback surveys",
+                "description": "Feedback surveys including the default.",
+                "operationId": "listFeedbackSurveys",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/feedbackSurveys"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/feedback-surveys/{id}": {
+            "x-swagger-router-controller": "feedback-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets the feedback survey for the survey.",
+                "operationId": "getFeedbackSurvey",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "full",
+                    "in": "query",
+                    "description": "If full survey json to be returned as well.",
+                    "required": false,
+                    "type": "boolean"
+                }],
+                "responses": {
+                    "200": {
+                       "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/feedbackSurvey"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete the feedback survey for the survey.",
+                "operationId": "deleteFeedbackSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -7401,6 +7539,67 @@
         "answerYearValue": {
             "type": "string",
             "pattern": "^\\d{4}$"
+        },
+        "newDefaultFeedbackSurvey": {
+            "type": "object",
+            "required": ["feedbackSurveyId"],
+            "properties": {
+                "feedbackSurveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "newFeedbackSurvey": {
+            "type": "object",
+            "required": ["feedbackSurveyId"],
+            "properties": {
+                "feedbackSurveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "feedbackSurvey": {
+            "type": "object",
+            "required": ["feedbackSurveyId"],
+            "properties": {
+                "feedbackSurveyId": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "isDefault": {
+                    "type": "boolean"
+                },
+                "survey": {
+                    "$ref": "#/definitions/survey"
+                }
+            },
+            "additionalProperties": false
+        },
+        "feedbackSurveys": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["feedbackSurveyId"],
+                "properties": {
+                    "feedbackSurveyId": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "surveyId": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "additionalProperties": false
+            }
         }
     }
 }
