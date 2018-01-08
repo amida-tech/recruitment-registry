@@ -818,7 +818,7 @@ module.exports = class SurveyDAO extends Translatable {
     patchSurveyCompleteTx(surveyId, surveyPatch, transaction) {
         const language = surveyPatch.language || 'en';
         // TODO: Need a version of getSurvey with transaction
-        return this.getSurvey(surveyId, { isIdentifying: true })
+        return this.getSurvey(surveyId)
             .then((survey) => {
                 if (!surveyPatch.forceStatus && survey.status === 'retired') {
                     return RRError.reject('surveyRetiredStatusUpdate');
@@ -1067,11 +1067,7 @@ module.exports = class SurveyDAO extends Translatable {
                         .then((surveyQuestions) => {
                             const ids = _.map(surveyQuestions, 'questionId');
                             const language = options.language;
-                            let isIdentifying = options.isIdentifying;
-                            if (isIdentifying === undefined) {
-                                isIdentifying = true;
-                            }
-                            return this.question.listQuestions({ scope: 'complete', ids, language, isIdentifying })
+                            return this.question.listQuestions({ scope: 'complete', ids, language, isIdentifying: true })
                                 .then((questions) => {
                                     const qxMap = _.keyBy(questions, 'id');
                                     let qxs = surveyQuestions.map((surveyQuestion) => {
