@@ -3,6 +3,7 @@
 module.exports = function questionChoice(sequelize, Sequelize, schema) {
     const tableName = 'question_choice';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         questionId: {
             type: Sequelize.INTEGER,
@@ -67,10 +68,10 @@ module.exports = function questionChoice(sequelize, Sequelize, schema) {
         deletedAt: 'deletedAt',
         indexes: [{
             fields: ['question_id'],
-            where: { deleted_at: { $eq: null } },
+            where: { deleted_at: { [Op.eq]: null } },
         }, {
             fields: ['choice_set_id'],
-            where: { deleted_at: { $eq: null } },
+            where: { deleted_at: { [Op.eq]: null } },
         }],
         paranoid: true,
     });

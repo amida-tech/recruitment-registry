@@ -1,8 +1,12 @@
 'use strict';
 
+const Sequelize = require('sequelize');
+
 const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
+
+const Op = Sequelize.Op;
 
 module.exports = class ConsentTypeDAO extends Translatable {
     constructor(db) {
@@ -30,7 +34,7 @@ module.exports = class ConsentTypeDAO extends Translatable {
             order: ['id'],
         };
         if (options.ids) {
-            query.where = { id: { $in: options.ids } };
+            query.where = { id: { [Op.in]: options.ids } };
         }
         if (options.transaction) {
             query.transaction = options.transaction;

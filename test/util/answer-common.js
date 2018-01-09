@@ -230,6 +230,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         return function getAnswers(done) {
             const query = {};
             const surveyId = hxSurvey.id(surveyIndex);
+            Object.assign(query, { isIdentifying: true });
             if (assessmentIndex === null) {
                 Object.assign(query, { 'survey-id': surveyId });
             } else {

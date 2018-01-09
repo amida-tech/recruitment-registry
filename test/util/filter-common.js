@@ -115,13 +115,13 @@ const IntegrationTests = class FilterIntegrationTests extends FilterTests {
         this.rrSuperTest = rrSuperTest;
     }
 
-    createFilterFn() {
+    createFilterFn(options = {}) {
         const rrSuperTest = this.rrSuperTest;
         const filterGenerator = this.filterGenerator;
         const hxFilter = this.hxFilter;
         const hxQuestion = this.hxQuestion;
         return function createFilter() {
-            const filter = filterGenerator.newFilter(hxQuestion);
+            const filter = options.filter || filterGenerator.newFilter(hxQuestion);
             return rrSuperTest.post('/filters', filter, 201)
                 .then(res => hxFilter.push(filter, res.body));
         };

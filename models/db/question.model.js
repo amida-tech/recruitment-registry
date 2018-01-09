@@ -58,6 +58,12 @@ module.exports = function question(sequelize, Sequelize, schema) {
         common: {
             type: Sequelize.BOOLEAN,
         },
+        isIdentifying: {
+            type: Sequelize.BOOLEAN,
+            field: 'is_identifying',
+            allowNull: false,
+            defaultValue: false,
+        },
     }, {
         freezeTableName: true,
         tableName,

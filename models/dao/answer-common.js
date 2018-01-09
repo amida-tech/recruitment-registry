@@ -8,8 +8,20 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value) { return { textValue: value }; },
-        date(value) { return { dateValue: value }; },
-        year(value) { return { yearValue: value }; },
+        year(value) {
+            if (value.indexOf(':') < 0) {
+                return { yearValue: value };
+            }
+            const [min, max] = value.split(':');
+            const yearRange = {};
+            if (max) {
+                yearRange.max = max;
+            }
+            if (min) {
+                yearRange.min = min;
+            }
+            return { yearRange };
+        },
         month(value) { return { monthValue: value }; },
         day(value) { return { dayValue: value }; },
         bool(value) { return { boolValue: value === 'true' }; },
@@ -27,6 +39,20 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
                 integerRange.min = parseInt(min, 10);
             }
             return { integerRange };
+        },
+        date(value) {
+            if (value.indexOf(':') < 0) {
+                return { dateValue: value };
+            }
+            const [min, max] = value.split(':');
+            const dateRange = {};
+            if (max) {
+                dateRange.max = max;
+            }
+            if (min) {
+                dateRange.min = min;
+            }
+            return { dateRange };
         },
         float(value) { return { floatValue: parseFloat(value) }; },
         bloodPressure(value) {
@@ -209,6 +235,16 @@ const answerValueToDBFormat = {
     integerRange(value) {
         const max = (value.max === 0) ? '0' : (value.max || '');
         const min = (value.min === 0) ? '0' : (value.min || '');
+        return { value: `${min}:${max}` };
+    },
+    yearRange(value) {
+        const max = value.max || '';
+        const min = value.min || '';
+        return { value: `${min}:${max}` };
+    },
+    dateRange(value) {
+        const max = (value.max || '');
+        const min = (value.min || '');
         return { value: `${min}:${max}` };
     },
     filename(value) {

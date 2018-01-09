@@ -9,10 +9,10 @@ const request = require('request');
 
 const models = require('../../models');
 
-const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
+const errHandler = require('./err-handler-spec');
 
 const expect = chai.expect;
 
@@ -164,27 +164,15 @@ class SharedSpec {
     }
 
     throwingHandler() { // eslint-disable-line class-methods-use-this
-        throw new Error('Unexpected no error.');
+        return errHandler.throwingHandler;
     }
 
     expectedErrorHandler(code, ...params) { // eslint-disable-line class-methods-use-this
-        return function expectedErrorHandler(err) {
-            if (!(err instanceof RRError)) {
-                console.log(err); // eslint-disable-line no-console
-            }
-            expect(err).to.be.instanceof(RRError);
-            expect(err.code).to.equal(code);
-            expect(err.params).to.deep.equal(params);
-            return err;
-        };
+        return errHandler.expectedErrorHandlerFn(code, ...params);
     }
 
     expectedSeqErrorHandler(name, fields) { // eslint-disable-line class-methods-use-this
-        return function expectedSeqErrorHandler(err) {
-            expect(err.name).to.equal(name);
-            expect(err.fields).to.deep.equal(fields);
-            return err;
-        };
+        return errHandler.expectedSeqErrorHandlerFn(name, fields);
     }
 
     sanityEnoughUserTested(hxUser) { // eslint-disable-line class-methods-use-this

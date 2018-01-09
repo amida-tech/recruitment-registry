@@ -72,6 +72,7 @@ module.exports = class SurveyGenerator {
         if (!question) {
             question = this.questionGenerator.newQuestion();
         }
+        question.isIdentifying = false;
         question.required = Boolean(index % 2);
         return question;
     }
@@ -135,7 +136,7 @@ module.exports = class SurveyGenerator {
             if (options.noneRequired) {
                 required = false;
             }
-            return { id, required };
+            return { id, required, isIdentifying: false };
         });
         return result;
     }

@@ -474,6 +474,11 @@
                     "in": "path",
                     "required": true,
                     "type": "integer"
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }, {
                     "name": "language",
                     "in": "query",
@@ -623,6 +628,11 @@
                         "type": "integer",
                         "minimum": 1
                     }
+                },{
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -1401,6 +1411,12 @@
                     "name": "federated",
                     "in": "query",
                     "description": "Federated flag",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "description": "identifying flag",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -2725,6 +2741,12 @@
                     "name": "include-survey",
                     "in": "query",
                     "description": "Include survey",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "isIdentifying",
+                    "in": "query",
+                    "description": "identifying flag",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -4175,12 +4197,52 @@
             },
             "minItems": 1
         },
+        "rulePatch": {
+            "type": "object",
+            "required": ["logic"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "logic": {
+                    "type": "string"
+                },
+                "answer": {
+                    "$ref": "#/definitions/newRuleAnswer"
+                },
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "minProperties": 2,
+            "additionalProperties": false
+        },
+        "enableWhenPatch": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/rulePatch"
+            },
+            "minItems": 1
+        },
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
             "required": ["required"],
             "properties": {
                 "required": {
+                    "type": "boolean"
+                },
+                "isIdentifying": {
                     "type": "boolean"
                 },
                 "id": {
@@ -4252,6 +4314,86 @@
             },
             "minItems": 1
         },
+        "surveyQuestionPatch": {
+            "type": "object",
+            "description": "Describes a patch to a question.",
+            "required": ["required"],
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "isIdentifying": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenPatch"
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "instruction": {
+                    "type": "string"
+                },
+                "common": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "$ref": "#/definitions/questionType"
+                },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sectionPatch"
+                    },
+                    "minItems": 1
+                },
+                "maxCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetReference": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                 "meta": {
+                    "$ref": "#/definitions/questionMeta"
+                },
+                "oneOfChoices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/choicePatch"
+                    },
+                    "minItems": 1
+                }
+            },
+            "minProperties": 2,
+            "additionalProperties": false
+        },
+        "surveyQuestionsPatch": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyQuestionPatch"
+            },
+            "minItems": 1
+        },
         "newSection": {
             "type": "object",
             "properties": {
@@ -4272,7 +4414,34 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
+            "additionalProperties": false
+        },
+        "sectionPatch": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questions": {
+                    "$ref": "#/definitions/surveyQuestionsPatch"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sectionPatch"
+                    }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenPatch"
+                }
+            },
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "section": {
@@ -4300,7 +4469,7 @@
                     "$ref": "#/definitions/enableWhen"
                 }
             },
-            "maxProperties": 3,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "sectionTextUpdate": {
@@ -4565,22 +4734,28 @@
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenPatch"
+                },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
                 "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newSection"
+                        "$ref": "#/definitions/sectionPatch"
                     }
                 },
                 "questions": {
-                    "$ref": "#/definitions/newSurveyQuestions"
+                    "$ref": "#/definitions/surveyQuestionsPatch"
                 },
                 "forceStatus": {
                     "type": "boolean"
                 },
                 "forceQuestions": {
+                    "type": "boolean"
+                },
+                "complete": {
                     "type": "boolean"
                 }
             },
@@ -5022,8 +5197,7 @@
                     "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5120,8 +5294,7 @@
                     "maxProperties": 2
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5152,6 +5325,34 @@
                 "dateValue": {
                     "type": "string",
                     "format": "date"
+                },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "yearRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "$ref": "#/definitions/answerYearValue"
+                        },
+                        "max": {
+                            "$ref": "#/definitions/answerYearValue"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
                 },
                 "numberValue": {
                     "type": "number"
@@ -5202,8 +5403,7 @@
                     "additionalProperties": false
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5265,6 +5465,34 @@
                     "minProperties": 1,
                     "additionalProperties": false
                 },
+                "dateRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "max": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "yearRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "$ref": "#/definitions/answerYearValue"
+                        },
+                        "max": {
+                            "$ref": "#/definitions/answerYearValue"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "floatValue": {
                     "type": "number"
                 },
@@ -5295,8 +5523,7 @@
                     "additionalProperties": false
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5330,8 +5557,7 @@
                     "$ref": "#/definitions/answerTextValue"
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5403,8 +5629,7 @@
                     "additionalProperties": false
                 },
                 "yearValue": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
+                    "$ref": "#/definitions/answerYearValue"
                 },
                 "monthValue": {
                     "type": "string",
@@ -5452,6 +5677,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "isIdentifying": {
+                    "type": "boolean"
                 },
                 "common": {
                     "type": "boolean"
@@ -5550,6 +5778,33 @@
             },
             "additionalProperties": false
         },
+        "choicePatch": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/definitions/choiceType"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
+                }
+            },
+            "additionalProperties": false
+        },
         "newQuestion": {
             "type": "object",
             "required": [
@@ -5571,6 +5826,9 @@
                     "type": "boolean"
                 },
                 "common": {
+                    "type": "boolean"
+                },
+                "isIdentifying": {
                     "type": "boolean"
                 },
                 "maxCount": {
@@ -7123,6 +7381,10 @@
         "answerTextValue": {
             "type": "string",
             "pattern": "^[^\\s]+(\\s+[^\\s]+)*$"
+        },
+        "answerYearValue": {
+            "type": "string",
+            "pattern": "^\\d{4}$"
         }
     }
 }

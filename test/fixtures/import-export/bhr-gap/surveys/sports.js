@@ -11,6 +11,7 @@ module.exports = {
     questions: [{
         text: 'How many hours a week do you participate in a team sports?',
         required: true,
+        isIdentifying: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID1' },
         choiceSetReference: 'count-0-8-plus',
@@ -18,6 +19,7 @@ module.exports = {
         text: 'What types of sports do you frequently watch?',
         instruction: 'Check all that apply',
         required: false,
+        isIdentifying: false,
         type: 'choices',
         choices: [
             { text: 'Football', answerIdentifier: { type: 'sports-column', value: 'QID2_1' } },
@@ -36,17 +38,20 @@ module.exports = {
     }, {
         text: 'Please indicate \'Other\' sport.',
         required: false,
+        isIdentifying: false,
         type: 'text',
         answerIdentifier: { type: 'sports-column', value: 'QID2_TEXT' },
     }, {
         text: 'On average how many hours do you watch sports or sport related programming on TV a week?',
         required: false,
+        isIdentifying: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID3' },
         choiceSetReference: 'count-0-8-plus',
     }, {
         text: 'What types of beverages do you usually drink while watching sports?',
         required: false,
+        isIdentifying: false,
         type: 'choices',
         answerIdentifier: { type: 'sports-column', value: 'QID4' },
         choices: [
@@ -64,6 +69,7 @@ module.exports = {
     }, {
         text: 'How many servings of each do you drink a a typical watch?',
         required: false,
+        isIdentifying: false,
         type: 'text',
         multiple: true,
         answerIdentifiers: {

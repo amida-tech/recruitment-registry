@@ -1,7 +1,10 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
+
+const Op = Sequelize.Op;
 
 module.exports = class QuestionIdentifierDAO extends Base {
     createAnswerIdentifier(answerIdentifier, transaction) {
@@ -121,7 +124,7 @@ module.exports = class QuestionIdentifierDAO extends Base {
         const AnswerIdentifier = this.db.AnswerIdentifier;
         const Question = this.db.Question;
         return AnswerIdentifier.findAll({
-            where: { type, questionId: { $in: ids } },
+            where: { type, questionId: { [Op.in]: ids } },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
             include: [{ model: Question, as: 'question', attributes: ['type'] }],
             raw: true,

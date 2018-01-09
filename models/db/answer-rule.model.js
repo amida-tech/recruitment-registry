@@ -3,6 +3,7 @@
 module.exports = function answerRule(sequelize, Sequelize, schema) {
     const tableName = 'answer_rule';
     const modelName = `${schema}_${tableName}`;
+    const Op = Sequelize.Op;
     return sequelize.define(modelName, {
         surveyId: {
             type: Sequelize.INTEGER,
@@ -94,6 +95,6 @@ module.exports = function answerRule(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };

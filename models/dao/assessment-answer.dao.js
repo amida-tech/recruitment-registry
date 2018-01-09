@@ -1,11 +1,14 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+
+const Op = Sequelize.Op;
 
 const copySqlQuery = queryrize.readQuerySync('copy-answers.sql');
 
@@ -68,7 +71,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                 .then(() => this.updateStatus(inputRecord.assessmentId, status, transaction))
                 .then(() => {
                     const ids = _.map(answers, 'questionId');
-                    const where = { questionId: { $in: ids } };
+                    const where = { questionId: { [Op.in]: ids } };
                     where.assessmentId = masterId.assessmentId;
                     return this.db.Answer.destroy({ where, transaction });
                 })
@@ -136,7 +139,7 @@ module.exports = class AnswerAssessmentDAO extends Base {
                 if (assessments.length) {
                     const ids = assessments.map(r => r.id);
                     return this.db.AssessmentAnswer.findAll({
-                        where: { assessmentId: { $in: ids } },
+                        where: { assessmentId: { [Op.in]: ids } },
                         raw: true,
                         attributes: ['assessmentId', 'status'],
                     })

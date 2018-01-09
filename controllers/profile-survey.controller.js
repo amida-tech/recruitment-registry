@@ -15,6 +15,7 @@ exports.getProfileSurvey = function getProfileSurvey(req, res) {
     const options = language ? { language } : {};
     const role = _.get(req, 'user.role');
     options.admin = (role === 'admin');
+    options.isIdentifying = true;
     req.models.profileSurvey.getProfileSurvey(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));

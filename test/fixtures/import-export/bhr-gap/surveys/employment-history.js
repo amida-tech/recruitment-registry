@@ -11,18 +11,21 @@ module.exports = {
     questions: [{
         text: 'How do you rate the condition of the building that you work?',
         required: false,
+        isIdentifying: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID1' },
         choiceSetReference: 'condition',
     }, {
         text: 'What is the field of your current job?',
         required: true,
+        isIdentifying: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID2' },
         choiceSetReference: 'primary-occupation',
     }, {
         text: 'Please indicate other field occupation?',
         required: false,
+        isIdentifying: false,
         type: 'text',
         answerIdentifier: { type: 'employment-history', value: 'QID3' },
         enableWhen: [{
@@ -33,6 +36,7 @@ module.exports = {
     }, {
         text: 'Please indicate your role in your current job',
         required: false,
+        isIdentifying: false,
         type: 'choices',
         choices: [
             { text: 'Management', answerIdentifier: { type: 'employment-history', value: 'QID4_1' } },

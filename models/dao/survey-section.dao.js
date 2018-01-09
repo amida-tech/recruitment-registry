@@ -1,9 +1,12 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
 const SPromise = require('../../lib/promise');
+
+const Op = Sequelize.Op;
 
 module.exports = class SectionDAO extends Base {
     constructor(db, dependencies) {
@@ -11,54 +14,52 @@ module.exports = class SectionDAO extends Base {
         Object.assign(this, dependencies);
     }
 
-    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) { // eslint-disable-line max-len
-        return this.section.createSectionTx({ name, description }, transaction)
-            .then(({ id: sectionId }) => {
-                const parentId = parentIndex === null || parentIndex === undefined ? null : ids[parentIndex].id; // eslint-disable-line max-len
-                const record = { surveyId, sectionId, parentId, line };
-                if (parentQuestionId) {
-                    record.parentQuestionId = parentQuestionId;
-                }
-                return this.db.SurveySection.create(record, { transaction })
-                    .then(({ id }) => {
-                        ids.push({ id, sectionId });
-                        return ids;
-                    });
+    createSurveySectionTx(surveySection, ids, transaction) {
+        const { surveyId, sectionId, parentQuestionId, line, parentIndex } = surveySection;
+        const parentId = _.isNil(parentIndex) ? null : ids[parentIndex];
+        const record = { surveyId, sectionId, parentId, line };
+        if (parentQuestionId) {
+            record.parentQuestionId = parentQuestionId;
+        }
+        return this.db.SurveySection.create(record, { transaction })
+            .then(({ id }) => {
+                ids.push(id);
+                return ids;
             });
     }
 
-    bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) { // eslint-disable-line max-len
-        if (!flattenedSections.length) {
+    createIndexedSurveySectionsTx(surveyId, questionIds, surveySections, transaction) { // eslint-disable-line max-len
+        if (!surveySections.length) {
             return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
         }
         return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
-            .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => { // eslint-disable-line max-len
+            .then(() => surveySections.reduce((r, { id, parentIndex, questionIndex, line, name }) => { // eslint-disable-line max-len
                 const record = { name, surveyId, line, parentIndex };
                 if (questionIndex !== undefined) {
-                    record.parentQuestionId = surveyQuestionIds[questionIndex];
+                    record.parentQuestionId = questionIds[questionIndex];
+                }
+                if (id) {
+                    record.sectionId = id;
                 }
                 if (r === null) {
                     return this.createSurveySectionTx(record, [], transaction);
                 }
                 return r.then(ids => this.createSurveySectionTx(record, ids, transaction));
             }, null))
-            .then(((sectionIds) => {
-                const records = flattenedSections.reduce((r, { indices }, line) => {
+            .then(((ids) => {
+                const records = surveySections.reduce((r, { indices }, line) => {
                     if (!indices) {
                         return r;
                     }
-                    const questionIds = indices.map(index => surveyQuestionIds[index]);
-                    if (questionIds) {
-                        const surveySectionId = sectionIds[line].id;
-                        questionIds.forEach((questionId, questionLine) => {
-                            const record = { surveySectionId, questionId, line: questionLine };
-                            r.push(record);
-                        });
-                    }
+                    indices.forEach((index, questionLine) => {
+                        const questionId = questionIds[index];
+                        const surveySectionId = ids[line];
+                        const record = { surveySectionId, questionId, line: questionLine };
+                        r.push(record);
+                    });
                     return r;
                 }, []);
-                return this.db.SurveySectionQuestion.bulkCreate(records, { transaction })
-                    .then(() => sectionIds.map(sectionId => sectionId.sectionId));
+                return this.db.SurveySectionQuestion.bulkCreate(records, { transaction });
             }));
     }
 
@@ -97,7 +98,7 @@ module.exports = class SectionDAO extends Base {
                     return r;
                 }, []);
                 return this.db.SurveySectionQuestion.findAll({
-                    where: { surveySectionId: { $in: ids } },
+                    where: { surveySectionId: { [Op.in]: ids } },
                     raw: true,
                     order: ['line'],
                     attributes: ['surveySectionId', 'questionId'],

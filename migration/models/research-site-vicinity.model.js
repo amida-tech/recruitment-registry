@@ -1,5 +1,9 @@
 'use strict';
 
+const Sequelize = require('sequelize');
+
+const Op = Sequelize.Op;
+
 module.exports = function Table(sequelize, DataTypes) {
     return sequelize.define('research_site_vicinity', {
         researchSiteId: {
@@ -33,6 +37,6 @@ module.exports = function Table(sequelize, DataTypes) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { [Op.eq]: null } } }],
     });
 };

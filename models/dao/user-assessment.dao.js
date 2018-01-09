@@ -1,8 +1,11 @@
 'use strict';
 
+const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 module.exports = class AssessmentDAO extends Base {
     constructor(db, dependencies) {
@@ -27,7 +30,7 @@ module.exports = class AssessmentDAO extends Base {
                     })
                         .then(surveyIds => surveyIds.map(({ surveyId }) => surveyId))
                         .then(surveyIds => Answer.findAll({
-                            where: { userId, surveyId: { $in: surveyIds } },
+                            where: { userId, surveyId: { [Op.in]: surveyIds } },
                             attributes: ['id'],
                             raw: true,
                             transaction,
@@ -137,7 +140,7 @@ module.exports = class AssessmentDAO extends Base {
 
     exportBulkAnswers(ids) {
         return this.db.UserAssessmentAnswer.findAll({
-            where: { userAssessmentId: { $in: ids } },
+            where: { userAssessmentId: { [Op.in]: ids } },
             attributes: ['answerId', 'userAssessmentId'],
             order: ['userAssessmentId', 'answerId'],
             raw: true,

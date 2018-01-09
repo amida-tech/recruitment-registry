@@ -11,14 +11,12 @@ const config = require('../../config');
 
 const appgen = require('../../app-generator');
 const models = require('../../models');
-const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
+const errHandler = require('./err-handler-spec');
 
 const expect = chai.expect;
-const unknownError = new RRError('unknown');
-const i18n = require('../../i18n');
 
 class SharedIntegration {
     constructor(rrSuperTest, generator) {
@@ -290,23 +288,11 @@ class SharedIntegration {
     }
 
     verifyErrorMessage(res, code, ...params) { // eslint-disable-line class-methods-use-this
-        const req = {};
-        const response = {};
-        i18n.init(req, response);
-        const expected = (new RRError(code, ...params)).getMessage(response);
-        expect(expected).to.not.equal(code);
-        expect(expected).to.not.equal(unknownError.getMessage(response));
-        expect(res.body.message).to.equal(expected);
+        errHandler.verifyErrorMessage(res, code, ...params);
     }
 
     verifyErrorMessageLang(res, language, code, ...params) { // eslint-disable-line class-methods-use-this
-        const req = { url: `http://aaa.com/anything?language=${language}` };
-        const response = {};
-        i18n.init(req, response);
-        const expected = (new RRError(code, ...params)).getMessage(response);
-        expect(expected).to.not.equal(code);
-        expect(expected).to.not.equal(unknownError.getMessage(response));
-        expect(res.body.message).to.equal(expected);
+        errHandler.verifyErrorMessageLang(res, language, code, ...params);
     }
 }
 

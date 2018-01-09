@@ -20,6 +20,7 @@ env.production.user
 env.production.head
 sandbox
 /server/config/local.env.js
+config/config.json
 
 # DB
 migration/sequelize-meta.json
@@ -27,7 +28,7 @@ migration/sequelize-meta.json
 # OS specifics
 *.DS_Store
 
+tmp/*
+
 # Static Code Analysis
 /artifacts
-
-tmp/*
