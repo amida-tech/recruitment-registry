@@ -3,12 +3,19 @@
 const surveys = require('../../example/survey');
 
 module.exports = [{
+     // Survey 0
     surveyIndex: 0,
     purpose: 'enableWhen',
     questionIndex: 5,
     type: 'text',
     logic: 'not-equals',
     relativeIndex: 1,
+}, {
+    surveyIndex: 0,
+    purpose: 'type',
+    questionIndex: 0,
+    type: 'bool',
+    isIdentifying: true,
 }, { // Survey 1
     surveyIndex: 1,
     purpose: 'type',
