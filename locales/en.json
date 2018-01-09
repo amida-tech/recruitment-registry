@@ -62,6 +62,8 @@
 	"surveyImportMissingParentSectionId": "Parent section id '{{$0}}' is not in the id map.",
 	"surveyImportMissingParentQuestionId": "Parent question id '{{$0}}' is not in the id map.",
 	"surveyNoDeleteFeedback": "Survey is being used as default or assigned feedback survey",
+	"surveyNoPatchTypeWhenFeedback": "Survey type cannot be changed when survey is being used as or assigned to a feedback survey.",
+	"surveyNoPatchTypeWhenAnswer": "Survey type cannot be changed when there are answers to the survey.",
 	"registryBothURLSchema": "URL and schema cannot be both specied.",
 	"genericUnique": "Record with {{$0}} '{{$1}}' already exists.",
 	"registryNoneFound": "No registries found in the system.",

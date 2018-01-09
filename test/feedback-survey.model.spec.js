@@ -13,6 +13,7 @@ const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
 const surveyCommon = require('./util/survey-common');
+const answerCommon = require('./util/answer-common');
 const userSurveyCommon = require('./util/user-survey-common');
 const feedbackSurveyCommon = require('./util/feedback-survey-common');
 
@@ -37,10 +38,12 @@ const verifyCase = (tests, index) => {
 describe('feedback survey unit', function feedbackSurveyUnit() {
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
+    const hxQuestion = new History();
     const generator = new Generator();
     const shared = new SharedSpec(generator);
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
     const userSurveyTests = new userSurveyCommon.SpecTests({ hxSurvey, hxUser });
+    const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey, hxQuestion });
     const tests = new feedbackSurveyCommon.SpecTests(hxSurvey);
 
     before(shared.setUpFn());
@@ -132,4 +135,22 @@ describe('feedback survey unit', function feedbackSurveyUnit() {
     it('list feedback surveys', tests.listFeedbackSurveysFn());
 
     it('verify user 1 user survey list', userSurveyTests.verifyUserSurveyListFn(1));
+
+    it('error: patch feedback survey 11 for type', surveyTests.errorPatchSurveyFn(11, {
+        type: constNames.defaultSurveyType,
+    }, { complete: true, errorKey: 'surveyNoPatchTypeWhenFeedback' }));
+
+    it('error: patch survey 1 for type (feedback)', surveyTests.errorPatchSurveyFn(1, {
+        type: constNames.feedbackSurveyType,
+    }, { complete: true, errorKey: 'surveyNoPatchTypeWhenFeedback' }));
+
+    it('user 2 answers feedback survey 12', answerTests.answerSurveyFn(2, 12));
+
+    it('error: patch answered feedback survey 12 for type', surveyTests.errorPatchSurveyFn(12, {
+        type: constNames.defaultSurveyType,
+    }, { complete: true, errorKey: 'surveyNoPatchTypeWhenAnswer' }));
+
+    it('patch feedback survey 5 for type', surveyTests.patchSurveyFn(5, {
+        type: constNames.feedbackSurveyType,
+    }, { complete: true }));
 });

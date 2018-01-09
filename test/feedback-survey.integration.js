@@ -15,6 +15,7 @@ const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
+const answerCommon = require('./util/answer-common');
 const userSurveyCommon = require('./util/user-survey-common');
 const feedbackSurveyCommon = require('./util/feedback-survey-common');
 
@@ -35,12 +36,16 @@ const verifyCase = (tests, index) => {
 describe('feedback survey integration', function feedbackSurveyiIntegration() {
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
+    const hxQuestion = new History();
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const userSurveyTests = new userSurveyCommon.IntegrationTests(rrSuperTest, {
         hxSurvey, hxUser,
+    });
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, {
+        generator, hxUser, hxSurvey, hxQuestion,
     });
     const tests = new feedbackSurveyCommon.IntegrationTests(rrSuperTest, hxSurvey);
 
@@ -188,4 +193,32 @@ describe('feedback survey integration', function feedbackSurveyiIntegration() {
     it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 user survey list', userSurveyTests.verifyUserSurveyListFn(1));
     it('logout as user 1', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    it('error: patch feedback survey 11 for type', surveyTests.errorPatchSurveyFn(11, {
+        type: constNames.defaultSurveyType,
+    }, { complete: true, errorKey: 'surveyNoPatchTypeWhenFeedback', statusCode: 400 }));
+
+    it('error: patch survey 1 for type (feedback)', surveyTests.errorPatchSurveyFn(1, {
+        type: constNames.feedbackSurveyType,
+    }, { complete: true, errorKey: 'surveyNoPatchTypeWhenFeedback', statusCode: 400 }));
+
+    it('logout as super', shared.logoutFn());
+
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 answers feedback survey 12', answerTests.answerSurveyFn(2, 12));
+    it('logout as user 1', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    it('error: patch answered feedback survey 12 for type', surveyTests.errorPatchSurveyFn(12, {
+        type: constNames.defaultSurveyType,
+    }, { complete: true, errorKey: 'surveyNoPatchTypeWhenAnswer', statusCode: 400 }));
+
+    it('patch feedback survey 5 for type', surveyTests.patchSurveyFn(5, {
+        type: constNames.feedbackSurveyType,
+    }, { complete: true }));
+
+    it('logout as super', shared.logoutFn());
 });

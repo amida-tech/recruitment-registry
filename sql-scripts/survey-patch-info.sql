@@ -1,5 +1,5 @@
 SELECT
-	survey.status, survey_text.name, survey_text.description, survey_question.question_ids AS "questionIds", survey_section.section_count AS "sectionCount"
+	survey.status, survey.type, survey_text.name, survey_text.description, survey_question.question_ids AS "questionIds", survey_section.section_count AS "sectionCount"
 FROM survey
 LEFT JOIN survey_text
 	ON :text_needed AND survey_text.survey_id = survey.id AND survey_text.language_code = 'en' AND survey_text.deleted_at IS NULL

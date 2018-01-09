@@ -342,6 +342,27 @@ const Tests = class SurveyTests {
         };
     }
 
+    errorPatchSurveyFn(index, patch, options = {}) {
+        const self = this;
+        return function errorPatchSurvey() {
+            const survey = _.cloneDeep(self.hxSurvey.server(index));
+            Object.assign(survey, patch);
+            _.forOwn(patch, (value, key) => {
+                if (value === null) {
+                    delete survey[key];
+                }
+            });
+            let payload;
+            if (options.complete) {
+                payload = _.cloneDeep(_.omit(survey, ['id', 'authorId']));
+                payload.complete = true;
+            } else {
+                payload = patch;
+            }
+            return self.errorPatchSurveyPx(survey.id, patch, options);
+        };
+    }
+
     errorStatusChangeFn(index, status, options, complete) {
         const self = this;
         const hxSurvey = this.hxSurvey;
@@ -591,4 +612,5 @@ module.exports = {
     formQuestionsSectionsSurveyPatch,
     SpecTests,
     IntegrationTests,
+    iterQuestions,
 };
