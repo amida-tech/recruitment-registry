@@ -3823,7 +3823,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/cohort"
                         }
@@ -3953,6 +3953,27 @@
                             "type": "file"
                         }
                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/demographics": {
+            "x-swagger-router-controller": "demographics.controller",
+            "get": {
+                "operationId": "listDemographics",
+                "summary": "List demographics",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/demographics"
+                        }
+                     },
                     "default": {
                         "$ref": "#/responses/genericError"
                     }
@@ -7385,6 +7406,28 @@
         "answerYearValue": {
             "type": "string",
             "pattern": "^\\d{4}$"
+        },
+        "demographic": {
+            "type": "object",
+            "properties": {
+                "zip": {
+                    "type": "string"
+                },
+                "yob": {
+                    "type": "integer",
+                    "minLength": 4
+                },
+                "registrationDate": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "demographics": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/demographic"
+            }
         }
     }
 }
