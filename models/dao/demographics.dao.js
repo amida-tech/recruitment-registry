@@ -78,9 +78,7 @@ module.exports = class DemographicsDAO extends Base {
                                 if(questions.find(question => answer.questionId === question.id && question.type === 'year')) {
                                     demographic.yob = answer.value;
                                 }
-                                console.log('>>>>> DAO > listDemographics > users[3]: ', users);
                                 demographic.registrationDate = users.find(user => {
-                                    console.log('!!!!! DAO > listDemographics > user: ', user);
                                     return answer.userId === user.id;
                                 }).createdAt;
                                 demographic.registrationDate = moment(demographic.registrationDate,'YYYY-MM-DD')
