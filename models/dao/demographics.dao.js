@@ -1,68 +1,30 @@
 'use strict';
 
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
+const moment = require('moment');
+const _ = require('lodash');
 const Base = require('./base');
 
-const _ = require('lodash');
-
-const demoDemographics = [
-    {
-       "zip":"20852",
-       "yob":1970,
-       "registrationDate":"2017-12-12"
-     },
-     {
-       "zip":"23229",
-       "yob":1929,
-       "registrationDate":"2017-10-05"
-     },
-     {
-       "zip":"20852",
-       "yob":1954,
-       "registrationDate":"2018-01-01"
-     },
-     {
-        "zip":"25587",
-        "yob":1970,
-        "registrationDate":"2017-12-12"
-      },
-      {
-        "zip":"25587",
-        "yob":1950,
-        "registrationDate":"2017-10-05"
-      },
-      {
-        "zip":"25589",
-        "yob":1954,
-        "registrationDate":"2018-01-01"
-      },
-      {
-         "zip":"25589",
-         "yob":1955,
-         "registrationDate":"2017-12-12"
-       },
-       {
-         "zip":"25590",
-         "yob":1955,
-         "registrationDate":"2017-10-05"
-       },
-       {
-         "zip":"25591",
-         "yob":1960,
-         "registrationDate":"2018-01-01"
-       },
-];
-
 module.exports = class DemographicsDAO extends Base {
-    listDemographics() {
+    listDemographics(options = {}) {
         // TODO: orderBy query param?
+        let role = options.role ? options.role : { [Op.in]: ['clinician', 'participant'] };
+        if (role === 'all') {
+            role = { [Op.in]: ['admin', 'clinician', 'participant'] };
+        }
+        const where = { role };
         return this.db.User.findAll({
             raw: true,
+            where,
             attributes: [
                 'id',
                 'createdAt', // registration_date
+                'role',
             ],
         })
         .then((users) => {
+            users = users.map(user => _.omitBy(user, _.isNil));
             // Assumes that there will always only ever be one profile-survey at a time
             return this.db.ProfileSurvey.find()
             .then((profileSurvey) => {
@@ -73,8 +35,12 @@ module.exports = class DemographicsDAO extends Base {
                     },
                 })
                 .then((surveys) => {
+                    const userIds = users.map((user) => {
+                        return user.id;
+                    });
                     return this.db.Answer.findAll({
                         where: {
+                            userId: userIds,
                             surveyId: profileSurveyId,
                         },
                         attributes: [
@@ -103,33 +69,44 @@ module.exports = class DemographicsDAO extends Base {
                         })
                         .then((questions) => {
                             let demographics = answers.map((answer) => {
-                                // NOTE: struct
-                                // answer = {
-                                //     userId: 5,
-                                //     questionId: 2,
-                                //     value: 1999,
-                                // };
                                 let demographic = {
                                     userId: answer.userId,
                                 };
-
                                 if(questions.find(question => answer.questionId === question.id && question.type === 'zip')) {
                                     demographic.zip = answer.value;
                                 }
                                 if(questions.find(question => answer.questionId === question.id && question.type === 'year')) {
                                     demographic.yob = answer.value;
                                 }
-                                demographic.registrationDate = users.find(user => answer.userId === user.id).createdAt;
-                                // TODO: format registrationDate?
+                                console.log('>>>>> DAO > listDemographics > users[3]: ', users);
+                                demographic.registrationDate = users.find(user => {
+                                    console.log('!!!!! DAO > listDemographics > user: ', user);
+                                    return answer.userId === user.id;
+                                }).createdAt;
+                                demographic.registrationDate = moment(demographic.registrationDate,'YYYY-MM-DD')
+                                    .format('YYYY-MM-DD');
                                 return demographic;
                             });
 
-                            // TODO: Merge each object values pivoting on userId
-                            demographics = _.chain().groupBy('userId').mapValues(value => _.chain(value).pluck('value').flattenDeep()).value();
-
-                            console.log('>>>>> DAO > listDemographics > demographics: ', demographics);
-                            // return demographics;
-                            return demoDemographics;
+                            demographics = _.chain(demographics)
+                                .groupBy('userId')
+                                .map((userRecordSet) => {
+                                    const zipRecord = userRecordSet.find((record) => record.zip);
+                                    const yobRecord = userRecordSet.find((record) => record.yob);
+                                    let unifiedRecord = Object.assign({},
+                                        zipRecord,
+                                        yobRecord
+                                    );
+                                    let anonymizedUnifiedRecord = {
+                                        zip: unifiedRecord.zip,
+                                        yob: unifiedRecord.yob,
+                                        registrationDate: unifiedRecord.registrationDate,
+                                    };
+                                    return anonymizedUnifiedRecord;
+                                })
+                                .flattenDeep()
+                                .value();
+                            return demographics;
                         });
                     });
                 });
