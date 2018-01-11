@@ -154,6 +154,18 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
+    Answer.belongsTo(ProfileSurvey, {
+        as: 'profileSurvey',
+        foreignKey: {
+            fieldName: 'surveyId',
+            field: 'survey_id',
+            references: {
+                model: 'profileSurvey',
+                key: 'surveyId',
+            },
+        },
+    });
+
     QuestionIdentifier.belongsTo(Question, questionBelongsTo());
     AnswerIdentifier.belongsTo(Question, questionBelongsTo());
     AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsTo());

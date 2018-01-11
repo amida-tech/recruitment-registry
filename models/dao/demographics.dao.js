@@ -7,111 +7,90 @@ const _ = require('lodash');
 const Base = require('./base');
 
 module.exports = class DemographicsDAO extends Base {
-    listDemographics(options = {}) {
-        // TODO: orderBy query param?
+    listDemographics(options = {}) { // TODO: orderBy query param?
         let role = options.role ? options.role : { [Op.in]: ['clinician', 'participant'] };
         if (role === 'all') {
             role = { [Op.in]: ['admin', 'clinician', 'participant'] };
         }
         const where = { role };
-        return this.db.User.findAll({
+        return this.db.Answer.findAll({
             raw: true,
-            where,
             attributes: [
-                'id',
-                'createdAt', // registration_date
-                'role',
+                'userId',
+                'value',
+            ],
+            include: [
+                {
+                    model: this.db.User,
+                    as: 'user',
+                    raw: true,
+                    attributes: [
+                        'createdAt',
+                    ],
+                    where,
+                },
+                {
+                    model: this.db.Question,
+                    as: 'question',
+                    raw: true,
+                    attributes: [
+                        'type',
+                    ],
+                    where: {
+                        type: [
+                            'zip',
+                            'year',
+                        ]
+                    },
+                },
+                {
+                    model: this.db.ProfileSurvey,
+                    as: 'profileSurvey',
+                    raw: true,
+                    attributes: [],
+                    where: {
+                        surveyId: {
+                            // NOTE: There could possibly be multiple ProfileSurveys?
+                            [Op.ne]: null,
+                        },
+                    },
+                },
             ],
         })
-        .then((users) => {
-            users = users.map(user => _.omitBy(user, _.isNil));
-            // Assumes that there will always only ever be one profile-survey at a time
-            return this.db.ProfileSurvey.find()
-            .then((profileSurvey) => {
-                const profileSurveyId = profileSurvey.id;
-                return this.db.Survey.find({
-                    where: {
-                        id: profileSurveyId,
-                    },
-                })
-                .then((surveys) => {
-                    const userIds = users.map((user) => {
-                        return user.id;
-                    });
-                    return this.db.Answer.findAll({
-                        where: {
-                            userId: userIds,
-                            surveyId: profileSurveyId,
-                        },
-                        attributes: [
-                            'userId',
-                            'questionId',
-                            // 'question_choice_id', // Not sure if we will need, yet
-                            'value'
-                        ],
-                    })
-                    .then((answers) => {
-                        const questionIds = answers.map((answer) => {
-                            return answer.questionId;
-                        });
-                        return this.db.Question.findAll({
-                            where: {
-                                id: questionIds,
-                                type: [
-                                    'zip',
-                                    'year',
-                                ],
-                            },
-                            attributes: [
-                                'id',
-                                'type',
-                            ],
-                        })
-                        .then((questions) => {
-                            let demographics = answers.map((answer) => {
-                                let demographic = {
-                                    userId: answer.userId,
-                                };
-                                if(questions.find(question => answer.questionId === question.id && question.type === 'zip')) {
-                                    demographic.zip = answer.value;
-                                }
-                                if(questions.find(question => answer.questionId === question.id && question.type === 'year')) {
-                                    demographic.yob = answer.value;
-                                }
-                                demographic.registrationDate = users.find(user => {
-                                    return answer.userId === user.id;
-                                }).createdAt;
-                                demographic.registrationDate = moment(demographic.registrationDate,'YYYY-MM-DD')
-                                    .format('YYYY-MM-DD');
-                                return demographic;
-                            });
-
-                            demographics = _.chain(demographics)
-                                .groupBy('userId')
-                                .map((userRecordSet) => {
-                                    const zipRecord = userRecordSet.find((record) => record.zip);
-                                    const yobRecord = userRecordSet.find((record) => record.yob);
-                                    let unifiedRecord = Object.assign({},
-                                        zipRecord,
-                                        yobRecord
-                                    );
-                                    let anonymizedUnifiedRecord = {
-                                        zip: unifiedRecord.zip,
-                                        yob: unifiedRecord.yob,
-                                        registrationDate: unifiedRecord.registrationDate,
-                                    };
-                                    return anonymizedUnifiedRecord;
-                                })
-                                .flattenDeep()
-                                .value();
-                            return demographics;
-                        });
-                    });
-                });
+        .then((demographics) => {
+            demographics = demographics.map((demographic) => {
+                const formattedDemographic = {
+                    userId: demographic.userId,
+                };
+                if(demographic['question.type'] === 'zip') {
+                    formattedDemographic.zip = demographic.value;
+                }
+                if(demographic['question.type'] === 'year') {
+                    formattedDemographic.yob = demographic.value;
+                }
+                formattedDemographic.registrationDate = moment(demographic['user.createdAt'],'YYYY-MM-DD')
+                    .format('YYYY-MM-DD');
+                return formattedDemographic;
             });
+            demographics = _.chain(demographics)
+                .groupBy('userId')
+                .map((userRecordSet) => {
+                    const zipRecord = userRecordSet.find((record) => record.zip);
+                    const yobRecord = userRecordSet.find((record) => record.yob);
+                    const unifiedRecord = Object.assign({},
+                        zipRecord,
+                        yobRecord
+                    );
+                    const anonymizedUnifiedRecord = {
+                        zip: unifiedRecord.zip,
+                        yob: unifiedRecord.yob,
+                        registrationDate: unifiedRecord.registrationDate,
+                    };
+                    return anonymizedUnifiedRecord;
+                })
+                .flattenDeep()
+                .value();
+            return demographics;
         });
-
-        // TODO: Table JOIN query instead of the above?
-
     }
 };
