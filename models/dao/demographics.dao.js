@@ -67,7 +67,9 @@ module.exports = class DemographicsDAO extends Base {
                         },
                     ],
                 })
-                .then(demographics => this.formatAndMergeDemographics(demographics));
+                .then(demographics => {
+                    return this.formatAndMergeDemographics(demographics);
+                });
             });
         });
     }
