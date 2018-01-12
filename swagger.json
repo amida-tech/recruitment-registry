@@ -3978,7 +3978,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/idSuccess"
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3994,7 +3994,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/idSuccess"
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4021,7 +4021,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/idSuccess"
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4089,7 +4089,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/idSuccess"
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
