@@ -56,7 +56,7 @@ const cohortAnswer = require('./cohort-answer.model');
 const file = require('./file.model');
 const smtpType = require('./smtp-type.model');
 const assessmentAnswer = require('./assessment-answer.model');
-const feedbackSurvey = require('./feedback-survey');
+const feedbackSurvey = require('./feedback-survey.model');
 
 const questionBelongsTo = function () {
     const result = {
