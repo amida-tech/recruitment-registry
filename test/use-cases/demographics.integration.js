@@ -62,7 +62,7 @@ describe('demographics', function ageCohort() {
                     return rrSuperTest.get('/profiles', false, 200)
                         .then((res) => {
                             const userInfo = res.body.user;
-                            const surveyInfo = res.body.survey;);
+                            const surveyInfo = res.body.survey;
                             let profileSurveyZipAnswer;
                             let profileSurveyYOBAnswer;
                             surveyInfo.questions.forEach((question) => {
