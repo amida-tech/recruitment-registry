@@ -62,9 +62,20 @@ describe('demographics', function ageCohort() {
                     return rrSuperTest.get('/profiles', false, 200)
                         .then((res) => {
                             const userInfo = res.body.user;
+                            const surveyInfo = res.body.survey;);
+                            let profileSurveyZipAnswer;
+                            let profileSurveyYOBAnswer;
+                            surveyInfo.questions.forEach((question) => {
+                                if(question.type === 'zip') {
+                                    profileSurveyZipAnswer = question.answer.textValue;
+                                }
+                                if(question.type === 'year') {
+                                    profileSurveyYOBAnswer = question.answer.yearValue;
+                                }
+                            });
                             expectedDemographics.push({
-                                zip: zipAnswer,
-                                yob: `${birthYear}`,
+                                zip: profileSurveyZipAnswer,
+                                yob: profileSurveyYOBAnswer,
                                 registrationDate: moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD'),
                             });
                         });
