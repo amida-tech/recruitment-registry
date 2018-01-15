@@ -13,9 +13,6 @@ const moment = require('moment');
 const Generator = require('../util/generator');
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
-const History = require('../util/history');
-const SurveyHistory = require('../util/survey-history');
-const surveyCommon = require('../util/survey-common');
 const filterCommon = require('../util/filter-common');
 const exampleSurveys = require('../fixtures/example/survey');
 const config = require('../../config');
@@ -27,8 +24,6 @@ describe('demographics', function ageCohort() {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest);
 
-    const hxSurvey = new SurveyHistory();
-    const hxQuestion = new History();
     const expectedDemographics = [];
 
     before(shared.setUpFn());
