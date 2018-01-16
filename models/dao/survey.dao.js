@@ -4,6 +4,7 @@ const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const answerCommon = require('./answer-common');
+const constNames = require('../const-names');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
@@ -638,9 +639,31 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
+    validatePatchSurveyFields(id, fields, transaction) {
+        const type = fields.type;
+        if (!type) {
+            return SPromise.resolve();
+        }
+        const property = type === constNames.feedbackSurveyType ? 'surveyId' : 'feedbackSurveyId';
+        const where = { [property]: id };
+        return this.db.FeedbackSurvey.count({ where, transaction })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('surveyNoPatchTypeWhenFeedback');
+                }
+                return this.db.Answer.count({ where: { surveyId: id }, transaction });
+            })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('surveyNoPatchTypeWhenAnswer');
+                }
+                return null;
+            });
+    }
+
     // use empty object to remove meta
-    patchSurveyFieldsTx(survey, { status, meta, forceStatus }, transaction) {
-        if (status || meta) {
+    patchSurveyFieldsTx(survey, { status, meta, type, forceStatus }, transaction) {
+        if (status || meta || type) {
             const fields = {};
             const { status: currentStatus, id } = survey;
             if (status && (status !== currentStatus)) {
@@ -652,6 +675,9 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 fields.status = status;
             }
+            if (type && (type !== survey.type)) {
+                fields.type = type;
+            }
             if (meta) {
                 if (_.isEmpty(meta)) {
                     fields.meta = null;
@@ -661,7 +687,8 @@ module.exports = class SurveyDAO extends Translatable {
             }
             if (!_.isEmpty(fields)) {
                 const where = { id };
-                return this.db.Survey.update(fields, { where, transaction });
+                return this.validatePatchSurveyFields(id, fields, transaction)
+                    .then(() => this.db.Survey.update(fields, { where, transaction }));
             }
         }
         return SPromise.resolve();
@@ -823,8 +850,8 @@ module.exports = class SurveyDAO extends Translatable {
                 if (!surveyPatch.forceStatus && survey.status === 'retired') {
                     return RRError.reject('surveyRetiredStatusUpdate');
                 }
-                const { status, meta, forceStatus } = surveyPatch;
-                const surveyFieldsPatch = { status, forceStatus };
+                const { status, type, meta, forceStatus } = surveyPatch;
+                const surveyFieldsPatch = { status, type, forceStatus };
                 surveyFieldsPatch.meta = !meta ? {} : meta;
                 return this.patchSurveyFieldsTx(survey, surveyFieldsPatch, transaction)
                     .then(() => {
@@ -930,9 +957,12 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     listSurveys(opt = {}) {
-        const { scope, language, history, order, groupId, version, ids } = opt;
+        const { scope, language, history, order, groupId, version, ids, type } = opt;
         const status = opt.status || 'published';
         const attributes = (status === 'all') ? ['id', 'status'] : ['id'];
+        if (!type) {
+            attributes.push('type');
+        }
         if (scope === 'version-only' || scope === 'version') {
             attributes.push('groupId');
             attributes.push('version');
@@ -941,7 +971,7 @@ module.exports = class SurveyDAO extends Translatable {
             attributes.push('authorId');
         }
         const options = { raw: true, attributes, order: order || ['id'], paranoid: !history };
-        if (groupId || version || (status !== 'all') || ids) {
+        if (groupId || version || (status !== 'all') || ids || type) {
             options.where = {};
             if (groupId) {
                 options.where.groupId = groupId;
@@ -954,6 +984,9 @@ module.exports = class SurveyDAO extends Translatable {
             }
             if (ids) {
                 options.where.id = { [Op.in]: ids };
+            }
+            if (type) {
+                options.where.type = type;
             }
         }
         if (language) {
@@ -1030,7 +1063,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        const attributes = ['id', 'meta', 'status'];
+        const attributes = ['id', 'meta', 'status', 'type'];
         if (options.admin) {
             attributes.push('authorId');
         }

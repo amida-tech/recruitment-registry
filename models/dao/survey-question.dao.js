@@ -31,6 +31,11 @@ const updateQuestionDependency = function (question, questionParents, sectionPar
 };
 
 module.exports = class SurveyQuestionsDAO extends Base {
+    constructor(db, dependencies) {
+        super(db);
+        Object.assign(this, dependencies);
+    }
+
     listSurveyQuestions(surveyId, addDependency) {
         const options = {
             where: { surveyId },

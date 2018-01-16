@@ -1,5 +1,7 @@
 'use strict';
 
+const surveyCommon = require('./survey-common');
+
 const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
     if (qxIndices) {
         return qxIndices.map((questionIndex) => {
@@ -11,7 +13,8 @@ const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
             return generator.answerQuestion(question);
         });
     }
-    return generator.answerQuestions(survey.questions);
+    const questions = Array.from(surveyCommon.iterQuestions(survey));
+    return generator.answerQuestions(questions);
 };
 
 module.exports = {

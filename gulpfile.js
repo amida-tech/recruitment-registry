@@ -19,7 +19,7 @@ const platoArgs = {
 
 function analysis() {
     if (!src.includes('node_modules')) {
-      plato.inspect(src, outputDir, platoArgs);
+        plato.inspect(src, outputDir, platoArgs);
     }
 }
 

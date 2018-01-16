@@ -61,6 +61,9 @@
 	"surveyImportMissingQuestionId": "Question id '{{$0}}' is not in the id map.",
 	"surveyImportMissingParentSectionId": "Parent section id '{{$0}}' is not in the id map.",
 	"surveyImportMissingParentQuestionId": "Parent question id '{{$0}}' is not in the id map.",
+	"surveyNoDeleteFeedback": "Survey is being used as default or assigned feedback survey",
+	"surveyNoPatchTypeWhenFeedback": "Survey type cannot be changed when survey is being used as or assigned to a feedback survey.",
+	"surveyNoPatchTypeWhenAnswer": "Survey type cannot be changed when there are answers to the survey.",
 	"registryBothURLSchema": "URL and schema cannot be both specied.",
 	"genericUnique": "Record with {{$0}} '{{$1}}' already exists.",
 	"registryNoneFound": "No registries found in the system.",
@@ -79,5 +82,7 @@
 	"cohortZipFileNotGenerated": "Cohort csv file cannot be zipped.",
 	"cohortS3NoZipUpload": "S3 Upload error ({{$0}})",
 	"answerInvalidAssesSurveys": "Survey assigned to assessment is not unique.",
-	"answerInvalidSurveyInAsses": "Survey does not belong to assessment."
+	"answerInvalidSurveyInAsses": "Survey does not belong to assessment.",
+	"feedbackSurveyNoDeletedDefault": "Invalid id(s) for feedback survey and/or linked survey.",
+	"feedbackSurveyNoWrongType": "Wrong type(s) for feedback survey and/or linked survey."
 }
