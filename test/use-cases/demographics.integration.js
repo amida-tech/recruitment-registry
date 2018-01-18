@@ -33,33 +33,71 @@ describe('demographics', function ageCohort() {
     // TODO: Test with a more dynamic surveyId
     // TODO: Test by creating at least two profileSurveys, testing the first, associate the second as the
     // new profileSurvey, and testing the second...
-    it('create profile survey', shared.createSurveyProfileFn(exampleSurveys.zipYOBProfileSurvey));
+    // it('create profile survey', shared.createSurveyProfileFn(exampleSurveys.zipYOBProfileSurvey));
+    it('create profile survey', shared.createSurveyProfileFn(exampleSurveys.variousQuestionTypes));
 
     it('logout as super user', shared.logoutFn());
 
     let birthYearId;
     let zipId;
+    let questionIds;
 
     it('get profile survey', function getProfileSurvey() {
         return rrSuperTest.get('/profile-survey', false, 200)
             .then((res) => {
                 const profileSurvey = res.body.survey;
-                [zipId, birthYearId] = _.map(profileSurvey.questions, 'id');
+                // [zipId, birthYearId] = _.map(profileSurvey.questions, 'id');
+                questionIds = _.map(profileSurvey.questions, 'id');
             });
     });
 
     _.range(20).forEach((index) => {
         it(`register user ${index}`, function registerUser() {
             const user = generator.newUser();
-            const birthYear = (2020 - 90) + (index * 2);
+            // const birthYear = (2020 - 90) + (index * 2);
+            // const zipAnswer = `${20850 + index}`;
+            // const answers = [{
+            //     // questionId: birthYearId,
+            //     questionId: questionIds[0],
+            //     answer: { yearValue: `${birthYear}` },
+            // }, {
+            //     // questionId: zipId,
+            //     questionId: questionIds[1],
+            //     answer: { textValue: zipAnswer },
+            // }];
+
+            const boolValue = Math.random() >= 0.5;
+            const textValue = `sampleString${index}`;
+            const integerValue = index;
             const zipAnswer = `${20850 + index}`;
-            const answers = [{
-                questionId: birthYearId,
-                answer: { yearValue: `${birthYear}` },
-            }, {
-                questionId: zipId,
-                answer: { textValue: zipAnswer },
-            }];
+            const birthYear = (2020 - 90) + (index * 2);
+            // // const dateValue =
+            // // const choice =
+            // // const choices =
+
+            const answers = [
+                {
+                    questionId: questionIds[0],
+                    answer: { boolValue: boolValue },
+                },
+                {
+                    questionId: questionIds[1],
+                    answer: { textValue: textValue },
+                },
+                {
+                    questionId: questionIds[2],
+                    answer: { integerValue: integerValue },
+                },
+                {
+                    questionId: questionIds[3],
+                    answer: { textValue: zipAnswer },
+                },
+                {
+                    questionId: questionIds[4],
+                    answer: { yearValue: `${birthYear}` },
+                },
+            ];
+
             return rrSuperTest.authPost('/profiles', { user, answers }, 201)
                 .then((res) => {
                     return rrSuperTest.get('/profiles', false, 200)
@@ -103,10 +141,27 @@ describe('demographics', function ageCohort() {
             });
     });
 
-    it('logout as super user', shared.logoutFn());
+    // it('create profile survey', shared.createSurveyProfileFn(exampleSurveys.variousQuestionTypes));
+
+    // it('get profile survey', function getProfileSurvey() {
+    //     return rrSuperTest.get('/profile-survey', false, 200)
+    //         .then((res) => {
+    //             const profileSurvey = res.body.survey;
+    //             // console.log('>>>>> >>>>> >>>>> profileSurvey: ', profileSurvey);
+    //             [zipId, birthYearId] = _.map(profileSurvey.questions, 'id');
+    //         });
+    // });
+    //
+    // it('logout as super user', shared.logoutFn());
+    //
+    // _.range(20).forEach((index) => {
+    //     it(`login as ${index}`, shared.loginFn(config.superUser));
+    //     it(`logout as user ${index}`, shared.logoutFn());
+    // });
 });
 
 // TODO: eventually assign these to the key of answerValueType?
+// NOTE: see `/models/dao/demographics.dao.js` ._castAnswerValueByType()
 const _getAnswerValue = (question) => {
     if(question.type === 'text') {
         return question.answer.textValue;

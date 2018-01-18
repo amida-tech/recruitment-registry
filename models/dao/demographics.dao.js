@@ -70,6 +70,7 @@ module.exports = class DemographicsDAO extends Base {
                                 raw: true,
                                 attributes: [
                                     'id',
+                                    'type',
                                 ],
                             },
                         ],
@@ -90,7 +91,7 @@ module.exports = class DemographicsDAO extends Base {
             const demographicKeyText = questionTextObjs.find((textObj) => {
                 return textObj.id === demographic['question.id'];
             }).text;
-            formattedDemographic[demographicKeyText] = demographic.value;
+            formattedDemographic[demographicKeyText] = _castAnswerValueByType(demographic);
             formattedDemographic.registrationDate = moment(demographic['user.createdAt'],'YYYY-MM-DD')
                 .format('YYYY-MM-DD');
             return formattedDemographic;
@@ -103,6 +104,7 @@ module.exports = class DemographicsDAO extends Base {
                     unifiedRecord = Object.assign(unifiedRecord, record);
                 });
                 delete unifiedRecord.userId;
+                delete unifiedRecord.type;
                 return unifiedRecord;
             })
             .flattenDeep()
@@ -110,3 +112,40 @@ module.exports = class DemographicsDAO extends Base {
         return demographics;
     }
 };
+
+// TODO: eventually assign these to the key of answerValueType?
+const _castAnswerValueByType = (demographic) => {
+    const type = demographic['question.type'];
+    if(type === 'text') {
+        return demographic.value;
+    }
+    else if(type === 'integer') {
+        return parseInt(demographic.value);
+    }
+    else if(type === 'zip') {
+        return demographic.value;
+    }
+    else if(type === 'year') {
+        return demographic.value;
+    }
+    else if(type === 'bool') {
+        if(demographic.value === 'true') {
+            return true;
+        }
+        return false;
+    }
+    else if(type === 'date') {
+        return demographic.value;
+    }
+    // FIXME: only gets ids... FIXME: this will be ambiguous with choices
+    else if(type === 'choice') {
+        return demographic.value;
+    }
+    // FIXME only gets ids... FIXME: this will be ambiguous with choice
+    else if(type === 'choices') {
+        return demographic.value;
+    }
+    else {
+        return demographic.value;
+    }
+}
