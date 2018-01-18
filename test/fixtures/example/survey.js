@@ -376,6 +376,73 @@ const booleanOnly = {
     questions: [{ text: 'i am in', type: 'bool', required: true, isIdentifying: false }],
 };
 
+const manyTypes = {
+    name: 'surveyTypes',
+    questions: [
+        {
+            text: 'Is this a boolean?',
+            type: 'bool',
+            required: true,
+            isIdentifying: true,
+        },
+        {
+            text: 'What do you desire?',
+            type: 'text',
+            required: true,
+            isIdentifying: false,
+        },
+        {
+            text: 'What is your favorite number?',
+            type: 'integer',
+            required: true,
+            isIdentifying: true,
+        },
+        {
+            text: 'What is your zip or postal code?',
+            type: 'zip',
+            required: true,
+            isIdentifying: true,
+        },
+        {
+            text: 'What is your birth year?',
+            type: 'year',
+            required: true,
+            isIdentifying: true,
+        },
+        {
+            text: 'Pick a date from the calendar',
+            type: 'date',
+            required: true,
+            isIdentifying: true,
+        },
+        {
+            text: 'Choose one',
+            type: 'choice',
+            required: true,
+            isIdentifying: true,
+            choices: [
+                { text: 'A' },
+                { text: 'B' },
+                { text: 'C' },
+                { text: 'D' },
+            ],
+        },
+        {
+            text: 'Choose several',
+            type: 'choices',
+            required: true,
+            isIdentifying: true,
+            choices: [
+                { text: 'One' },
+                { text: 'Two' },
+                { text: 'Three' },
+                { text: 'Four' },
+                { text: 'Five' },
+            ],
+        },
+    ],
+};
+
 module.exports = {
     example,
     exampleAnswer,

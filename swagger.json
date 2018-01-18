@@ -7410,18 +7410,11 @@
         "demographic": {
             "type": "object",
             "properties": {
-                "zip": {
-                    "type": "string"
-                },
-                "yob": {
-                    "type": "string",
-                    "pattern": "^\\d{4}$"
-                },
                 "registrationDate": {
                     "type": "string"
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "demographics": {
             "type": "array",

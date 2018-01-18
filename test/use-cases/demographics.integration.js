@@ -30,6 +30,9 @@ describe('demographics', function ageCohort() {
 
     it('login as super user', shared.loginFn(config.superUser));
 
+    // TODO: Test with a more dynamic surveyId
+    // TODO: Test by creating at least two profileSurveys, testing the first, associate the second as the
+    // new profileSurvey, and testing the second...
     it('create profile survey', shared.createSurveyProfileFn(exampleSurveys.zipYOBProfileSurvey));
 
     it('logout as super user', shared.logoutFn());
@@ -63,21 +66,27 @@ describe('demographics', function ageCohort() {
                         .then((res) => {
                             const userInfo = res.body.user;
                             const surveyInfo = res.body.survey;
-                            let profileSurveyZipAnswer;
-                            let profileSurveyYOBAnswer;
-                            surveyInfo.questions.forEach((question) => {
-                                if(question.type === 'zip') {
-                                    profileSurveyZipAnswer = question.answer.textValue;
-                                }
-                                if(question.type === 'year') {
-                                    profileSurveyYOBAnswer = question.answer.yearValue;
-                                }
+                            let rawDemographics = surveyInfo.questions.map((question) => {
+                                let key = question.text;
+                                let value = _getAnswerValue(question);
+                                return {
+                                    user: userInfo.id,
+                                    [key]: value,
+                                };
                             });
-                            expectedDemographics.push({
-                                zip: profileSurveyZipAnswer,
-                                yob: profileSurveyYOBAnswer,
-                                registrationDate: moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD'),
-                            });
+                            _.chain(rawDemographics)
+                                .groupBy('userId')
+                                .forEach((userRecordSet) => {
+                                    let unifiedRecord = {};
+                                    userRecordSet.forEach((record) => {
+                                        unifiedRecord = Object.assign(unifiedRecord, record);
+                                    });
+                                    delete unifiedRecord.user;
+                                    unifiedRecord.registrationDate = moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD');
+                                    expectedDemographics.push(unifiedRecord);
+                                })
+                                .flattenDeep()
+                                .value();
                         });
                 });
         });
@@ -96,3 +105,36 @@ describe('demographics', function ageCohort() {
 
     it('logout as super user', shared.logoutFn());
 });
+
+// TODO: eventually assign these to the key of answerValueType?
+const _getAnswerValue = (question) => {
+    if(question.type === 'text') {
+        return question.answer.textValue;
+    }
+    else if(question.type === 'integer') {
+        return parseInt(question.answer.integerValue);
+    }
+    else if(question.type === 'zip') {
+        return question.answer.textValue;
+    }
+    else if(question.type === 'year') {
+        return question.answer.yearValue;
+    }
+    else if(question.type === 'bool') {
+        return question.answer.boolValue;
+    }
+    else if(question.type === 'date') {
+        return question.answer.dateValue;
+    }
+    // FIXME: only gets ids, however... FIXME: this will be ambiguous with choices
+    else if(question.type === 'choice') {
+        return question.answer.choice;
+    }
+    // FIXME only gets ids, however... FIXME: this will be ambiguous with choice
+    else if(question.type === 'choices') {
+        return question.answer.choices;
+    }
+    else {
+        return question.answer.textValue;
+    }
+}
