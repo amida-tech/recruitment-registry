@@ -39,6 +39,7 @@ const CohortDAO = require('./cohort.dao');
 const FileDAO = require('./file.dao');
 const AssessmentAnswerDAO = require('./assessment-answer.dao');
 const DemographicsDAO = require('./demographics.dao');
+const FeedbackSurvey = require('./feedback-survey.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
     const registry = new Registry(db);
@@ -95,6 +96,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const cohort = new CohortDAO(db, { answer, filter, registry });
     const file = new FileDAO(db);
     const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, assessment });
+    const feedbackSurvey = new FeedbackSurvey(db, { survey });
     const demographics = new DemographicsDAO(db);
 
     return {
@@ -136,6 +138,7 @@ const doasPerSchema = function (db, daosGenerator) {
         cohort,
         file,
         assessmentAnswer,
+        feedbackSurvey,
         demographics,
     };
 };

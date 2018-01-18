@@ -298,6 +298,11 @@ sequelize
 
 Migration uses the `.env` file in the root directory.  Each run creates/updates a file named `sequelize-meta.json` in the migration directory.  This file must be preserved in this directory to avoid running the same migrations again.
 
+## Code Analysis
+A shell script is used to generate files that show static analysis and complexity metrics.
+- Run `$ ./analysis.sh` from the project directory
+- Files are written to the `artifacts` directory
+
 ## References
 
 - [Node.js](https://nodejs.org/en/)

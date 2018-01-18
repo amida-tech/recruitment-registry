@@ -14,12 +14,15 @@ const specialQuestionGenerator = {
         return surveyGenerator.questionGenerator.newMultiQuestion(options);
     },
     type(surveyGenerator, questionInfo) {
-        const { type, choiceCount } = questionInfo;
+        const { type, choiceCount, isIdentifying } = questionInfo;
         const options = { type };
         if (choiceCount) {
             options.choiceCount = choiceCount;
         }
         const question = surveyGenerator.questionGenerator.newQuestion(options);
+        if (isIdentifying) {
+            question.isIdentifying = true;
+        }
         return question;
     },
     enableWhen(surveyGenerator, questionInfo, index) {
@@ -256,7 +259,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const purpose = questionInfo.purpose;
             question = specialQuestionGenerator[purpose](this, questionInfo, index);
             question.required = false;
-            question.isIdentifying = false;
         } else {
             question = super.newSurveyQuestion(index);
         }

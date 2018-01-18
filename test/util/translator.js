@@ -57,6 +57,7 @@ const translator = {
         delete result.meta;
         delete result.status;
         delete result.authorId;
+        delete result.type;
         if (result.sections) {
             result.sections = this.translateSurveySections(result.sections, language);
         }

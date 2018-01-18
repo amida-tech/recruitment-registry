@@ -100,7 +100,7 @@ describe('survey (patch complete) unit', function surveyPatchUnit() {
         tests.patchSurveyFn(surveyCount - 6, { status: 'retired' }, { complete: true }));
 
     [surveyCount - 6].forEach((index) => {
-        it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
     });
 
     [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach((index) => {

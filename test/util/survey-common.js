@@ -305,10 +305,7 @@ const Tests = class SurveyTests {
             const callback = (clientParent, serverParent) => {
                 const enableWhen = clientParent.enableWhen;
                 if (enableWhen) {
-                    const code = _.get(enableWhen[0], 'answer.code'); // ignore code for now
-                    if (!code) {
-                        serverParent.enableWhen = enableWhen;
-                    }
+                    serverParent.enableWhen = enableWhen;
                     return;
                 }
                 delete serverParent.enableWhen;
@@ -342,6 +339,27 @@ const Tests = class SurveyTests {
                 .then((survey) => {
                     self.patchGenerator.compareAndReplace(spec, survey);
                 });
+        };
+    }
+
+    errorPatchSurveyFn(index, patch, options = {}) {
+        const self = this;
+        return function errorPatchSurvey() {
+            const survey = _.cloneDeep(self.hxSurvey.server(index));
+            Object.assign(survey, patch);
+            _.forOwn(patch, (value, key) => {
+                if (value === null) {
+                    delete survey[key];
+                }
+            });
+            let payload;
+            if (options.complete) {
+                payload = _.cloneDeep(_.omit(survey, ['id', 'authorId']));
+                payload.complete = true;
+            } else {
+                payload = patch;
+            }
+            return self.errorPatchSurveyPx(survey.id, patch, options);
         };
     }
 
@@ -414,6 +432,16 @@ const SpecTests = class SurveySpecTests extends Tests {
             const id = hxSurvey.id(index);
             return models.survey.deleteSurvey(id)
                 .then(() => hxSurvey.remove(index));
+        };
+    }
+
+    errorDeleteSurveyFn(index, errorKey) {
+        const hxSurvey = this.hxSurvey;
+        const errHandler = errHandlerSpec.expectedErrorHandlerFn(errorKey);
+        return function errorDeleteSurvey() {
+            const id = hxSurvey.id(index);
+            return models.survey.deleteSurvey(id)
+                .then(errHandlerSpec.throwingHandler, errHandler);
         };
     }
 
@@ -515,13 +543,22 @@ const IntegrationTests = class SurveyIntegrationTests extends Tests {
     deleteSurveyFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function deleteSurvey(done) {
+        return function deleteSurvey() {
             const id = hxSurvey.id(index);
-            rrSuperTest.delete(`/surveys/${id}`, 204)
+            return rrSuperTest.delete(`/surveys/${id}`, 204)
                 .expect(() => {
                     hxSurvey.remove(index);
-                })
-                .end(done);
+                });
+        };
+    }
+
+    errorDeleteSurveyFn(index, errorKey) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function errorDeleteSurvey() {
+            const id = hxSurvey.id(index);
+            return rrSuperTest.delete(`/surveys/${id}`, 400)
+                .then(res => errHandlerSpec.verifyErrorMessage(res, errorKey));
         };
     }
 
@@ -575,4 +612,5 @@ module.exports = {
     formQuestionsSectionsSurveyPatch,
     SpecTests,
     IntegrationTests,
+    iterQuestions,
 };
