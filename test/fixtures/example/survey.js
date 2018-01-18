@@ -409,17 +409,17 @@ const variousQuestionTypes = {
             required: true,
             isIdentifying: false,
         },
-        // {
-        //     text: 'Pick a date from the calendar',
-        //     type: 'date',
-        //     required: true,
-        //     isIdentifying: true,
-        // },
+        {
+            text: 'Pick a date from the calendar',
+            type: 'date',
+            required: true,
+            isIdentifying: false,
+        },
         // {
         //     text: 'Choose one',
         //     type: 'choice',
         //     required: true,
-        //     isIdentifying: true,
+        //     isIdentifying: false,
         //     choices: [
         //         { text: 'A' },
         //         { text: 'B' },
@@ -431,7 +431,7 @@ const variousQuestionTypes = {
         //     text: 'Choose several',
         //     type: 'choices',
         //     required: true,
-        //     isIdentifying: true,
+        //     isIdentifying: false,
         //     choices: [
         //         { text: 'One' },
         //         { text: 'Two' },

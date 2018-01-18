@@ -52,7 +52,6 @@ module.exports = class DemographicsDAO extends Base {
                             questionId: questionIds,
                         },
                         include: [
-
                             {
                                 model: this.db.User,
                                 as: 'user',
@@ -63,7 +62,6 @@ module.exports = class DemographicsDAO extends Base {
                                 ],
                                 where,
                             },
-
                             {
                                 model: this.db.Question,
                                 as: 'question',
@@ -73,6 +71,20 @@ module.exports = class DemographicsDAO extends Base {
                                     'type',
                                 ],
                             },
+                            // FIXME:
+                            // {
+                            //     model: this.db.QuestionChoice,
+                            //     as: 'questionChoice',
+                            //     raw: true,
+                            //     attributes: [
+                            //         'id',
+                            //         'type',
+                            //         'line',
+                            //     ],
+                            //     // where: {
+                            //     //     questionId: questionIds,
+                            //     // },
+                            // },
                         ],
                     })
                     .then(demographics => {
@@ -137,14 +149,14 @@ const _castAnswerValueByType = (demographic) => {
     else if(type === 'date') {
         return demographic.value;
     }
-    // FIXME: only gets ids... FIXME: this will be ambiguous with choices
-    else if(type === 'choice') {
-        return demographic.value;
-    }
-    // FIXME only gets ids... FIXME: this will be ambiguous with choice
-    else if(type === 'choices') {
-        return demographic.value;
-    }
+    // // FIXME: only returns a true value... need to join with questionChoice
+    // else if(type === 'choice') {
+    //     return demographic.value;
+    // }
+    // // FIXME will always be null... need to join with questionChoice
+    // else if(type === 'choices') {
+    //     return demographic.value;
+    // }
     else {
         return demographic.value;
     }
