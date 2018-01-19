@@ -21,17 +21,22 @@ const expect = chai.expect;
 // TODO: eventually assign these to the key of answerValueType?
 // NOTE: see `/models/dao/demographics.dao.js` ._castAnswerValueByType()
 const getAnswerValue = (question) => {
-    if (question.type === 'text') {
+    if(question.type === 'text') {
         return question.answer.textValue;
-    } else if (question.type === 'integer') {
+    }
+    else if(question.type === 'integer') {
         return parseInt(question.answer.integerValue, 10);
-    } else if (question.type === 'zip') {
+    }
+    else if(question.type === 'zip') {
         return question.answer.textValue;
-    } else if (question.type === 'year') {
+    }
+    else if(question.type === 'year') {
         return question.answer.yearValue;
-    } else if (question.type === 'bool') {
+    }
+    else if(question.type === 'bool') {
         return question.answer.boolValue;
-    } else if (question.type === 'date') {
+    }
+    else if(question.type === 'date') {
         return question.answer.dateValue;
     }
     // // FIXME: only returns a true value... need to join with questionChoice
@@ -42,8 +47,9 @@ const getAnswerValue = (question) => {
     // else if(question.type === 'choices') {
     //     return question.answer.choices;
     // }
-
-    return question.answer.textValue;
+    else {
+        return question.answer.textValue;
+    }
 };
 
 describe('demographics', function ageCohort() {
@@ -84,15 +90,15 @@ describe('demographics', function ageCohort() {
             const answers = [
                 {
                     questionId: questionIds[0],
-                    answer: { boolValue },
+                    answer: { boolValue: boolValue },
                 },
                 {
                     questionId: questionIds[1],
-                    answer: { textValue },
+                    answer: { textValue: textValue },
                 },
                 {
                     questionId: questionIds[2],
-                    answer: { integerValue },
+                    answer: { integerValue: integerValue },
                 },
                 {
                     questionId: questionIds[3],
@@ -117,13 +123,14 @@ describe('demographics', function ageCohort() {
             ];
 
             return rrSuperTest.authPost('/profiles', { user, answers }, 201)
-                .then(() => rrSuperTest.get('/profiles', false, 200)
+                .then(() => {
+                    return rrSuperTest.get('/profiles', false, 200)
                         .then((res) => {
                             const userInfo = res.body.user;
                             const surveyInfo = res.body.survey;
-                            const rawDemographics = surveyInfo.questions.map((question) => {
-                                const key = question.text;
-                                const value = getAnswerValue(question);
+                            let rawDemographics = surveyInfo.questions.map((question) => {
+                                let key = question.text;
+                                let value = getAnswerValue(question);
                                 return {
                                     user: userInfo.id,
                                     [key]: value,
@@ -137,12 +144,13 @@ describe('demographics', function ageCohort() {
                                         unifiedRecord = Object.assign(unifiedRecord, record);
                                     });
                                     delete unifiedRecord.user;
-                                    unifiedRecord.registrationDate = moment(userInfo.createdAt, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                                    unifiedRecord.registrationDate = moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD');
                                     expectedDemographics.push(unifiedRecord);
                                 })
                                 .flattenDeep()
                                 .value();
-                        }));
+                        });
+                });
         });
         it(`logout as user ${index}`, shared.logoutFn());
     });
@@ -187,13 +195,14 @@ describe('demographics', function ageCohort() {
             }];
 
             return rrSuperTest.authPost('/profiles', { user, answers }, 201)
-                .then(() => rrSuperTest.get('/profiles', false, 200)
+                .then(() => {
+                    return rrSuperTest.get('/profiles', false, 200)
                         .then((res) => {
                             const userInfo = res.body.user;
                             const surveyInfo = res.body.survey;
-                            const rawDemographics = surveyInfo.questions.map((question) => {
-                                const key = question.text;
-                                const value = getAnswerValue(question);
+                            let rawDemographics = surveyInfo.questions.map((question) => {
+                                let key = question.text;
+                                let value = getAnswerValue(question);
                                 return {
                                     user: userInfo.id,
                                     [key]: value,
@@ -207,12 +216,13 @@ describe('demographics', function ageCohort() {
                                         unifiedRecord = Object.assign(unifiedRecord, record);
                                     });
                                     delete unifiedRecord.user;
-                                    unifiedRecord.registrationDate = moment(userInfo.createdAt, 'YYYY-MM-DD').format('YYYY-MM-DD');
+                                    unifiedRecord.registrationDate = moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD');
                                     expectedDemographics.push(unifiedRecord);
                                 })
                                 .flattenDeep()
                                 .value();
-                        }));
+                        });
+                });
         });
         it(`logout as user ${newIndex}`, shared.logoutFn());
     });
@@ -228,4 +238,5 @@ describe('demographics', function ageCohort() {
     });
 
     it('logout as super user', shared.logoutFn());
+
 });
