@@ -13,11 +13,38 @@ const moment = require('moment');
 const Generator = require('../util/generator');
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
-const filterCommon = require('../util/filter-common');
 const exampleSurveys = require('../fixtures/example/survey');
 const config = require('../../config');
 
 const expect = chai.expect;
+
+// TODO: eventually assign these to the key of answerValueType?
+// NOTE: see `/models/dao/demographics.dao.js` ._castAnswerValueByType()
+const getAnswerValue = (question) => {
+    if (question.type === 'text') {
+        return question.answer.textValue;
+    } else if (question.type === 'integer') {
+        return parseInt(question.answer.integerValue, 10);
+    } else if (question.type === 'zip') {
+        return question.answer.textValue;
+    } else if (question.type === 'year') {
+        return question.answer.yearValue;
+    } else if (question.type === 'bool') {
+        return question.answer.boolValue;
+    } else if (question.type === 'date') {
+        return question.answer.dateValue;
+    }
+    // // FIXME: only returns a true value... need to join with questionChoice
+    // else if(question.type === 'choice') {
+    //     return question.answer.choice;
+    // }
+    // // // FIXME will always be null... need to join with questionChoice
+    // else if(question.type === 'choices') {
+    //     return question.answer.choices;
+    // }
+
+    return question.answer.textValue;
+};
 
 describe('demographics', function ageCohort() {
     const rrSuperTest = new RRSuperTest();
@@ -34,8 +61,6 @@ describe('demographics', function ageCohort() {
 
     it('logout as super user', shared.logoutFn());
 
-    let birthYearId;
-    let zipId;
     let questionIds;
 
     it('get profile survey', function getProfileSurvey() {
@@ -59,15 +84,15 @@ describe('demographics', function ageCohort() {
             const answers = [
                 {
                     questionId: questionIds[0],
-                    answer: { boolValue: boolValue },
+                    answer: { boolValue },
                 },
                 {
                     questionId: questionIds[1],
-                    answer: { textValue: textValue },
+                    answer: { textValue },
                 },
                 {
                     questionId: questionIds[2],
-                    answer: { integerValue: integerValue },
+                    answer: { integerValue },
                 },
                 {
                     questionId: questionIds[3],
@@ -92,14 +117,13 @@ describe('demographics', function ageCohort() {
             ];
 
             return rrSuperTest.authPost('/profiles', { user, answers }, 201)
-                .then((res) => {
-                    return rrSuperTest.get('/profiles', false, 200)
+                .then(() => rrSuperTest.get('/profiles', false, 200)
                         .then((res) => {
                             const userInfo = res.body.user;
                             const surveyInfo = res.body.survey;
-                            let rawDemographics = surveyInfo.questions.map((question) => {
-                                let key = question.text;
-                                let value = _getAnswerValue(question);
+                            const rawDemographics = surveyInfo.questions.map((question) => {
+                                const key = question.text;
+                                const value = getAnswerValue(question);
                                 return {
                                     user: userInfo.id,
                                     [key]: value,
@@ -113,13 +137,12 @@ describe('demographics', function ageCohort() {
                                         unifiedRecord = Object.assign(unifiedRecord, record);
                                     });
                                     delete unifiedRecord.user;
-                                    unifiedRecord.registrationDate = moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD');
+                                    unifiedRecord.registrationDate = moment(userInfo.createdAt, 'YYYY-MM-DD').format('YYYY-MM-DD');
                                     expectedDemographics.push(unifiedRecord);
                                 })
                                 .flattenDeep()
                                 .value();
-                        });
-                });
+                        }));
         });
         it(`logout as user ${index}`, shared.logoutFn());
     });
@@ -150,11 +173,11 @@ describe('demographics', function ageCohort() {
     });
 
     _.range(20).forEach((index) => {
-        index = index + 20;
-        it(`register user ${index}`, function registerUser() {
+        const newIndex = index + 20;
+        it(`register user ${newIndex}`, function registerUser() {
             const user = generator.newUser();
-            const birthYear = (2020 - 90) + (index * 2);
-            const zipAnswer = `${20850 + index}`;
+            const birthYear = (2020 - 90) + (newIndex * 2);
+            const zipAnswer = `${20850 + newIndex}`;
             const answers = [{
                 questionId: questionIds[0],
                 answer: { yearValue: `${birthYear}` },
@@ -164,14 +187,13 @@ describe('demographics', function ageCohort() {
             }];
 
             return rrSuperTest.authPost('/profiles', { user, answers }, 201)
-                .then((res) => {
-                    return rrSuperTest.get('/profiles', false, 200)
+                .then(() => rrSuperTest.get('/profiles', false, 200)
                         .then((res) => {
                             const userInfo = res.body.user;
                             const surveyInfo = res.body.survey;
-                            let rawDemographics = surveyInfo.questions.map((question) => {
-                                let key = question.text;
-                                let value = _getAnswerValue(question);
+                            const rawDemographics = surveyInfo.questions.map((question) => {
+                                const key = question.text;
+                                const value = getAnswerValue(question);
                                 return {
                                     user: userInfo.id,
                                     [key]: value,
@@ -185,15 +207,14 @@ describe('demographics', function ageCohort() {
                                         unifiedRecord = Object.assign(unifiedRecord, record);
                                     });
                                     delete unifiedRecord.user;
-                                    unifiedRecord.registrationDate = moment(userInfo.createdAt,'YYYY-MM-DD').format('YYYY-MM-DD');
+                                    unifiedRecord.registrationDate = moment(userInfo.createdAt, 'YYYY-MM-DD').format('YYYY-MM-DD');
                                     expectedDemographics.push(unifiedRecord);
                                 })
                                 .flattenDeep()
                                 .value();
-                        });
-                });
+                        }));
         });
-        it(`logout as user ${index}`, shared.logoutFn());
+        it(`logout as user ${newIndex}`, shared.logoutFn());
     });
 
     it('login as super user', shared.loginFn(config.superUser));
@@ -207,39 +228,4 @@ describe('demographics', function ageCohort() {
     });
 
     it('logout as super user', shared.logoutFn());
-
 });
-
-// TODO: eventually assign these to the key of answerValueType?
-// NOTE: see `/models/dao/demographics.dao.js` ._castAnswerValueByType()
-const _getAnswerValue = (question) => {
-    if(question.type === 'text') {
-        return question.answer.textValue;
-    }
-    else if(question.type === 'integer') {
-        return parseInt(question.answer.integerValue);
-    }
-    else if(question.type === 'zip') {
-        return question.answer.textValue;
-    }
-    else if(question.type === 'year') {
-        return question.answer.yearValue;
-    }
-    else if(question.type === 'bool') {
-        return question.answer.boolValue;
-    }
-    else if(question.type === 'date') {
-        return question.answer.dateValue;
-    }
-    // // FIXME: only returns a true value... need to join with questionChoice
-    // else if(question.type === 'choice') {
-    //     return question.answer.choice;
-    // }
-    // // // FIXME will always be null... need to join with questionChoice
-    // else if(question.type === 'choices') {
-    //     return question.answer.choices;
-    // }
-    else {
-        return question.answer.textValue;
-    }
-}
