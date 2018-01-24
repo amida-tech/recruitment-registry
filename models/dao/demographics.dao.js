@@ -45,7 +45,7 @@ const formatAndMergeDemographics = (demographics, questionTextObjs) => {
         const formattedDemographic = {
             userId: demographic['user.id'],
         };
-        const demographicKeyText = questionTextObjs.find(textObj => textObj.id === demographic['question.id']).text;
+        const demographicKeyText = questionTextObjs.find(textObj => textObj.questionId === demographic['question.id']).text;
         formattedDemographic[demographicKeyText] = castAnswerValueByType(demographic);
         formattedDemographic.registrationDate =
             moment(demographic['user.createdAt'], 'YYYY-MM-DD').format('YYYY-MM-DD');
@@ -69,34 +69,29 @@ const formatAndMergeDemographics = (demographics, questionTextObjs) => {
 
 module.exports = class DemographicsDAO extends Base {
     listDemographics(options = {}) { // TODO: orderBy query param?
-        let role = options.role ? options.role : { [Op.in]: ['clinician', 'participant'] };
-        if (role === 'all') {
-            role = { [Op.in]: ['admin', 'clinician', 'participant'] };
-        }
-        const where = { role };
         return this.db.ProfileSurvey.findAll({
             raw: true,
             attributes: [
-                'id',
+                'surveyId',
             ],
         })
         .then((surveys) => {
-            const surveyIds = surveys.map(survey => survey.id);
+            const surveyIds = surveys.map(survey => survey.surveyId);
             return this.db.SurveyQuestion.findAll({
                 raw: true,
                 attributes: [
-                    'id',
+                    'questionId',
                 ],
                 where: {
                     surveyId: surveyIds,
                 },
             })
             .then((surveyQuestions) => {
-                const questionIds = surveyQuestions.map(surveyQuestion => surveyQuestion.id);
+                const questionIds = surveyQuestions.map(surveyQuestion => surveyQuestion.questionId);
                 return this.db.QuestionText.findAll({
                     raw: true,
                     attributes: [
-                        'id',
+                        'questionId',
                         'text',
                     ],
                     where: {
@@ -120,7 +115,9 @@ module.exports = class DemographicsDAO extends Base {
                                 'id',
                                 'createdAt',
                             ],
-                            where,
+                            where: {
+                                role: 'participant'
+                            },
                         },
                         {
                             model: this.db.Question,

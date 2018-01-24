@@ -4105,6 +4105,14 @@
                 "security": [{
                     "admin": []
                 }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",

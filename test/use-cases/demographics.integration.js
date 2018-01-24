@@ -16,6 +16,10 @@ const RRSuperTest = require('../util/rr-super-test');
 const exampleSurveys = require('../fixtures/example/survey');
 const config = require('../../config');
 
+const surveyCommon = require('../util/survey-common');
+const SurveyHistory = require('../util/survey-history');
+const History = require('../util/history');
+
 const expect = chai.expect;
 
 // TODO: eventually assign these to the key of answerValueType?
@@ -51,11 +55,16 @@ describe('demographics', function ageCohort() {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest);
 
+    const hxSurvey = new SurveyHistory();
+    const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
+
     let expectedDemographics = [];
 
     before(shared.setUpFn());
 
     it('login as super user', shared.loginFn(config.superUser));
+
+    it('create a survey', tests.createSurveyFn());
 
     it('create profile survey', shared.createSurveyProfileFn(exampleSurveys.variousQuestionTypes));
 
@@ -71,8 +80,63 @@ describe('demographics', function ageCohort() {
             });
     });
 
+    _.range(5).forEach((index) => {
+        it(`register clinician ${index}`, function registerUser() {
+            const user = {
+                username: `clinician_${index}`,
+                email: `clinician${index}@email.com`,
+                password: `pAsS${index}${index+1}${index+3}${index+4}`,
+                firstname: `Clinician-First-${index}`,
+                lastname: `Clinician-Last-${index}`,
+                role: 'clinician',
+            };
+            const boolValue = Math.random() >= 0.5;
+            const textValue = `sampleString${index}`;
+            const integerValue = index;
+            const zipAnswer = `${20850 + index}`;
+            const birthYear = (2020 - 90) + (index * 2);
+
+            const answers = [
+                {
+                    questionId: questionIds[0],
+                    answer: { boolValue },
+                },
+                {
+                    questionId: questionIds[1],
+                    answer: { textValue },
+                },
+                {
+                    questionId: questionIds[2],
+                    answer: { integerValue },
+                },
+                {
+                    questionId: questionIds[3],
+                    answer: { textValue: zipAnswer },
+                },
+                {
+                    questionId: questionIds[4],
+                    answer: { yearValue: `${birthYear}` },
+                },
+                {
+                    questionId: questionIds[5],
+                    answer: { dateValue: `${birthYear}-12-31` },
+                },
+                // {
+                //     questionId: questionIds[6],
+                //     answer: { choice: 3 },
+                // },
+                // {
+                //     questionId: questionIds[7],
+                //     answer: { choices: [{ id: 2 }, { id: 3 }, { id: 4 }] },
+                // },
+            ];
+            return rrSuperTest.authPost('/profiles', { user, answers }, 201);
+        });
+        it(`logout as user ${index}`, shared.logoutFn());
+    });
+
     _.range(20).forEach((index) => {
-        it(`register user ${index}`, function registerUser() {
+        it(`register participant ${index}`, function registerUser() {
             const user = generator.newUser();
 
             const boolValue = Math.random() >= 0.5;
@@ -170,6 +234,31 @@ describe('demographics', function ageCohort() {
                 const profileSurvey = res.body.survey;
                 questionIds = _.map(profileSurvey.questions, 'id');
             });
+    });
+
+    _.range(5).forEach((index) => {
+        const newIndex = index + 5;
+        it(`register clinician ${newIndex}`, function registerUser() {
+            const user = {
+                username: `clinician_${newIndex}`,
+                email: `clinician${newIndex}@email.com`,
+                password: `pAsS${newIndex}${newIndex+1}${newIndex+3}${newIndex+4}`,
+                firstname: `Clinician-First-${newIndex}`,
+                lastname: `Clinician-Last-${newIndex}`,
+                role: 'clinician',
+            };
+            const birthYear = (2020 - 90) + (newIndex * 2);
+            const zipAnswer = `${20850 + newIndex}`;
+            const answers = [{
+                questionId: questionIds[0],
+                answer: { yearValue: `${birthYear}` },
+            }, {
+                questionId: questionIds[1],
+                answer: { textValue: zipAnswer },
+            }];
+            return rrSuperTest.authPost('/profiles', { user, answers }, 201);
+        });
+        it(`logout as user ${newIndex}`, shared.logoutFn());
     });
 
     _.range(20).forEach((index) => {
