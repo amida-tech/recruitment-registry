@@ -24,7 +24,7 @@ const smtp = {
 const schema = appGenerator.extractSchema(config.db.schema) || 'public';
 const models = modelsGenerator(schema);
 
-return models.sequelize.sync({ force: false })
+models.sequelize.sync({ force: false })
     .then(() => models.smtp.createSmtp(smtp))
     .then(() => process.exit(0))
     .catch((err) => {
