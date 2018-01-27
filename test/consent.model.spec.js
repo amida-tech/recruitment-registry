@@ -17,25 +17,30 @@ const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
 const translator = require('./util/translator');
 const comparator = require('./util/comparator');
+const consentTypeCommon = require('./util/consent-type-common');
 
 const expect = chai.expect;
-const generator = new Generator();
 
-const shared = new SharedSpec(generator);
-
-describe('consent unit', () => {
+describe('consent unit', function consentUnit() {
     const userCount = 4;
     const typeCount = 12;
+
+    const generator = new Generator();
+
+    const shared = new SharedSpec(generator);
 
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
     const consentCommon = new ConsentCommon(hxConsent, history, generator);
+    const typeTests = new consentTypeCommon.SpecTests({
+        generator, hxConsentType: history.hxType,
+    });
 
     before(shared.setUpFn());
 
-    _.range(typeCount).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
+    _.range(typeCount).forEach((index) => {
+        it(`create consent type ${index}`, typeTests.createConsentTypeFn());
+        it(`add translated (es) consent type ${index}`, typeTests.translateConsentTypeFn(index, 'es'));
     });
 
     _.range(userCount).forEach((i) => {

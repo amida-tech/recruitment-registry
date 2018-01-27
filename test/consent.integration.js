@@ -19,10 +19,11 @@ const config = require('../config');
 const translator = require('./util/translator');
 const models = require('../models');
 const comparator = require('./util/comparator');
+const consentTypeCommon = require('./util/consent-type-common');
 
 const expect = chai.expect;
 
-describe('consent integration', () => {
+describe('consent integration', function consentIntegration() {
     const userCount = 4;
     const typeCount = 12;
 
@@ -32,6 +33,9 @@ describe('consent integration', () => {
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
     const consentCommon = new ConsentCommon(hxConsent, history);
+    const typeTests = new consentTypeCommon.IntegrationTests(rrSuperTest, {
+        generator, hxConsentType: history.hxType,
+    });
     const browserMap = new Map();
 
     before(shared.setUpFn());
@@ -39,8 +43,8 @@ describe('consent integration', () => {
     it('login as super', shared.loginFn(config.superUser));
 
     _.range(typeCount).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
+        it(`create consent type ${i}`, typeTests.createConsentTypeFn());
+        it(`add translated (es) consent type ${i}`, typeTests.translateConsentTypeFn(i, 'es'));
     });
 
     _.range(userCount).forEach((i) => {

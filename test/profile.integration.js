@@ -18,6 +18,7 @@ const History = require('./util/history');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
+const consentTypeCommon = require('./util/consent-type-common');
 
 const expect = chai.expect;
 
@@ -30,6 +31,9 @@ describe('profile integration', () => {
     const hxUser = new History();
     const hxAnswers = [];
     const hxConsentDoc = new ConsentDocumentHistory(2);
+    const typeTests = new consentTypeCommon.IntegrationTests(rrSuperTest, {
+        generator, hxConsentType: hxConsentDoc.hxType,
+    });
 
     before(shared.setUpFn());
 
@@ -81,7 +85,7 @@ describe('profile integration', () => {
 
     it('login as super', shared.loginFn(config.superUser));
     _.range(2).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
+        it(`create consent type ${i}`, typeTests.createConsentTypeFn());
     });
     _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));

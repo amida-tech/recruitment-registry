@@ -11,13 +11,8 @@ module.exports = class ConsentDocumentHistory {
         this.hxUser = new History();
         this.hxType = new History();
         this.hxDocument = new History();
-        this.activeConsentDocuments = [];
+        this.activeConsentDocuments = {};
         this.signatures = _.range(userCount).map(() => []);
-    }
-
-    pushType(client, server) {
-        this.hxType.pushWithId(client, server.id);
-        this.activeConsentDocuments.push(null);
     }
 
     deleteType(typeIndex) {
@@ -86,7 +81,9 @@ module.exports = class ConsentDocumentHistory {
 
     getContents(ids) {
         const map = new Map();
-        this.activeConsentDocuments.forEach((d) => {
+        const n = this.hxType.length();
+        _.range(n).forEach((index) => {
+            const d = this.activeConsentDocuments[index];
             if (d) {
                 map.set(d.id, d.content);
             }
@@ -96,7 +93,9 @@ module.exports = class ConsentDocumentHistory {
 
     serversInListWithSigned(userIndex) {
         const signatureMap = new Map(this.signatures[userIndex].map(signature => [signature.id, signature]));
-        const result = this.activeConsentDocuments.reduce((r, { id }, index) => {
+        const n = this.hxType.length();
+        const result = _.range(n).reduce((r, index) => {
+            const id = _.get(this.activeConsentDocuments[index], 'id');
             if (!id) {
                 return r;
             }

@@ -20,13 +20,14 @@ const MultiIndexHistory = require('./util/multi-index-history');
 const comparator = require('./util/comparator');
 const surveyCommon = require('./util/survey-common');
 const answerCommon = require('./util/answer-common');
-
-const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedSpec(generator);
+const consentTypeCommon = require('./util/consent-type-common');
 
 describe('survey consent unit', function surveyConsentUnit() {
     const userCount = 4;
+
+    const expect = chai.expect;
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
 
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
@@ -36,11 +37,14 @@ describe('survey consent unit', function surveyConsentUnit() {
     const hxSurveyConsents = new MultiIndexHistory();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
     const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey });
+    const typeTests = new consentTypeCommon.SpecTests({
+        generator, hxConsentType: hxConsentDocument.hxType,
+    });
 
     before(shared.setUpFn());
 
-    _.range(10).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDocument));
+    _.range(10).forEach((index) => {
+        it(`create consent type ${index}`, typeTests.createConsentTypeFn());
     });
 
     [

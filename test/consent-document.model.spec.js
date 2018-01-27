@@ -16,34 +16,27 @@ const History = require('./util/history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
 const comparator = require('./util/comparator');
+const consentTypeCommon = require('./util/consent-type-common');
 
 const expect = chai.expect;
-
-const generator = new Generator();
-const shared = new SharedSpec(generator);
 
 describe('consent document/type/signature unit', () => {
     const userCount = 4;
 
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
+
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
+    const typeTests = new consentTypeCommon.SpecTests({
+        generator, hxConsentType: history.hxType,
+    });
 
     before(shared.setUpFn());
 
-    const verifyConsentTypeInListFn = function () {
-        return function verifyConsentTypeInList() {
-            return models.consentType.listConsentTypes()
-                .then((result) => {
-                    const types = history.listTypes();
-                    expect(result).to.deep.equal(types);
-                });
-        };
-    };
-
     _.range(2).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
-        it('verify consent type list', verifyConsentTypeInListFn);
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
+        it(`create consent type ${i}`, typeTests.createConsentTypeFn());
+        it(`add translated (es) consent type ${i}`, typeTests.translateConsentTypeFn(i, 'es'));
     });
 
     _.range(userCount).forEach((i) => {
@@ -179,8 +172,7 @@ describe('consent document/type/signature unit', () => {
             });
     });
 
-    it('add consent type 2', shared.createConsentTypeFn(history));
-    it('verify the new consent type in the list', verifyConsentTypeInListFn);
+    it('add consent type 2', typeTests.createConsentTypeFn());
 
     it('error: no consent document of existing types', () => models.consentDocument.listConsentDocuments(history.userId(2))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));

@@ -75,28 +75,6 @@ class SharedSpec {
         };
     }
 
-    createConsentTypeFn(history) {
-        const m = this.models;
-        const generator = this.generator;
-        return function createConsentType() {
-            const cst = generator.newConsentType();
-            return m.consentType.createConsentType(cst)
-                .then(server => history.pushType(cst, server));
-        };
-    }
-
-    translateConsentTypeFn(index, language, hxType) {
-        const m = this.models;
-        return function translateConsentType() {
-            const server = hxType.server(index);
-            const translation = translator.translateConsentType(server, language);
-            return m.consentType.updateConsentTypeText(translation, language)
-                .then(() => {
-                    hxType.translate(index, language, translation);
-                });
-        };
-    }
-
     translateConsentDocumentFn(index, language, history) {
         const m = this.models;
         return function translateConsentDocument() {

@@ -156,22 +156,6 @@ class SharedIntegration {
         };
     }
 
-    createConsentTypeFn(history) {
-        const rrSuperTest = this.rrSuperTest;
-        const generator = this.generator;
-        return function createConsentType(done) {
-            const cst = generator.newConsentType();
-            rrSuperTest.post('/consent-types', cst, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.pushType(cst, res.body);
-                    return done();
-                });
-        };
-    }
-
     createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
         const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
@@ -229,22 +213,6 @@ class SharedIntegration {
                         return done(err);
                     }
                     history.push(typeIndex, cs, res.body);
-                    return done();
-                });
-        };
-    }
-
-    translateConsentTypeFn(index, language, hxType) {
-        const rrSuperTest = this.rrSuperTest;
-        return function translateConsentType(done) {
-            const server = hxType.server(index);
-            const translation = translator.translateConsentType(server, language);
-            rrSuperTest.patch(`/consent-types/text/${language}`, translation, 204)
-                .end((err) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxType.translate(index, language, translation);
                     return done();
                 });
         };

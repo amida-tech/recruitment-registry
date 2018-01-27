@@ -16,6 +16,7 @@ const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
 const models = require('../models');
 const comparator = require('./util/comparator');
+const consentTypeCommon = require('./util/consent-type-common');
 
 const expect = chai.expect;
 
@@ -26,26 +27,17 @@ describe('consent document integration', () => {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
     const history = new ConsentDocumentHistory(userCount);
+    const typeTests = new consentTypeCommon.IntegrationTests(rrSuperTest, {
+        generator, hxConsentType: history.hxType,
+    });
 
     before(shared.setUpFn());
-
-    const listConsentTypesFn = function () {
-        return function listConsentTypes(done) {
-            rrSuperTest.get('/consent-types', true, 200)
-                .expect((res) => {
-                    const types = history.listTypes();
-                    expect(res.body).to.deep.equal(types);
-                })
-                .end(done);
-        };
-    };
 
     it('login as super', shared.loginFn(config.superUser));
 
     _.range(2).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
-        it('verify consent type list', listConsentTypesFn());
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
+        it(`create consent type ${i}`, typeTests.createConsentTypeFn());
+        it(`add translated (es) consent type ${i}`, typeTests.translateConsentTypeFn(i, 'es'));
     });
 
     _.range(userCount).forEach((i) => {
@@ -224,7 +216,8 @@ describe('consent document integration', () => {
     it('user 3 get consent document of 0', getConsentDocumentFn(0));
 
     it('login as super', shared.loginFn(config.superUser));
-    it('add a new consent type', shared.createConsentTypeFn(history));
+    it('add a new consent type', typeTests.createConsentTypeFn());
+
     it('create/verify consent document of type 2', shared.createConsentDocumentFn(history, 2));
     it('logout as super', shared.logoutFn());
 
@@ -311,7 +304,6 @@ describe('consent document integration', () => {
 
     it('login as super', shared.loginFn(config.superUser));
     it('delete consent type 1', deleteConsentTypeFn(1));
-    it('verify consent list', listConsentTypesFn());
     it('logout as super', shared.logoutFn());
 
     verifyConsentDocuments(0, []);
