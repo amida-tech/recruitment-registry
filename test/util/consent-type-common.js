@@ -44,6 +44,17 @@ const BaseTests = class BaseTests {
         };
     }
 
+    deleteConsentTypeFn(index) {
+        const self = this;
+        return function deleteConsentType() {
+            const id = self.hxConsentType.id(index);
+            return self.deleteConsentTypePx(id)
+                .then(() => {
+                    self.hxConsentType.remove(index);
+                });
+        };
+    }
+
     getTranslatedConsentTypeFn(index, language) {
         const self = this;
         return function getTranslatedConsentType() {
@@ -98,6 +109,10 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
         return this.models.consentType.listConsentTypes(options);
     }
 
+    deleteConsentTypePx(id) {
+        return this.models.consentType.deleteConsentType(id);
+    }
+
     translateConsentTypePx(translation, language) {
         return this.models.consentType.updateConsentTypeText(translation, language);
     }
@@ -122,6 +137,10 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
     listConsentTypesPx(options = {}) {
         return this.rrSuperTest.get('/consent-types', true, 200, options)
             .then(res => res.body);
+    }
+
+    deleteConsentTypePx(id) {
+        return this.rrSuperTest.delete(`/consent-types/${id}`, 204);
     }
 
     translateConsentTypePx(translation, language) {

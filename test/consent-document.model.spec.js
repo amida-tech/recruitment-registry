@@ -247,18 +247,8 @@ describe('consent document/type/signature unit', () => {
             });
     });
 
-    it('delete consent type 1', () => {
-        const id = history.typeId(1);
-        return models.consentType.deleteConsentType(id)
-            .then(() => {
-                history.deleteType(1);
-                return models.consentType.listConsentTypes()
-                    .then((result) => {
-                        const types = history.listTypes();
-                        expect(result).to.deep.equal(types);
-                    });
-            });
-    });
+    it('delete consent type 1', typeTests.deleteConsentTypeFn(1));
+    it('list consent types', typeTests.listConsentTypesFn());
 
     verifyConsentDocuments(0, []);
     verifyConsentDocuments(1, [0]);

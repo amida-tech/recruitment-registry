@@ -13,11 +13,9 @@ module.exports = class ConsentDocumentHistory {
         this.hxDocument = new History();
         this.activeConsentDocuments = {};
         this.signatures = _.range(userCount).map(() => []);
-    }
-
-    deleteType(typeIndex) {
-        this.hxType.remove(typeIndex);
-        this.activeConsentDocuments[typeIndex] = {};
+        this.hxType.pushRemoveHook((index) => {
+            this.activeConsentDocuments[index] = {};
+        });
     }
 
     typeId(typeIndex) {

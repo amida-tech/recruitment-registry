@@ -291,19 +291,8 @@ describe('consent document integration', () => {
     signConsentType(0, 0);
     verifyConsentDocuments(0, []);
 
-    const deleteConsentTypeFn = function (index) {
-        return function deleteConsentType(done) {
-            const id = history.typeId(index);
-            rrSuperTest.delete(`/consent-types/${id}`, 204)
-                .expect(() => {
-                    history.deleteType(index);
-                })
-                .end(done);
-        };
-    };
-
     it('login as super', shared.loginFn(config.superUser));
-    it('delete consent type 1', deleteConsentTypeFn(1));
+    it('delete consent type 1', typeTests.deleteConsentTypeFn(1));
     it('logout as super', shared.logoutFn());
 
     verifyConsentDocuments(0, []);
