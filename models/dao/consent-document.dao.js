@@ -13,6 +13,9 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     constructor(db, dependencies) {
         super(db, 'ConsentDocumentText', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
+
+        const cbDeleteType = options => this.beforeConsentTypeDestroy(options);
+        db.ConsentType.addHook('beforeBulkDestroy', 'consentDocument', cbDeleteType);
     }
 
     static finalizeDocumentFields(document, fields, options) {
@@ -201,5 +204,11 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         })
             .then(documents => this.updateAllTexts(documents, language))
             .then(documents => _.map(documents, 'updateComment'));
+    }
+
+    beforeConsentTypeDestroy(options) {
+        const { where: whereType, transaction } = options;
+        const where = { typeId: whereType.id };
+        return this.db.ConsentDocument.destroy({ where, transaction });
     }
 };

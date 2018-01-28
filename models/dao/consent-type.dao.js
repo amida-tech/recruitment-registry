@@ -3,8 +3,6 @@
 const Sequelize = require('sequelize');
 const _ = require('lodash');
 
-const RRError = require('../../lib/rr-error');
-
 const Translatable = require('./translatable');
 
 const Op = Sequelize.Op;
@@ -53,16 +51,8 @@ module.exports = class ConsentTypeDAO extends Translatable {
     }
 
     deleteConsentType(id) {
-        return this.db.ConsentSection.count({ where: { typeId: id } })
-            .then((count) => {
-                if (count) {
-                    return RRError.reject('consentTypeDeleteOnConsent');
-                }
-                return this.transaction((transaction) => {
-                    const where = { typeId: id };
-                    return this.db.ConsentType.destroy({ where: { id }, transaction })
-                        .then(() => this.db.ConsentDocument.destroy({ where, transaction }));
-                });
-            });
+        return this.transaction(transaction => this.db.ConsentType.destroy({
+            where: { id }, transaction,
+        }));
     }
 };

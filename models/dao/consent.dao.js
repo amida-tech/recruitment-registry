@@ -2,12 +2,16 @@
 
 const _ = require('lodash');
 
+const RRError = require('../../lib/rr-error');
 const Base = require('./base');
 
 module.exports = class ConsentDAO extends Base {
     constructor(db, dependencies) {
         super(db);
         Object.assign(this, dependencies);
+
+        const cbDeleteType = options => this.beforeConsentTypeDestroy(options);
+        db.ConsentType.addHook('beforeBulkDestroy', 'consent', cbDeleteType);
     }
 
     fillSections(result) {
@@ -133,5 +137,17 @@ module.exports = class ConsentDAO extends Base {
     getUserConsentDocumentsByName(userId, name, options) {
         return this.getConsentDocumentsByName(name, options)
             .then(this.fillUserConsentDocuments(userId));
+    }
+
+    beforeConsentTypeDestroy(options) {
+        const { where: whereType, transaction } = options;
+        const where = { typeId: whereType.id };
+        return this.db.ConsentSection.count({ where, transaction })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('consentTypeDeleteOnConsent');
+                }
+                return null;
+            });
     }
 };
