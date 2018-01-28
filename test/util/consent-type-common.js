@@ -13,10 +13,13 @@ const BaseTests = class BaseTests {
         this.hxConsentType = hxConsentType;
     }
 
-    createConsentTypeFn() {
+    createConsentTypeFn(options = {}) {
         const self = this;
         return function createConsentType() {
             const consentType = self.generator.newConsentType();
+            if (options.role) {
+                consentType.role = options.role;
+            }
             return self.createConsentTypePx(consentType)
                 .then(server => self.hxConsentType.pushWithId(consentType, server.id));
         };

@@ -6,6 +6,8 @@ process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 
+const constNames = require('../models/const-names');
+
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
 const History = require('./util/history');
@@ -22,13 +24,14 @@ describe('consent unit', function consentTypeUnit() {
 
     before(shared.setUpFn());
 
+    const roles = [null, ...constNames.consentRoles];
     _.range(count).forEach((index) => {
-        it(`create consent type ${index}`, tests.createConsentTypeFn());
+        const options = { role: roles[index % 3] };
+        it(`create consent type ${index}`, tests.createConsentTypeFn(options));
         it(`get consent type ${index}`, tests.getConsentTypeFn(index));
     });
 
     it('list consent types', tests.listConsentTypesFn());
-
 
     it('get consent type 3 in spanish when no translation',
         tests.getTranslatedConsentTypeFn(3, 'es'));
@@ -55,4 +58,19 @@ describe('consent unit', function consentTypeUnit() {
     it('list translated (fr) consent types', tests.listTranslatedConsentTypesFn('fr'));
 
     it('list consent types in english (original)', tests.listTranslatedConsentTypesFn('en'));
+
+    [2, 4, 7].forEach((index) => {
+        it(`delete consent type ${index}`, tests.deleteConsentTypeFn(index));
+    });
+
+    it('list consent types', tests.listConsentTypesFn());
+
+    _.range(2).forEach((index) => {
+        it(`create consent type ${index}`, tests.createConsentTypeFn());
+        it(`get consent type ${index}`, tests.getConsentTypeFn(index));
+    });
+
+    it('list consent types', tests.listConsentTypesFn());
+    it('list translated (es) consent types', tests.listTranslatedConsentTypesFn('es'));
+    it('list translated (fr) consent types', tests.listTranslatedConsentTypesFn('fr'));
 });

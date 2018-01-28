@@ -6313,6 +6313,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 }
             },
             "additionalProperties": false
@@ -6336,6 +6339,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 }
             },
             "additionalProperties": false
@@ -7600,6 +7606,10 @@
                 },
                 "additionalProperties": false
             }
+        },
+        "consentRole": {
+            "type": "string",
+            "enum": ["participant", "clinician"]
         }
     }
 }
