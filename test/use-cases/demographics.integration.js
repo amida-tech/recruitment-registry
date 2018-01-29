@@ -18,7 +18,6 @@ const config = require('../../config');
 
 const surveyCommon = require('../util/survey-common');
 const SurveyHistory = require('../util/survey-history');
-const History = require('../util/history');
 
 const expect = chai.expect;
 
@@ -85,7 +84,7 @@ describe('demographics', function ageCohort() {
             const user = {
                 username: `clinician_${index}`,
                 email: `clinician${index}@email.com`,
-                password: `pAsS${index}${index+1}${index+3}${index+4}`,
+                password: `pAsS${index}${index + 1}${index + 3}${index + 4}`,
                 firstname: `Clinician-First-${index}`,
                 lastname: `Clinician-Last-${index}`,
                 role: 'clinician',
@@ -242,7 +241,7 @@ describe('demographics', function ageCohort() {
             const user = {
                 username: `clinician_${newIndex}`,
                 email: `clinician${newIndex}@email.com`,
-                password: `pAsS${newIndex}${newIndex+1}${newIndex+3}${newIndex+4}`,
+                password: `pAsS${newIndex}${newIndex + 1}${newIndex + 3}${newIndex + 4}`,
                 firstname: `Clinician-First-${newIndex}`,
                 lastname: `Clinician-Last-${newIndex}`,
                 role: 'clinician',
@@ -308,11 +307,31 @@ describe('demographics', function ageCohort() {
 
     it('login as super user', shared.loginFn(config.superUser));
 
-    it('get demographics', function getDemographics() {
+    it('get demographics default english', function getDemographics() {
         return rrSuperTest.get('/demographics', false, 200)
             .then((res) => {
                 const demographics = res.body;
                 expect(demographics).to.deep.equal(expectedDemographics);
+            });
+    });
+
+    it('get demographics strictly english', function getDemographics() {
+        return rrSuperTest.get('/demographics?language=en', false, 200)
+            .then((res) => {
+                const demographics = res.body;
+                expect(demographics).to.deep.equal(expectedDemographics);
+            });
+    });
+
+    const spanishDemographics = [];
+    // TODO: add a few 'es' language-code questions in testing survey
+    // -- for now, there will be none, so no demographics should be returned
+
+    it('get demographics strictly spanish', function getDemographics() {
+        return rrSuperTest.get('/demographics?language=es', false, 200)
+            .then((res) => {
+                const demographics = res.body;
+                expect(demographics).to.deep.equal(spanishDemographics);
             });
     });
 
