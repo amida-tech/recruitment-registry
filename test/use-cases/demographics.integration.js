@@ -307,31 +307,11 @@ describe('demographics', function ageCohort() {
 
     it('login as super user', shared.loginFn(config.superUser));
 
-    it('get demographics default english', function getDemographics() {
+    it('get demographics', function getDemographics() {
         return rrSuperTest.get('/demographics', false, 200)
             .then((res) => {
                 const demographics = res.body;
                 expect(demographics).to.deep.equal(expectedDemographics);
-            });
-    });
-
-    it('get demographics strictly english', function getDemographics() {
-        return rrSuperTest.get('/demographics?language=en', false, 200)
-            .then((res) => {
-                const demographics = res.body;
-                expect(demographics).to.deep.equal(expectedDemographics);
-            });
-    });
-
-    const spanishDemographics = [];
-    // TODO: add a few 'es' language-code questions in testing survey
-    // -- for now, there will be none, so no demographics should be returned
-
-    it('get demographics strictly spanish', function getDemographics() {
-        return rrSuperTest.get('/demographics?language=es', false, 200)
-            .then((res) => {
-                const demographics = res.body;
-                expect(demographics).to.deep.equal(spanishDemographics);
             });
     });
 

@@ -2,9 +2,12 @@
 
 /* eslint max-len: 0 */
 
+const Sequelize = require('sequelize');
 const moment = require('moment');
 const _ = require('lodash');
 const Base = require('./base');
+
+const Op = Sequelize.Op;
 
 // TODO: eventually assign these to the key of answerValueType?
 const castAnswerValueByType = (demographic) => {
@@ -42,8 +45,7 @@ const formatAndMergeDemographics = (demographics, questionTextObjs) => {
         const formattedDemographic = {
             userId: demographic['user.id'],
         };
-        const demographicKey = questionTextObjs.find(textObj => textObj.questionId === demographic['question.id']);
-        const demographicKeyText = demographicKey ? demographicKey.text : null;
+        const demographicKeyText = questionTextObjs.find(textObj => textObj.questionId === demographic['question.id']).text;
         formattedDemographic[demographicKeyText] = castAnswerValueByType(demographic);
         formattedDemographic.registrationDate =
             moment(demographic['user.createdAt'], 'YYYY-MM-DD').format('YYYY-MM-DD');
@@ -66,8 +68,7 @@ const formatAndMergeDemographics = (demographics, questionTextObjs) => {
 };
 
 module.exports = class DemographicsDAO extends Base {
-    listDemographics(options = {}) { // TODO: orderBy query param?
-        const language = options.language || 'en';
+    listDemographics() { // TODO: orderBy query param?
         return this.db.ProfileSurvey.findAll({
             raw: true,
             attributes: [
@@ -95,61 +96,55 @@ module.exports = class DemographicsDAO extends Base {
                     ],
                     where: {
                         id: questionIds,
-                        language,
                     },
                 })
-                .then((questionTextObjs) => {
-                    if (questionTextObjs.length > 0) {
-                        return this.db.Answer.findAll({
+                .then(questionTextObjs => this.db.Answer.findAll({
+                    raw: true,
+                    attributes: [
+                        'value',
+                    ],
+                    where: {
+                        questionId: questionIds,
+                    },
+                    include: [
+                        {
+                            model: this.db.User,
+                            as: 'user',
                             raw: true,
                             attributes: [
-                                'value',
+                                'id',
+                                'createdAt',
                             ],
                             where: {
-                                questionId: questionIds,
+                                role: 'participant',
                             },
-                            include: [
-                                {
-                                    model: this.db.User,
-                                    as: 'user',
-                                    raw: true,
-                                    attributes: [
-                                        'id',
-                                        'createdAt',
-                                    ],
-                                    where: {
-                                        role: 'participant',
-                                    },
-                                },
-                                {
-                                    model: this.db.Question,
-                                    as: 'question',
-                                    raw: true,
-                                    attributes: [
-                                        'id',
-                                        'type',
-                                    ],
-                                },
-                                    // FIXME:
-                                    // {
-                                    //     model: this.db.QuestionChoice,
-                                    //     as: 'questionChoice',
-                                    //     raw: true,
-                                    //     attributes: [
-                                    //         'id',
-                                    //         'type',
-                                    //         'line',
-                                    //     ],
-                                    //     // where: {
-                                    //     //     questionId: questionIds,
-                                    //     // },
-                                    // },
+                        },
+                        {
+                            model: this.db.Question,
+                            as: 'question',
+                            raw: true,
+                            attributes: [
+                                'id',
+                                'type',
                             ],
-                        })
-                        .then(demographics => formatAndMergeDemographics(demographics, questionTextObjs));
-                    }
-                    return [];
-                });
+                        },
+                            // FIXME:
+                            // {
+                            //     model: this.db.QuestionChoice,
+                            //     as: 'questionChoice',
+                            //     raw: true,
+                            //     attributes: [
+                            //         'id',
+                            //         'type',
+                            //         'line',
+                            //     ],
+                            //     // where: {
+                            //     //     questionId: questionIds,
+                            //     // },
+                            // },
+                    ],
+                })
+                    .then(demographics => formatAndMergeDemographics(demographics, questionTextObjs)));
             });
         });
     }
