@@ -2,38 +2,32 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
-const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
-const History = require('./util/history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
-const models = require('../models');
-const comparator = require('./util/comparator');
 const consentTypeCommon = require('./util/consent-type-common');
 const consentDocumentCommon = require('./util/consent-document-common');
+const userConsentDocumentCommon = require('./util/user-consent-document-common');
 
-const expect = chai.expect;
-
-describe('consent document/type/signature unit', function consentDocumentUnit() {
+describe('consent document/signature unit', function consentDocumentUnit() {
     const userCount = 4;
 
     const generator = new Generator();
     const shared = new SharedSpec(generator);
 
     const history = new ConsentDocumentHistory(userCount);
-    const hxConsent = new History();
     const typeTests = new consentTypeCommon.SpecTests({
         generator, hxConsentType: history.hxType,
     });
     const tests = new consentDocumentCommon.SpecTests({
         generator, hxConsentDocument: history,
+    });
+    const userTests = new userConsentDocumentCommon.SpecTests({
+        hxConsentDocument: history,
     });
 
     before(shared.setUpFn());
@@ -47,56 +41,38 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
         it(`create user ${i}`, shared.createUserFn(history.hxUser));
     });
 
-    it('error: no consent documents of existing types', () => models.userConsentDocument.listUserConsentDocuments(history.userId(0))
-            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
+    it('error: no consent documents of existing types',
+        userTests.errorListUserConsentDocumentsFn(0, 'noSystemConsentDocuments'));
 
     _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, tests.createConsentDocumentFn(i));
         it(`get consent document of type ${i}`, tests.getConsentDocumentFn(i));
         it(`get consent document of type ${i} (type name)`, tests.getConsentDocumentByTypeIdFn(i));
         it(`add translated (es) consent document ${i}`, tests.translateConsentDocumentFn(i, 'es'));
-        it(`verify translated (es) consent document of type ${i}`, tests.getTranslatedConsentDocumentFn(i, 'es'));
+        it(`verify translated (es) consent document of type ${i}`,
+            tests.getTranslatedConsentDocumentFn(i, 'es'));
     });
 
-    it('error: no consent documents with type name', () => models.consentDocument.getConsentDocumentByTypeId(99999)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound')));
+    it('error: no consent documents with type name',
+        tests.errorGetConsentDocumentByTypeIdFn(99999, 'consentTypeNotFound'));
 
     const verifyConsentDocuments = function (userIndex, expectedIndices) {
-        it(`get consent document list (required) for user ${userIndex}`, () => models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex))
-                .then((consentDocuments) => {
-                    const expected = history.serversInList(expectedIndices);
-                    comparator.consentDocuments(expected, consentDocuments);
-                    return expected;
-                }));
-        it(`get consent documents (required) for user ${userIndex}`, () => {
-            const css = expectedIndices.map(index => history.server(index));
-            return SPromise.all(css.map(cs => models.consentDocument.getConsentDocument(cs.id)
-                    .then((result) => {
-                        expect(result).to.deep.equal(cs);
-                    })));
-        });
-        it(`get consent document list (all) for user ${userIndex}`, () => models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { includeSigned: true })
-                .then((consentDocuments) => {
-                    const expected = history.serversInListWithSigned(userIndex);
-                    comparator.consentDocuments(expected, consentDocuments);
-                    return expected;
-                }));
+        it(`list consent documents (required) for user ${userIndex}`,
+            userTests.listUserConsentDocumentsFn(userIndex, expectedIndices));
+
+        it(`get consent documents (required) for user ${userIndex}`,
+            tests.listConsentDocumentsFn(expectedIndices));
+
+        it(`list consent documents (all) for user ${userIndex}`,
+            userTests.listSignedUserConsentDocumentsFn(userIndex, expectedIndices));
     };
 
     const verifyTranslatedConsentDocuments = function (userIndex, expectedIndices, language) {
-        it(`verify translated consent document list (required) for user ${userIndex}`, () => models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { language })
-                .then((consentDocuments) => {
-                    const expected = history.translatedServersInList(expectedIndices, language);
-                    comparator.consentDocuments(expected, consentDocuments);
-                    return expected;
-                }));
-        it(`verify translated consent documents (required) for user ${userIndex}`, () => {
-            const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
-            return SPromise.all(css.map(cs => models.consentDocument.getConsentDocument(cs.id, { language })
-                    .then((result) => {
-                        expect(result).to.deep.equal(cs);
-                    })));
-        });
+        it(`verify translated consent document list (required) for user ${userIndex}`,
+            userTests.listTranslatedUserConsentDocumentsFn(userIndex, expectedIndices, language));
+
+        it(`verify translated consent documents (required) for user ${userIndex}`,
+            tests.listTranslatedConsentDocumentsFn(expectedIndices, language));
     };
 
     _.range(4).forEach((i) => {
@@ -104,50 +80,28 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
         verifyTranslatedConsentDocuments(i, [0, 1], 'es');
     });
 
-    const signConsentTypeFn = function (userIndex, typeIndex, language) {
-        return function signConsentType() {
-            const consentDocumentId = history.id(typeIndex);
-            const userId = history.userId(userIndex);
-            history.sign(typeIndex, userIndex, language);
-            if (language) {
-                return models.consentSignature.createSignature({ userId, consentDocumentId, language });
-            }
-            return models.consentSignature.createSignature({ userId, consentDocumentId });
-        };
-    };
-
-    it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0));
-    it('user 0 signs consent document of type 1', signConsentTypeFn(0, 1));
-    it('user 1 signs consent document of type 0', signConsentTypeFn(1, 0, 'en'));
-    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'es'));
-    it('user 2 signs consent document of type 0', signConsentTypeFn(2, 0));
-    it('user 3 signs consent document of type 1', signConsentTypeFn(3, 1));
+    it('user 0 signs consent document of type 0', userTests.signConsentTypeFn(0, 0));
+    it('user 0 signs consent document of type 1', userTests.signConsentTypeFn(0, 1));
+    it('user 1 signs consent document of type 0', userTests.signConsentTypeFn(1, 0, 'en'));
+    it('user 1 signs consent document of type 1', userTests.signConsentTypeFn(1, 1, 'es'));
+    it('user 2 signs consent document of type 0', userTests.signConsentTypeFn(2, 0));
+    it('user 3 signs consent document of type 1', userTests.signConsentTypeFn(3, 1));
 
     verifyConsentDocuments(0, []);
     verifyConsentDocuments(1, []);
     verifyConsentDocuments(2, [1]);
     verifyConsentDocuments(3, [0]);
 
-    it('error: invalid user signs already signed consent document of type 0 ', () => {
-        const consentDocumentId = history.activeConsentDocuments[0].id;
-        return models.consentSignature.createSignature({ userId: 999, consentDocumentId })
-            .then(shared.throwingHandler, (err) => {
-                expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
-            });
-    });
+    it('error: invalid user signs already signed consent document of type 0 ',
+        userTests.errorSignConsentTypeFn(null, 0));
 
-    it('error: user 0 signs invalid consent document', () => {
-        const userId = history.userId(0);
-        return models.consentSignature.createSignature({ userId, consentDocumentId: 999 })
-            .then(shared.throwingHandler, (err) => {
-                expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
-            });
-    });
+    it('error: user 0 signs invalid consent document',
+        userTests.errorSignConsentTypeFn(0, null));
 
     it('add consent type 2', typeTests.createConsentTypeFn());
 
-    it('error: no consent document of existing types', () => models.consentDocument.listConsentDocuments(history.userId(2))
-            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
+    it('error: no consent document of existing types',
+        userTests.errorListUserConsentDocumentsFn(2, 'noSystemConsentDocuments'));
 
     it('create consent document of type 2', tests.createConsentDocumentFn(2));
     it('get consent document of type 2)', tests.getConsentDocumentFn(2));
@@ -157,7 +111,7 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
     verifyConsentDocuments(2, [1, 2]);
     verifyConsentDocuments(3, [0, 2]);
 
-    it('user 2 signs consent document of type 2', signConsentTypeFn(2, 2, 'en'));
+    it('user 2 signs consent document of type 2', userTests.signConsentTypeFn(2, 2, 'en'));
     verifyConsentDocuments(2, [1]);
 
     it('create consent document of type 1', tests.createConsentDocumentFn(1));
@@ -168,7 +122,7 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
     verifyConsentDocuments(2, [1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    it('user 1 signs consent document of type 2', signConsentTypeFn(1, 2, 'es'));
+    it('user 1 signs consent document of type 2', userTests.signConsentTypeFn(1, 2, 'es'));
     verifyConsentDocuments(1, [1]);
 
     it('create consent document of type 0', tests.createConsentDocumentFn(0));
@@ -179,8 +133,8 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
     verifyConsentDocuments(2, [0, 1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    it('user 2 signs consent document of type 1', signConsentTypeFn(2, 1));
-    it('user 3 signs consent document of type 1', signConsentTypeFn(3, 1));
+    it('user 2 signs consent document of type 1', userTests.signConsentTypeFn(2, 1));
+    it('user 3 signs consent document of type 1', userTests.signConsentTypeFn(3, 1));
 
     verifyConsentDocuments(0, [0, 1, 2]);
     verifyConsentDocuments(1, [0, 1]);
@@ -195,29 +149,12 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
     verifyConsentDocuments(2, [0, 1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    it('user 0 signs consent document of type 1', signConsentTypeFn(0, 1));
+    it('user 0 signs consent document of type 1', userTests.signConsentTypeFn(0, 1));
     verifyConsentDocuments(0, [0, 2]);
-    it('user 0 signs consent document of type 2', signConsentTypeFn(0, 2, 'en'));
+    it('user 0 signs consent document of type 2', userTests.signConsentTypeFn(0, 2, 'en'));
     verifyConsentDocuments(0, [0]);
-    it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0, 'es'));
+    it('user 0 signs consent document of type 0', userTests.signConsentTypeFn(0, 0, 'es'));
     verifyConsentDocuments(0, []);
-
-    it('create consent from types 0, 1, 2', () => {
-        const sections = [0, 1, 2].map(typeIndex => history.typeId(typeIndex));
-        const clientConsent = generator.newConsent({ sections });
-        return models.consent.createConsent(clientConsent)
-            .then(result => hxConsent.pushWithId(clientConsent, result.id));
-    });
-
-    it('error: delete consent type when on a consent', () => {
-        const id = history.typeId(1);
-        return models.consentType.deleteConsentType(id)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeDeleteOnConsent'))
-            .then(() => {
-                const consentId = hxConsent.id(0);
-                return models.consent.deleteConsent(consentId);
-            });
-    });
 
     it('delete consent type 1', typeTests.deleteConsentTypeFn(1));
     it('list consent types', typeTests.listConsentTypesFn());
@@ -227,28 +164,12 @@ describe('consent document/type/signature unit', function consentDocumentUnit() 
     verifyConsentDocuments(2, [0]);
     verifyConsentDocuments(3, [0, 2]);
 
-    const verifySignatureExistenceFn = function (userIndex) {
-        return function verifySignatureExistence() {
-            const userId = history.userId(userIndex);
-            return models.consentSignature.getSignatureHistory(userId)
-                .then((result) => {
-                    const expected = _.sortBy(history.signatures[userIndex], 'id');
-                    expect(result).to.deep.equal(expected);
-                });
-        };
-    };
-
     _.range(userCount).forEach((i) => {
-        it(`verify all signings still exists for user ${i}`, verifySignatureExistenceFn(i));
+        it(`verify all signings still exists for user ${i}`,
+            userTests.verifySignatureExistenceFn(i));
     });
 
-    it('verify all consent documents still exists', () => models.consentDocument.listConsentDocuments({ noTypeExpand: true, paranoid: false })
-            .then((consentDocuments) => {
-                comparator.consentDocuments(history.serversHistory(), consentDocuments);
-            })
-            .then(() => models.consentDocument.listConsentDocuments({ noTypeExpand: true }))
-            .then((consentDocuments) => {
-                const expected = _.sortBy([history.server(0), history.server(2)], 'id');
-                comparator.consentDocuments(expected, consentDocuments);
-            }));
+    it('verify all consent documents still exists', tests.listAllConsentDocumentsFn());
+
+    it('verify all consent documents still exists', tests.listConsentDocumentsSummaryFn([0, 2]));
 });

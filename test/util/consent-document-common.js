@@ -1,9 +1,14 @@
 'use strict';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
+const SPromise = require('../../lib/promise');
+
 const translator = require('./translator');
+const comparator = require('./comparator');
+const errSpec = require('./err-handler-spec');
 
 const expect = chai.expect;
 
@@ -62,6 +67,15 @@ const BaseTests = class BaseTests {
         };
     }
 
+    errorGetConsentDocumentByTypeIdFn(typeId, errKey) {
+        const self = this;
+        return function errprGetConsentDocumentByTypeName() {
+            const errFn = errSpec.expectedErrorHandlerFn(errKey);
+            return self.errorGetConsentDocumentByTypeIdPx(typeId)
+                .then(errSpec.throwingHandler, errFn);
+        };
+    }
+
     getTranslatedConsentDocumentFn(index, language) {
         const self = this;
         return function getTranslatedConsentDocument() {
@@ -71,6 +85,60 @@ const BaseTests = class BaseTests {
                 .then((result) => {
                     const expected = hx.hxDocument.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
+                });
+        };
+    }
+
+    listConsentDocumentsFn(indices) {
+        const self = this;
+        return function listConsentDocuments() {
+            const hx = self.hxConsentDocument;
+            const css = indices.map(index => hx.server(index));
+            return SPromise.all(css.map(cs => self.models.consentDocument.getConsentDocument(cs.id)
+                .then((result) => {
+                    expect(result).to.deep.equal(cs);
+                })));
+        };
+    }
+
+    listConsentDocumentsSummaryFn(indices) {
+        const self = this;
+        return function listConsentDocuments() {
+            const hx = self.hxConsentDocument;
+            const css = indices.map(index => hx.server(index));
+            return self.models.consentDocument.listConsentDocuments({ noTypeExpand: true })
+                .then((consentDocuments) => {
+                    const expected = _.sortBy(css, 'id');
+                    comparator.consentDocuments(expected, consentDocuments);
+                });
+        };
+    }
+
+    listTranslatedConsentDocumentsFn(indices, language) {
+        const self = this;
+        return function listConsentDOcuments() {
+            const hx = self.hxConsentDocument;
+            const css = indices.map(index => hx.hxDocument.translatedServer(index, language));
+            return SPromise.all(css.map((cs) => {
+                const options = { language };
+                return self.models.consentDocument.getConsentDocument(cs.id, options)
+                    .then((result) => {
+                        expect(result).to.deep.equal(cs);
+                    });
+            }));
+        };
+    }
+
+    listAllConsentDocumentsFn() {
+        const self = this;
+        return function listAllConsentDocuments() {
+            const hx = self.hxConsentDocument;
+            const options = { noTypeExpand: true, paranoid: false };
+            return self.models.consentDocument.listConsentDocuments(options)
+                .then((consentDocuments) => {
+                    const expected = hx.serversHistory();
+                    comparator.consentDocuments(expected, consentDocuments);
+                    return expected;
                 });
         };
     }
@@ -98,6 +166,10 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
         return this.models.consentDocument.getConsentDocumentByTypeId(typeId);
     }
 
+    errorGetConsentDocumentByTypeIdPx(typeId) {
+        return this.models.consentDocument.getConsentDocumentByTypeId(typeId);
+    }
+
     getTranslatedConsentDocumentPx(id, language) {
         return this.models.consentDocument.getConsentDocument(id, { language });
     }
@@ -115,7 +187,7 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
     }
 
     translateConsentDocumentPx(translation, language) {
-        this.rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204);
+        return this.rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204);
     }
 
     getConsentDocumentPx(id) {

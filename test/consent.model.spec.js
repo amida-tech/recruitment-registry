@@ -84,6 +84,12 @@ describe('consent unit', function consentUnit() {
 
     it('list/verify consents', listConsentsFn);
 
+    it('error: delete consent type when on a consent', () => {
+        const id = history.typeId(6);
+        return models.consentType.deleteConsentType(id)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeDeleteOnConsent'));
+    });
+
     it('delete consent 2', () => {
         const id = hxConsent.id(2);
         return models.consent.deleteConsent(id)
