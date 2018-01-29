@@ -12,7 +12,6 @@ const config = require('../../config');
 const appgen = require('../../app-generator');
 const models = require('../../models');
 const Generator = require('./generator');
-const translator = require('./translator');
 const comparator = require('./comparator');
 const errHandler = require('./err-handler-spec');
 
@@ -198,39 +197,6 @@ class SharedIntegration {
             const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
             typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
             rrSuperTest.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
-        };
-    }
-
-    createConsentDocumentFn(history, typeIndex) {
-        const rrSuperTest = this.rrSuperTest;
-        const generator = this.generator;
-        return function createConsentDocument(done) {
-            const typeId = history.typeId(typeIndex);
-            const cs = generator.newConsentDocument({ typeId });
-            rrSuperTest.post('/consent-documents', cs, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.push(typeIndex, cs, res.body);
-                    return done();
-                });
-        };
-    }
-
-    translateConsentDocumentFn(index, language, history) {
-        const rrSuperTest = this.rrSuperTest;
-        return function translateConsentDocument(done) {
-            const server = history.server(index);
-            const translation = translator.translateConsentDocument(server, language);
-            rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204)
-                .end((err) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.hxDocument.translateWithServer(server, language, translation);
-                    return done();
-                });
         };
     }
 

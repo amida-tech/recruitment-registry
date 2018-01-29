@@ -22,6 +22,7 @@ const comparator = require('./util/comparator');
 const surveyCommon = require('./util/survey-common');
 const answerCommon = require('./util/answer-common');
 const consentTypeCommon = require('./util/consent-type-common');
+const consentDocumentCommon = require('./util/consent-document-common');
 
 const expect = chai.expect;
 
@@ -43,6 +44,9 @@ describe('survey consent integration', function surveyConsentIntegration() {
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, opt);
     const typeTests = new consentTypeCommon.IntegrationTests(rrSuperTest, {
         generator, hxConsentType: hxConsentDocument.hxType,
+    });
+    const docTests = new consentDocumentCommon.SpecTests({
+        generator, hxConsentDocument,
     });
 
     before(shared.setUpFn());
@@ -76,7 +80,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
     });
 
     _.range(10).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
     const surveysPerConsentType = _.range(10).map(() => []);
@@ -344,7 +348,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
 
     it('login as super', shared.loginFn(config.superUser));
     _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
     it('logout as super', shared.logoutFn());
 
@@ -698,7 +702,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
 
     _.range(2).forEach((i) => {
         it('login as super', shared.loginFn(config.superUser));
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
         it('logout as super', shared.logoutFn());
     });
 
@@ -959,7 +963,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
 
     _.range(7, 10).forEach((i) => {
         it('login as super', shared.loginFn(config.superUser));
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
         it('logout as super', shared.logoutFn());
     });
 

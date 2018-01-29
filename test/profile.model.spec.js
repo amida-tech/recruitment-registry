@@ -17,6 +17,7 @@ const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const consentTypeCommon = require('./util/consent-type-common');
+const consentDocumentCommon = require('./util/consent-document-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -31,6 +32,9 @@ describe('profile unit', () => {
     const hxConsentDoc = new ConsentDocumentHistory(2);
     const typeTests = new consentTypeCommon.SpecTests({
         generator, hxConsentType: hxConsentDoc.hxType,
+    });
+    const docTests = new consentDocumentCommon.SpecTests({
+        generator, hxConsentDocument: hxConsentDoc,
     });
 
     const createProfileFn = function () {
@@ -81,7 +85,7 @@ describe('profile unit', () => {
         it(`create consent type ${i}`, typeTests.createConsentTypeFn());
     });
     _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures, language) {

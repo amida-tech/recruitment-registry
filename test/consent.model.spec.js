@@ -18,6 +18,7 @@ const models = require('../models');
 const translator = require('./util/translator');
 const comparator = require('./util/comparator');
 const consentTypeCommon = require('./util/consent-type-common');
+const consentDocumentCommon = require('./util/consent-document-common');
 
 const expect = chai.expect;
 
@@ -34,6 +35,9 @@ describe('consent unit', function consentUnit() {
     const consentCommon = new ConsentCommon(hxConsent, history, generator);
     const typeTests = new consentTypeCommon.SpecTests({
         generator, hxConsentType: history.hxType,
+    });
+    const docTests = new consentDocumentCommon.SpecTests({
+        generator, hxConsentDocument: history,
     });
 
     before(shared.setUpFn());
@@ -169,8 +173,8 @@ describe('consent unit', function consentUnit() {
     };
 
     _.range(3).forEach((i) => {
-        it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
+        it(`create/verify consent document of type ${i}`, docTests.createConsentDocumentFn(i));
+        it(`add translated (es) consent document ${i}`, docTests.translateConsentDocumentFn(i, 'es'));
     });
 
     it('error: get consent 0 documents', () => {
@@ -180,8 +184,8 @@ describe('consent unit', function consentUnit() {
     });
 
     _.range(3, typeCount).forEach((i) => {
-        it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
+        it(`create/verify consent document of type ${i}`, docTests.createConsentDocumentFn(i));
+        it(`add translated (es) consent document ${i}`, docTests.translateConsentDocumentFn(i, 'es'));
     });
 
     [0, 1, 3].forEach((consentIndex) => {
@@ -254,8 +258,8 @@ describe('consent unit', function consentUnit() {
     it('user 3 signs consent 0 (0, 2, 3, 4)', signDocumentsFn(3, 0, [0, 2, 3, 4], [0, 2, 3, 4]));
 
     [2, 10, 8, 4].forEach((typeIndex) => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
-        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
+        it(`create/verify consent document of type ${typeIndex}`, docTests.createConsentDocumentFn(typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, docTests.translateConsentDocumentFn(typeIndex, 'es'));
     });
 
     it('get/verify user 0 consent 0 documents', () => getUserConsentDocuments(0, 0, [
@@ -282,8 +286,8 @@ describe('consent unit', function consentUnit() {
     it('user 3 signs consent 0 (2, 4)', signDocumentsFn(3, 0, [2, 4], [0, 2, 3, 4]));
 
     [2, 10].forEach((typeIndex) => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
-        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
+        it(`create/verify consent document of type ${typeIndex}`, docTests.createConsentDocumentFn(typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, docTests.translateConsentDocumentFn(typeIndex, 'es'));
     });
 
     it('update history for type 2', () => {

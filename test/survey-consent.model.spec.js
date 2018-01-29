@@ -21,6 +21,7 @@ const comparator = require('./util/comparator');
 const surveyCommon = require('./util/survey-common');
 const answerCommon = require('./util/answer-common');
 const consentTypeCommon = require('./util/consent-type-common');
+const consentDocumentCommon = require('./util/consent-document-common');
 
 describe('survey consent unit', function surveyConsentUnit() {
     const userCount = 4;
@@ -39,6 +40,9 @@ describe('survey consent unit', function surveyConsentUnit() {
     const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey });
     const typeTests = new consentTypeCommon.SpecTests({
         generator, hxConsentType: hxConsentDocument.hxType,
+    });
+    const docTests = new consentDocumentCommon.SpecTests({
+        generator, hxConsentDocument,
     });
 
     before(shared.setUpFn());
@@ -97,7 +101,7 @@ describe('survey consent unit', function surveyConsentUnit() {
     //
 
     _.range(10).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
     const listConsentDocumentsFn = function () {
@@ -295,7 +299,7 @@ describe('survey consent unit', function surveyConsentUnit() {
     });
 
     _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
     _.range(userCount).forEach((i) => {
@@ -470,7 +474,7 @@ describe('survey consent unit', function surveyConsentUnit() {
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [3]));
 
     _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
     it('user 0 survey 1 consent documents for read', listConsentSurveyDocumentsFn(0, 1, 'read', [1]));
@@ -633,7 +637,7 @@ describe('survey consent unit', function surveyConsentUnit() {
     it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
 
     _.range(7, 10).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
     it('user 0 survey 4 consent documents for read', listConsentSurveyDocumentsFn(0, 5, 'read', [

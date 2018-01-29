@@ -10,7 +10,6 @@ const request = require('request');
 const models = require('../../models');
 
 const Generator = require('./generator');
-const translator = require('./translator');
 const comparator = require('./comparator');
 const errHandler = require('./err-handler-spec');
 
@@ -72,29 +71,6 @@ class SharedSpec {
                     hxSurvey.updateServer(index, survey);
                     comparator.survey(hxSurvey.client(index), survey);
                 });
-        };
-    }
-
-    translateConsentDocumentFn(index, language, history) {
-        const m = this.models;
-        return function translateConsentDocument() {
-            const server = history.server(index);
-            const translation = translator.translateConsentDocument(server, language);
-            return m.consentDocument.updateConsentDocumentText(translation, language)
-                .then(() => {
-                    history.hxDocument.translateWithServer(server, language, translation);
-                });
-        };
-    }
-
-    createConsentDocumentFn(history, typeIndex) {
-        const m = this.models;
-        const generator = this.generator;
-        return function createConsentDocument() {
-            const typeId = history.typeId(typeIndex);
-            const cs = generator.newConsentDocument({ typeId });
-            return m.consentDocument.createConsentDocument(cs)
-                .then(server => history.push(typeIndex, cs, server));
         };
     }
 
