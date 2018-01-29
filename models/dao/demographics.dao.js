@@ -2,12 +2,9 @@
 
 /* eslint max-len: 0 */
 
-const Sequelize = require('sequelize');
 const moment = require('moment');
 const _ = require('lodash');
 const Base = require('./base');
-
-const Op = Sequelize.Op;
 
 // TODO: eventually assign these to the key of answerValueType?
 const castAnswerValueByType = (demographic) => {
