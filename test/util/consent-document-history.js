@@ -77,6 +77,24 @@ module.exports = class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
+    listServers(options = {}) {
+        let typeIndices = options.typeIndices;
+        if (!typeIndices) {
+            const allTypeIndices = Object.keys(this.activeConsentDocuments);
+            typeIndices = allTypeIndices.filter((index) => {
+                const doc = this.activeConsentDocuments[index];
+                return !_.isEmpty(doc);
+            });
+        }
+        let result;
+        if (options.language) {
+            result = this.translatedServersInList(typeIndices, options.language, true);
+        } else {
+            result = this.serversInList(typeIndices, true);
+        }
+        return _.sortBy(result, 'id');
+    }
+
     getContents(ids) {
         const map = new Map();
         const n = this.hxType.length();
@@ -112,14 +130,18 @@ module.exports = class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
-    translatedServersInList(typeIndices, language) {
+    translatedServersInList(typeIndices, language, keepTypeId) {
         const result = typeIndices.map((index) => {
             const type = this.hxType.translatedServer(index, language);
-            return {
+            const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
                 title: type.title,
             };
+            if (keepTypeId) {
+                doc.typeId = this.hxType.id(index);
+            }
+            return doc;
         });
         return _.sortBy(result, 'id');
     }

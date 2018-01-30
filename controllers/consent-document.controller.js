@@ -44,7 +44,10 @@ exports.getUpdateCommentHistory = function getUpdateCommentHistory(req, res) {
 exports.listConsentDocuments = function listConsentDocuments(req, res) {
     const surveys = _.get(req, 'swagger.params.surveys.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = { language, surveys, summary: true, keepTypeId: true };
+    const history = _.get(req, 'swagger.params.history.value');
+    const summary = _.get(req, 'swagger.params.summary.value');
+    const keepTypeId = _.get(req, 'swagger.params.keep-type-id.value');
+    const options = { language, surveys, history, summary, keepTypeId };
     req.models.consentDocument.listConsentDocuments(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));

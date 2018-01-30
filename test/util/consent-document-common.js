@@ -1,10 +1,8 @@
 'use strict';
 
 const chai = require('chai');
-const _ = require('lodash');
 
 const models = require('../../models');
-const SPromise = require('../../lib/promise');
 
 const translator = require('./translator');
 const comparator = require('./comparator');
@@ -89,52 +87,28 @@ const BaseTests = class BaseTests {
         };
     }
 
-    listConsentDocumentsFn(indices) {
+    listConsentDocumentsFn(options = {}) {
         const self = this;
         return function listConsentDocuments() {
             const hx = self.hxConsentDocument;
-            const css = indices.map(index => hx.server(index));
-            return SPromise.all(css.map(cs => self.models.consentDocument.getConsentDocument(cs.id)
-                .then((result) => {
-                    expect(result).to.deep.equal(cs);
-                })));
-        };
-    }
-
-    listConsentDocumentsSummaryFn(indices) {
-        const self = this;
-        return function listConsentDocuments() {
-            const hx = self.hxConsentDocument;
-            const css = indices.map(index => hx.server(index));
-            return self.models.consentDocument.listConsentDocuments({ noTypeExpand: true })
+            const daoOptions = { summary: true, keepTypeId: true };
+            if (options.language) {
+                daoOptions.language = options.language;
+            }
+            return self.listConsentDocumentsPx(daoOptions)
                 .then((consentDocuments) => {
-                    const expected = _.sortBy(css, 'id');
+                    const expected = hx.listServers(options);
                     comparator.consentDocuments(expected, consentDocuments);
                 });
         };
     }
 
-    listTranslatedConsentDocumentsFn(indices, language) {
-        const self = this;
-        return function listConsentDOcuments() {
-            const hx = self.hxConsentDocument;
-            const css = indices.map(index => hx.hxDocument.translatedServer(index, language));
-            return SPromise.all(css.map((cs) => {
-                const options = { language };
-                return self.models.consentDocument.getConsentDocument(cs.id, options)
-                    .then((result) => {
-                        expect(result).to.deep.equal(cs);
-                    });
-            }));
-        };
-    }
-
-    listAllConsentDocumentsFn() {
+    listConsentDocumentsHistoryFn() {
         const self = this;
         return function listAllConsentDocuments() {
             const hx = self.hxConsentDocument;
-            const options = { noTypeExpand: true, paranoid: false };
-            return self.models.consentDocument.listConsentDocuments(options)
+            const options = { history: true, summary: false, keepTypeId: false };
+            return self.listConsentDocumentsPx(options)
                 .then((consentDocuments) => {
                     const expected = hx.serversHistory();
                     comparator.consentDocuments(expected, consentDocuments);
@@ -173,6 +147,10 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
     getTranslatedConsentDocumentPx(id, language) {
         return this.models.consentDocument.getConsentDocument(id, { language });
     }
+
+    listConsentDocumentsPx(options) {
+        return this.models.consentDocument.listConsentDocuments(options);
+    }
 };
 
 const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
@@ -202,6 +180,24 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
 
     getTranslatedConsentDocumentPx(id, language) {
         return this.rrSuperTest.get(`/consent-documents/${id}`, false, 200, { language })
+            .then(res => res.body);
+    }
+
+    listConsentDocumentsPx(options = {}) {
+        const params = {};
+        if (options.language) {
+            params.language = options.language;
+        }
+        if (options.history) {
+            params.history = options.history;
+        }
+        if (options.summary !== undefined) {
+            params.summary = options.summary;
+        }
+        if (options.keepTypeId !== undefined) {
+            params['keep-type-id'] = options.keepTypeId;
+        }
+        return this.rrSuperTest.get('/consent-documents', false, 200, params)
             .then(res => res.body);
     }
 };

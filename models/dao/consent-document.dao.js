@@ -68,8 +68,6 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     listConsentDocuments(options = {}) {
-        const ConsentDocument = this.db.ConsentDocument;
-
         const typeIds = options.typeIds;
         const createdAtColumn = this.timestampColumn('consent_document', 'created');
         const query = {
@@ -83,10 +81,10 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         if (typeIds && typeIds.length) {
             query.where = { typeId: { [Op.in]: typeIds } };
         }
-        if (Object.prototype.hasOwnProperty.call(options, 'paranoid')) {
-            query.paranoid = options.paranoid;
+        if (options.history) {
+            query.paranoid = !options.history;
         }
-        return ConsentDocument.findAll(query)
+        return this.db.ConsentDocument.findAll(query)
             .then((documents) => {
                 if (options.summary) {
                     return documents;
@@ -94,7 +92,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                 return this.updateAllTexts(documents, options.language);
             })
             .then((documents) => {
-                if (options.noTypeExpand) {
+                if (options.history) {
                     return documents;
                 }
                 const opt = {};
