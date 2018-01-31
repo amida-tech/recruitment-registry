@@ -38,6 +38,7 @@ const FilterAnswerDAO = require('./filter-answer.dao');
 const CohortDAO = require('./cohort.dao');
 const FileDAO = require('./file.dao');
 const AssessmentAnswerDAO = require('./assessment-answer.dao');
+const DemographicsDAO = require('./demographics.dao');
 const FeedbackSurvey = require('./feedback-survey.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
@@ -96,6 +97,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const file = new FileDAO(db);
     const assessmentAnswer = new AssessmentAnswerDAO(db, { answer, assessment });
     const feedbackSurvey = new FeedbackSurvey(db, { survey });
+    const demographics = new DemographicsDAO(db);
 
     return {
         sequelize: db.sequelize,
@@ -137,6 +139,7 @@ const doasPerSchema = function (db, daosGenerator) {
         file,
         assessmentAnswer,
         feedbackSurvey,
+        demographics,
     };
 };
 
