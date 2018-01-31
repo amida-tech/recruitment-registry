@@ -4,6 +4,7 @@ const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 
 const Translatable = require('./translatable');
 
@@ -67,8 +68,38 @@ module.exports = class ConsentDocumentDAO extends Translatable {
             });
     }
 
+    findTypeIds(options) {
+        const { role, roleOnly, typeIds } = options;
+        if (roleOnly && !role) {
+            return RRError.reject('consentDocumentRoleOnlyWithoutRole');
+        }
+        if (role) {
+            let where = { role };
+            if (!roleOnly) {
+                where = { [Op.or]: [where, { role: null }] };
+            }
+            if (typeIds && typeIds.length) {
+                where.id = typeIds;
+            }
+            const findOptions = { where };
+            if (options.transaction) {
+                findOptions.transaction = options.transaction;
+            }
+            return this.db.ConsentType.findAll({
+                raw: true, attributes: ['id'], where,
+            })
+                .then((ids) => {
+                    if (ids.length) {
+                        return ids.map(({ id }) => id);
+                    }
+                    return 'empty';
+                });
+        }
+        return SPromise.resolve(typeIds);
+    }
+
     listConsentDocuments(options = {}) {
-        const typeIds = options.typeIds;
+        let typeIds;
         const createdAtColumn = this.timestampColumn('consent_document', 'created');
         const query = {
             raw: true,
@@ -78,13 +109,20 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         if (options.transaction) {
             query.transaction = options.transaction;
         }
-        if (typeIds && typeIds.length) {
-            query.where = { typeId: { [Op.in]: typeIds } };
-        }
         if (options.history) {
             query.paranoid = !options.history;
         }
-        return this.db.ConsentDocument.findAll(query)
+        return this.findTypeIds(options)
+            .then((ids) => {
+                if (ids === 'empty') {
+                    return [];
+                }
+                typeIds = ids;
+                if (typeIds && typeIds.length) {
+                    query.where = { typeId: { [Op.in]: typeIds } };
+                }
+                return this.db.ConsentDocument.findAll(query);
+            })
             .then((documents) => {
                 if (options.summary) {
                     return documents;

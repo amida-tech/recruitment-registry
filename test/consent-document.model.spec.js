@@ -6,6 +6,8 @@ process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 
+const constNames = require('../models/const-names');
+
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
@@ -14,6 +16,7 @@ const consentDocumentCommon = require('./util/consent-document-common');
 
 describe('consent document unit', function consentDocumentUnit() {
     const userCount = 4;
+    const documentCount = 9;
 
     const generator = new Generator();
     const shared = new SharedSpec(generator);
@@ -28,42 +31,85 @@ describe('consent document unit', function consentDocumentUnit() {
 
     before(shared.setUpFn());
 
-    _.range(2).forEach((i) => {
-        it(`create consent type ${i}`, typeTests.createConsentTypeFn());
-        it(`add translated (es) consent type ${i}`, typeTests.translateConsentTypeFn(i, 'es'));
+    const roles = [null, ...constNames.consentRoles];
+    _.range(documentCount).forEach((index) => {
+        const options = { role: roles[index % 3] };
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn(options));
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
     });
 
-    _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, tests.createConsentDocumentFn(i));
-        it(`get consent document of type ${i}`, tests.getConsentDocumentFn(i));
-        it(`get consent document of type ${i} (type id)`, tests.getConsentDocumentByTypeIdFn(i));
-        it(`add translated (es) consent document ${i}`, tests.translateConsentDocumentFn(i, 'es'));
-        it(`get translated (es) consent document of type ${i}`,
-            tests.getTranslatedConsentDocumentFn(i, 'es'));
+    _.range(documentCount).forEach((index) => {
+        it(`create consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+        it(`get consent document of type ${index}`,
+            tests.getConsentDocumentFn(index));
+        it(`get consent document of type ${index} (type id)`,
+            tests.getConsentDocumentByTypeIdFn(index));
+        it(`add translated (es) consent document ${index}`,
+            tests.translateConsentDocumentFn(index, 'es'));
+        it(`get translated (es) consent document of type ${index}`,
+            tests.getTranslatedConsentDocumentFn(index, 'es'));
     });
 
-    it('list consent documents', tests.listConsentDocumentsFn());
-    it('list translated (es) consent documents', tests.listConsentDocumentsFn({
-        language: 'es',
-    }));
+    const listConsentDocuments = () => {
+        it('list consent documents', tests.listConsentDocumentsFn());
+        it('list translated (es) consent documents', tests.listConsentDocumentsFn({
+            language: 'es',
+        }));
+        it('list consent documents (with content)',
+            tests.listConsentDocumentsFn({ detailed: true }));
 
-    it('error: no consent documents with type id',
+        constNames.consentRoles.forEach((role) => {
+            it(`list consent documents (for role ${role})`,
+                tests.listConsentDocumentsFn({ role }));
+            it(`list consent documents (for role ${role}) role only`,
+                tests.listConsentDocumentsFn({ role, roleOnly: true }));
+        });
+    };
+
+    listConsentDocuments();
+
+    it('error: get consent document of invalid type id',
         tests.errorGetConsentDocumentByTypeIdFn(99999, 'consentTypeNotFound'));
 
-    it('add consent type 2', typeTests.createConsentTypeFn());
-    it('create consent document of type 2', tests.createConsentDocumentFn(2));
-    it('get consent document of type 2', tests.getConsentDocumentFn(2));
+    [0, 3, 5, 7].forEach((index) => {
+        it(`update consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+        it(`get consent document of type ${index}`,
+            tests.getConsentDocumentFn(index));
+    });
 
-    it('delete consent type 1', typeTests.deleteConsentTypeFn(1));
+    listConsentDocuments();
+
+    [1, 5].forEach((index) => {
+        it(`delete consent type ${index}`, typeTests.deleteConsentTypeFn(index));
+    });
     it('list consent types', typeTests.listConsentTypesFn());
 
-    it('get consent document of type 0', tests.getConsentDocumentFn(0));
-    it('get consent document of type 2', tests.getConsentDocumentFn(2));
+    listConsentDocuments();
 
-    it('list consent documents', tests.listConsentDocumentsFn());
-    it('list translated (es) consent documents', tests.listConsentDocumentsFn({
-        language: 'es',
-    }));
+    _.range(documentCount, documentCount + 3).forEach((index) => {
+        const options = { role: roles[index % 3] };
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn(options));
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
+        it(`create consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+    });
+
+    listConsentDocuments();
+
+    [0, 6, 7, 8].forEach((index) => {
+        it(`update consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+        it(`get consent document of type ${index}`,
+            tests.getConsentDocumentFn(index));
+    });
+
+    listConsentDocuments();
 
     it('list consent document full history', tests.listConsentDocumentsHistoryFn());
 });

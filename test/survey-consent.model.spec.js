@@ -109,7 +109,7 @@ describe('survey consent unit', function surveyConsentUnit() {
             return models.consentDocument.listConsentDocuments({ summary: true, keepTypeId: true })
                 .then((consentDocuments) => {
                     const types = _.range(10);
-                    const expected = hxConsentDocument.serversInList(types, true);
+                    const expected = hxConsentDocument.serversInList(types, { keepTypeId: true });
                     comparator.consentDocuments(expected, consentDocuments);
                 });
         };
@@ -120,7 +120,7 @@ describe('survey consent unit', function surveyConsentUnit() {
             return models.consentDocument.listConsentDocuments({ summary: true, surveys: true, keepTypeId: true })
                 .then((consentDocuments) => {
                     const types = _.range(10);
-                    const expected = _.cloneDeep(hxConsentDocument.serversInList(types, true));
+                    const expected = _.cloneDeep(hxConsentDocument.serversInList(types, { keepTypeId: true }));
                     expected.forEach((r, typeIndex) => {
                         const surveyIndices = surveysPerConsentType[typeIndex];
                         if (surveyIndices.length) {

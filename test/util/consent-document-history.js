@@ -61,19 +61,35 @@ module.exports = class ConsentDocumentHistory {
         return tr || server;
     }
 
-    serversInList(typeIndices, keepTypeId) {
-        const result = typeIndices.map((index) => {
+    serversInList(typeIndices, options = {}) {
+        const result = typeIndices.reduce((r, index) => {
             const type = this.hxType.server(index);
             const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
                 title: type.title,
             };
-            if (keepTypeId) {
+            const role = type.role;
+            if (options.roleOnly && !role) {
+                return r;
+            }
+            if (options.role && role && (role !== options.role)) {
+                return r;
+            }
+            if (role) {
+                doc.role = role;
+            }
+            if (options.detailed) {
+                doc.type = type.type;
+                doc.content = this.activeConsentDocuments[index].content;
+                doc.updateComment = this.activeConsentDocuments[index].updateComment || '';
+            }
+            if (options.keepTypeId) {
                 doc.typeId = type.id;
             }
-            return doc;
-        });
+            r.push(doc);
+            return r;
+        }, []);
         return _.sortBy(result, 'id');
     }
 
@@ -90,7 +106,12 @@ module.exports = class ConsentDocumentHistory {
         if (options.language) {
             result = this.translatedServersInList(typeIndices, options.language, true);
         } else {
-            result = this.serversInList(typeIndices, true);
+            result = this.serversInList(typeIndices, {
+                keepTypeId: true,
+                detailed: options.detailed,
+                role: options.role,
+                roleOnly: options.roleOnly,
+            });
         }
         return _.sortBy(result, 'id');
     }
@@ -138,6 +159,9 @@ module.exports = class ConsentDocumentHistory {
                 name: type.name,
                 title: type.title,
             };
+            if (type.role) {
+                doc.role = type.role;
+            }
             if (keepTypeId) {
                 doc.typeId = this.hxType.id(index);
             }

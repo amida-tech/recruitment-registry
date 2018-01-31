@@ -129,7 +129,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
             return rrSuperTest.get('/consent-documents', false, 200)
                 .then((res) => {
                     const types = _.range(10);
-                    const expected = hxConsentDocument.serversInList(types, true);
+                    const expected = hxConsentDocument.serversInList(types, { keepTypeId: true });
                     comparator.consentDocuments(expected, res.body);
                 });
         };
@@ -140,7 +140,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
             return rrSuperTest.get('/consent-documents', false, 200, { surveys: true })
                 .then((res) => {
                     const types = _.range(10);
-                    const expected = _.cloneDeep(hxConsentDocument.serversInList(types, true));
+                    const expected = _.cloneDeep(hxConsentDocument.serversInList(types, { keepTypeId: true }));
                     expected.forEach((r, typeIndex) => {
                         const surveyIndices = surveysPerConsentType[typeIndex];
                         if (surveyIndices.length) {

@@ -1793,7 +1793,7 @@
                 }, {
                     "name": "summary",
                     "in": "query",
-                    "description": "Ignore content and update comments ",
+                    "description": "Ignore content and update comments",
                     "required": false,
                     "type": "boolean",
                     "default": true
@@ -1801,9 +1801,19 @@
                     "name": "keep-type-id",
                     "in": "query",
                     "description": "Keep type id",
-                    "required": true,
+                    "required": false,
                     "type": "boolean",
                     "default": true
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -6477,6 +6487,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 },
                 "signature": {
                     "type": "boolean"

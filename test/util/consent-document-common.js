@@ -1,6 +1,7 @@
 'use strict';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
 
@@ -19,11 +20,15 @@ const BaseTests = class BaseTests {
     createConsentDocumentFn(typeIndex) {
         const self = this;
         return function createConsentDocument() {
-            const typeId = self.hxConsentDocument.typeId(typeIndex);
+            const hx = self.hxConsentDocument;
+            const typeId = hx.typeId(typeIndex);
             const consentDoc = self.generator.newConsentDocument({ typeId });
             return self.createConsentDocumentPx(consentDoc)
                 .then((server) => {
-                    self.hxConsentDocument.push(typeIndex, consentDoc, server);
+                    const prevContent = hx.server(typeIndex) && hx.server(typeIndex).content;
+                    hx.push(typeIndex, consentDoc, server);
+                    const content = hx.server(typeIndex).content;
+                    expect(content).not.to.equal(prevContent);
                 });
         };
     }
@@ -92,9 +97,10 @@ const BaseTests = class BaseTests {
         return function listConsentDocuments() {
             const hx = self.hxConsentDocument;
             const daoOptions = { summary: true, keepTypeId: true };
-            if (options.language) {
-                daoOptions.language = options.language;
+            if (options.detailed) {
+                daoOptions.summary = false;
             }
+            Object.assign(daoOptions, _.pick(options, ['language', 'role', 'roleOnly']));
             return self.listConsentDocumentsPx(daoOptions)
                 .then((consentDocuments) => {
                     const expected = hx.listServers(options);
@@ -196,6 +202,12 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
         }
         if (options.keepTypeId !== undefined) {
             params['keep-type-id'] = options.keepTypeId;
+        }
+        if (options.roleOnly) {
+            params['role-only'] = true;
+        }
+        if (options.role) {
+            params.role = options.role;
         }
         return this.rrSuperTest.get('/consent-documents', false, 200, params)
             .then(res => res.body);

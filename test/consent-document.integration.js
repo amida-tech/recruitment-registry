@@ -6,6 +6,8 @@ process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 
+const constNames = require('../models/const-names');
+
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
@@ -16,6 +18,7 @@ const consentDocumentCommon = require('./util/consent-document-common');
 
 describe('consent document integration', function consentDocumentIntegration() {
     const userCount = 4;
+    const documentCount = 9;
 
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
@@ -32,65 +35,95 @@ describe('consent document integration', function consentDocumentIntegration() {
 
     it('login as super', shared.loginFn(config.superUser));
 
-    _.range(2).forEach((i) => {
-        it(`create consent type ${i}`, typeTests.createConsentTypeFn());
-        it(`add translated (es) consent type ${i}`,
-            typeTests.translateConsentTypeFn(i, 'es'));
+    const roles = [null, ...constNames.consentRoles];
+    _.range(documentCount).forEach((index) => {
+        const options = { role: roles[index % 3] };
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn(options));
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
     });
 
     it('logout as super', shared.logoutFn());
 
-    _.range(2).forEach((i) => {
+    _.range(documentCount).forEach((index) => {
         it('login as super', shared.loginFn(config.superUser));
-        it(`create consent document of type ${i}`, tests.createConsentDocumentFn(i));
+        it(`create consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
         it('logout as super', shared.logoutFn());
-        it(`get consent document of type ${i}`,
-            tests.getConsentDocumentFn(i));
-        it(`get consent document content of type ${i} (type id)`,
-            tests.getConsentDocumentByTypeIdFn(i));
+        it(`get consent document of type ${index}`,
+            tests.getConsentDocumentFn(index));
+        it(`get consent document content of type ${index} (type id)`,
+            tests.getConsentDocumentByTypeIdFn(index));
         it('login as super', shared.loginFn(config.superUser));
-        it(`add translated (es) consent document ${i}`,
-            tests.translateConsentDocumentFn(i, 'es'));
+        it(`add translated (es) consent document ${index}`,
+            tests.translateConsentDocumentFn(index, 'es'));
         it('logout as super', shared.logoutFn());
-        it(`get translated (es) consent document of type ${i}`,
-            tests.getTranslatedConsentDocumentFn(i, 'es'));
+        it(`get translated (es) consent document of type ${index}`,
+            tests.getTranslatedConsentDocumentFn(index, 'es'));
     });
 
-    it('list consent documents', tests.listConsentDocumentsFn());
-    it('list translated (es) consent documents', tests.listConsentDocumentsFn({
-        language: 'es',
-    }));
+    const listConsentDocuments = () => {
+        it('list consent documents', tests.listConsentDocumentsFn());
+        it('list translated (es) consent documents',
+            tests.listConsentDocumentsFn({ language: 'es' }));
+        it('list consent documents (with content)',
+            tests.listConsentDocumentsFn({ detailed: true }));
+
+        constNames.consentRoles.forEach((role) => {
+            it(`list consent documents (for role ${role})`,
+                tests.listConsentDocumentsFn({ role }));
+            it(`list consent documents (for role ${role}) role only`,
+                tests.listConsentDocumentsFn({ role, roleOnly: true }));
+        });
+    };
+
+    listConsentDocuments();
+
+    [0, 3, 5, 7].forEach((index) => {
+        it('login as super', shared.loginFn(config.superUser));
+        it(`update consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+        it('logout as super', shared.logoutFn());
+        it(`get consent document of type ${index}`,
+            tests.getConsentDocumentFn(index));
+    });
+
+    listConsentDocuments();
 
     it('login as super', shared.loginFn(config.superUser));
-    it('create consent type 2', typeTests.createConsentTypeFn());
-    it('create consent document of type 2', tests.createConsentDocumentFn(2));
+    [1, 5].forEach((index) => {
+        it(`delete consent type ${index}`, typeTests.deleteConsentTypeFn(index));
+    });
+    it('list consent types', typeTests.listConsentTypesFn());
     it('logout as super', shared.logoutFn());
 
-    it('get consent document of type 2', tests.getConsentDocumentFn(2));
+    listConsentDocuments();
 
     it('login as super', shared.loginFn(config.superUser));
-    it('create consent document of type 1', tests.createConsentDocumentFn(1));
+    _.range(documentCount, documentCount + 3).forEach((index) => {
+        const options = { role: roles[index % 3] };
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn(options));
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
+        it(`create consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+    });
     it('logout as super', shared.logoutFn());
 
-    it('login as super', shared.loginFn(config.superUser));
-    it('create consent document of type 0', tests.createConsentDocumentFn(0));
-    it('logout as super', shared.logoutFn());
+    listConsentDocuments();
 
-    it('login as super', shared.loginFn(config.superUser));
-    it('create consent document of type 1', tests.createConsentDocumentFn(1));
-    it('logout as super', shared.logoutFn());
+    [0, 6, 7, 8].forEach((index) => {
+        it('login as super', shared.loginFn(config.superUser));
+        it(`update consent document of type ${index}`,
+            tests.createConsentDocumentFn(index));
+        it('logout as super', shared.logoutFn());
+        it(`get consent document of type ${index}`,
+            tests.getConsentDocumentFn(index));
+    });
 
-    it('login as super', shared.loginFn(config.superUser));
-    it('delete consent type 1', typeTests.deleteConsentTypeFn(1));
-    it('logout as super', shared.logoutFn());
-
-    it('get consent document of type 0', tests.getConsentDocumentFn(0));
-    it('get consent document of type 2', tests.getConsentDocumentFn(2));
-
-    it('list consent documents', tests.listConsentDocumentsFn());
-    it('list translated (es) consent documents', tests.listConsentDocumentsFn({
-        language: 'es',
-    }));
+    listConsentDocuments();
 
     it('list consent document full history', tests.listConsentDocumentsHistoryFn());
 
