@@ -23,11 +23,13 @@ const surveyCommon = require('./util/survey-common');
 const answerCommon = require('./util/answer-common');
 const consentTypeCommon = require('./util/consent-type-common');
 const consentDocumentCommon = require('./util/consent-document-common');
+const errSpec = require('./util/err-handler-spec');
 
 const expect = chai.expect;
 
 describe('survey consent integration', function surveyConsentIntegration() {
     const userCount = 4;
+    const typeCount = 10;
 
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
@@ -53,7 +55,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
 
     it('login as super', shared.loginFn(config.superUser));
 
-    _.range(10).forEach((index) => {
+    _.range(typeCount).forEach((index) => {
         it(`create consent type ${index}`, typeTests.createConsentTypeFn());
     });
 
@@ -68,7 +70,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
     it('create profile survey (survey 0)', shared.createProfileSurveyFn(hxSurvey));
     it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
-    _.range(1, 7).forEach((i) => {
+    _.range(1, 9).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn(({ noSection: true })));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     });
@@ -79,11 +81,11 @@ describe('survey consent integration', function surveyConsentIntegration() {
             .end(done);
     });
 
-    _.range(10).forEach((i) => {
+    _.range(typeCount).forEach((i) => {
         it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
 
-    const surveysPerConsentType = _.range(10).map(() => []);
+    const surveysPerConsentType = _.range(typeCount).map(() => []);
 
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
         return function createSurveyConsent(done) {
@@ -124,22 +126,22 @@ describe('survey consent integration', function surveyConsentIntegration() {
         };
     };
 
-    const listConsentDocumentsFn = function () {
-        return function listConsentDocuments() {
-            return rrSuperTest.get('/consent-documents', false, 200)
-                .then((res) => {
-                    const types = _.range(10);
-                    const expected = hxConsentDocument.serversInList(types, { keepTypeId: true });
-                    comparator.consentDocuments(expected, res.body);
-                });
-        };
-    };
+    // const listConsentDocumentsFn = function () {
+    //     return function listConsentDocuments() {
+    //         return rrSuperTest.get('/consent-documents', false, 200)
+    //             .then((res) => {
+    //                 const types = _.range(typeCount);
+    //                 const expected = hxConsentDocument.serversInList(types, { keepTypeId: true });
+    //                 comparator.consentDocuments(expected, res.body);
+    //             });
+    //     };
+    // };
 
     const listConsentDocumentsSurveyFn = function () {
         return function listConsentDocumentsSurvey() {
             return rrSuperTest.get('/consent-documents', false, 200, { surveys: true })
                 .then((res) => {
-                    const types = _.range(10);
+                    const types = _.range(typeCount);
                     const expected = _.cloneDeep(hxConsentDocument.serversInList(types, { keepTypeId: true }));
                     expected.forEach((r, typeIndex) => {
                         const surveyIndices = surveysPerConsentType[typeIndex];
@@ -155,7 +157,9 @@ describe('survey consent integration', function surveyConsentIntegration() {
         };
     };
 
-    it('list consent documents', listConsentDocumentsFn());
+    it('list consent documents', docTests.listConsentDocumentsFn());
+    it('list consent documents (manual expected indices)',
+        docTests.listConsentDocumentsFn({ typeIndices: _.range(typeCount) }));
 
     it('list consent documents with surveys', listConsentDocumentsSurveyFn());
 
@@ -193,7 +197,9 @@ describe('survey consent integration', function surveyConsentIntegration() {
 
     it('verify list surveys', surveyTests.listSurveysFn());
 
-    it('list consent documents', listConsentDocumentsFn());
+    it('list consent documents', docTests.listConsentDocumentsFn());
+    it('list consent documents (manual expected indices)',
+        docTests.listConsentDocumentsFn({ typeIndices: _.range(typeCount) }));
 
     it('list consent documents with surveys', listConsentDocumentsSurveyFn());
 
@@ -258,7 +264,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
         };
     };
 
-    _.range(10).forEach((i) => {
+    _.range(typeCount).forEach((i) => {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     });
 
@@ -961,7 +967,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
     it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
     it('logout as user 3', shared.logoutFn());
 
-    _.range(7, 10).forEach((i) => {
+    _.range(7, typeCount).forEach((i) => {
         it('login as super', shared.loginFn(config.superUser));
         it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
         it('logout as super', shared.logoutFn());
@@ -1024,4 +1030,31 @@ describe('survey consent integration', function surveyConsentIntegration() {
         [1, 9],
     ]));
     it('logout as user 3', shared.logoutFn());
+
+    const errorCreateSurveyRoleConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
+        return function errorCreateSurveyConsent() {
+            const consentType = hxConsentDocument.type(typeIndex);
+            const consentTypeId = consentType.id;
+            const surveyId = hxSurvey.id(surveyIndex);
+            const surveyConsent = { surveyId, consentTypeId, action };
+            if (consentIndex !== undefined) {
+                const consentId = hxConsent.id(consentIndex);
+                surveyConsent.consentId = consentId;
+            }
+            return rrSuperTest.post('/survey-consents', surveyConsent, 400)
+                .then(res => errSpec.verifyErrorMessage(res, 'surveyConsentNoRoleType'));
+        };
+    };
+
+    it('login as super', shared.loginFn(config.superUser));
+    _.range(typeCount, typeCount + 2).forEach((typeIndex, index) => {
+        const role = typeIndex % 2 ? 'participant' : 'clinician';
+        const options = { role };
+        it(`create consent type ${typeIndex} role (${role})`,
+            typeTests.createConsentTypeFn(options));
+        const surveyIndex = 7 + index;
+        it(`error: create survey consent with role  (${role}) type`,
+            errorCreateSurveyRoleConsentFn(surveyIndex, typeIndex, 'read'));
+    });
+    it('logout as super', shared.logoutFn());
 });
