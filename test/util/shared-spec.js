@@ -35,7 +35,8 @@ class SharedSpec {
             const user = generator.newUser(override);
             return m.user.createUser(user)
                 .then(({ id }) => {
-                    hxUser.push(user, { id });
+                    const server = Object.assign({ id }, user);
+                    hxUser.push(user, server);
                 });
         };
     }

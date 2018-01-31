@@ -9,13 +9,13 @@ const errSpec = require('./err-handler-spec');
 
 const expect = chai.expect;
 
-const verifySignatureIpAndUserAgent = function () {
+const verifySignatureIpAndUserAgent = function (typeIdCount) {
     const query = 'select consent_type.id as "typeId", ip, user_agent as "userAgent" from consent_signature, consent_type, consent_document where consent_signature.consent_document_id = consent_document.id and consent_type.id = consent_document.type_id';
     return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
         .then((result) => {
             const typeGroups = _.groupBy(result, 'typeId');
             const typeIds = Object.keys(typeGroups);
-            expect(typeIds).to.have.length(3);
+            expect(typeIds).to.have.length(typeIdCount);
             typeIds.forEach((typeId) => {
                 const expectedUserAgent = `Browser-${typeId}`;
                 const expectedIp = `9848.3${typeId}.838`;
@@ -38,8 +38,8 @@ const BaseTests = class BaseTests {
         const self = this;
         return function listUserConsentDocuments() {
             const hx = self.hxConsentDocument;
-            const userId = hx.userId(userIndex);
-            return self.listUserConsentDocumentsPx(userId)
+            const user = hx.user(userIndex);
+            return self.listUserConsentDocumentsPx(user)
                 .then((consentDocuments) => {
                     const expected = hx.serversInList(expectedIndices);
                     comparator.consentDocuments(expected, consentDocuments);
@@ -52,25 +52,26 @@ const BaseTests = class BaseTests {
         const self = this;
         return function listTranslatedUserConsentDocuments() {
             const hx = self.hxConsentDocument;
-            const userId = hx.userId(userIndex);
-            return self.listOptionedUserConsentDocumentsPx(userId, { language })
+            const user = hx.user(userIndex);
+            return self.listOptionedUserConsentDocumentsPx(user, { language })
                 .then((consentDocuments) => {
-                    const expected = hx.translatedServersInList(expectedIndices, language);
+                    const options = Object.assign({ role: user.role }, { language });
+                    const expected = hx.translatedServersInList(expectedIndices, options);
                     comparator.consentDocuments(expected, consentDocuments);
                     return expected;
                 });
         };
     }
 
-    listSignedUserConsentDocumentsFn(userIndex) {
+    listSignedUserConsentDocumentsFn(userIndex, options) {
         const self = this;
         return function listUserConsentDocuments() {
             const hx = self.hxConsentDocument;
-            const userId = hx.userId(userIndex);
-            const options = { includeSigned: true };
-            return self.listOptionedUserConsentDocumentsPx(userId, options)
+            const user = hx.user(userIndex);
+            return self.listOptionedUserConsentDocumentsPx(user, options)
                 .then((consentDocuments) => {
-                    const expected = hx.serversInListWithSigned(userIndex);
+                    Object.assign(options, { role: user.role });
+                    const expected = hx.serversInListWithSigned(userIndex, options);
                     comparator.consentDocuments(expected, consentDocuments);
                     return expected;
                 });
@@ -97,12 +98,15 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
         this.models = models;
     }
 
-    listUserConsentDocumentsPx(userId) {
-        return this.models.userConsentDocument.listUserConsentDocuments(userId);
+    listUserConsentDocumentsPx(user) {
+        const { id: userId, role } = user;
+        return this.models.userConsentDocument.listUserConsentDocuments(userId, { role });
     }
 
-    listOptionedUserConsentDocumentsPx(userId, options) {
-        return this.models.userConsentDocument.listUserConsentDocuments(userId, options);
+    listOptionedUserConsentDocumentsPx(user, options) {
+        const { id: userId, role } = user;
+        const daoOptions = Object.assign({ role }, options);
+        return this.models.userConsentDocument.listUserConsentDocuments(userId, daoOptions);
     }
 
     signConsentTypeFn(userIndex, typeIndex, language) {
@@ -164,13 +168,16 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
             .then(res => res.body);
     }
 
-    listOptionedUserConsentDocumentsPx(userId, options) {
+    listOptionedUserConsentDocumentsPx(user, options) {
         const queryParams = {};
         if (options.language) {
             queryParams.language = options.language;
         }
         if (options.includeSigned) {
             queryParams['include-signed'] = true;
+        }
+        if (options.roleOnly) {
+            queryParams['role-only'] = true;
         }
         return this.rrSuperTest.get('/user-consent-documents', true, 200, queryParams)
             .then(res => res.body);

@@ -1965,6 +1965,8 @@
                 "operationId": "createSignature",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "consent_document",
@@ -2045,6 +2047,8 @@
                 "summary": "Lists consent documents (section)",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2057,6 +2061,12 @@
                     "name": "include-signed",
                     "in": "query",
                     "description": "Flag to include signed documents",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only include role specific consents",
                     "required": false,
                     "type": "boolean"
                 }],

@@ -26,6 +26,10 @@ module.exports = class ConsentDocumentHistory {
         return this.hxUser.id(userIndex);
     }
 
+    user(userIndex) {
+        return this.hxUser.server(userIndex);
+    }
+
     listTypes() {
         return this.hxType.listServers();
     }
@@ -104,7 +108,10 @@ module.exports = class ConsentDocumentHistory {
         }
         let result;
         if (options.language) {
-            result = this.translatedServersInList(typeIndices, options.language, true);
+            result = this.translatedServersInList(typeIndices, {
+                language: options.language,
+                keepTypeId: true,
+            });
         } else {
             result = this.serversInList(typeIndices, {
                 keepTypeId: true,
@@ -128,7 +135,7 @@ module.exports = class ConsentDocumentHistory {
         return ids.map(id => map.get(id));
     }
 
-    serversInListWithSigned(userIndex) {
+    serversInListWithSigned(userIndex, options) {
         const signatureMap = new Map(this.signatures[userIndex].map(signature => [signature.id, signature]));
         const n = this.hxType.length();
         const result = _.range(n).reduce((r, index) => {
@@ -136,9 +143,24 @@ module.exports = class ConsentDocumentHistory {
             if (!id) {
                 return r;
             }
-            const { name, title } = this.hxType.server(index);
+            const { name, title, role } = this.hxType.server(index);
+            if (options.roleOnly && !role) {
+                return r;
+            }
+            if (options.role && role && (role !== options.role)) {
+                return r;
+            }
             const info = { id, name, title };
+            if (role) {
+                info.role = role;
+            }
             const signature = signatureMap.get(info.id);
+            if (!options.includeSigned) {
+                if (!signature) {
+                    r.push(info);
+                }
+                return r;
+            }
             if (signature) {
                 info.signature = true;
                 info.language = signature.language;
@@ -151,22 +173,31 @@ module.exports = class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
-    translatedServersInList(typeIndices, language, keepTypeId) {
-        const result = typeIndices.map((index) => {
+    translatedServersInList(typeIndices, options) {
+        const { language, keepTypeId } = options;
+        const result = typeIndices.reduce((r, index) => {
             const type = this.hxType.translatedServer(index, language);
             const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
                 title: type.title,
             };
-            if (type.role) {
-                doc.role = type.role;
+            const role = type.role;
+            if (options.roleOnly && !role) {
+                return r;
+            }
+            if (options.role && role && (role !== options.role)) {
+                return r;
+            }
+            if (role) {
+                doc.role = role;
             }
             if (keepTypeId) {
                 doc.typeId = this.hxType.id(index);
             }
-            return doc;
-        });
+            r.push(doc);
+            return r;
+        }, []);
         return _.sortBy(result, 'id');
     }
 

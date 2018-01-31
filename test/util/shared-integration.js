@@ -139,7 +139,8 @@ class SharedIntegration {
             }
             return rrSuperTest.post('/users', user, 201)
                 .then((res) => {
-                    history.push(user, { id: res.body.id });
+                    const server = Object.assign({ id: res.body.id }, user);
+                    history.push(user, server);
                 });
         };
     }
