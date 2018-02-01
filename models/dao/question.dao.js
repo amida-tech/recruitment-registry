@@ -290,7 +290,7 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    findQuestions({ scope, ids, surveyId, commonOnly, isIdentifying }) {
+    findQuestions({ scope, ids, surveyId, surveyPublished, commonOnly, isIdentifying }) {
         const attributes = ['id', 'type', 'isIdentifying'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
@@ -309,14 +309,21 @@ module.exports = class QuestionDAO extends Translatable {
             }
             options.where = where;
         }
-
-
-        const Question = this.db.Question;
-        if (surveyId) {
-            Object.assign(options, { model: Question, as: 'question' });
+        if (surveyId || surveyPublished) {
+            Object.assign(options, { model: this.db.Question, as: 'question' });
             const include = [options];
-            const where = { surveyId };
-            const sqOptions = { raw: true, where, include, attributes: [], order: ['question_id'] };
+            if (surveyPublished) {
+                include.push({
+                    model: this.db.Survey,
+                    as: 'survey',
+                    attributes: [],
+                    where: { status: 'published' },
+                });
+            }
+            const sqOptions = { raw: true, include, attributes: [], order: ['question_id'] };
+            if (surveyId) {
+                sqOptions.where = { surveyId };
+            }
             return this.db.SurveyQuestion.findAll(sqOptions)
                 .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {  // eslint-disable-line no-param-reassign, max-len
                     const newKey = key.split('.')[1];
@@ -329,7 +336,7 @@ module.exports = class QuestionDAO extends Translatable {
             options.where.isIdentifying = false;
         }
         Object.assign(options, { raw: true, order: ['id'] });
-        return Question.findAll(options);
+        return this.db.Question.findAll(options);
     }
 
     findFederatedQuestions(options = {}) {

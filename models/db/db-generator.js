@@ -179,6 +179,19 @@ const defineTables = function (sequelize, Sequelize, schema) {
     });
 
     SurveyQuestion.belongsTo(Question, questionBelongsTo());
+    SurveyQuestion.belongsTo(Survey, {
+        as: 'survey',
+        onUpdate: 'NO ACTION',
+        foreignKey: {
+            allowNull: false,
+            fieldName: 'surveyId',
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id',
+            },
+        },
+    });
 
     SurveySection.belongsTo(Section, {
         as: 'section',
