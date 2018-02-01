@@ -13,7 +13,7 @@ const SharedSpec = require('./util/shared-spec');
 const models = require('../models');
 const Generator = require('./util/generator');
 const History = require('./util/history');
-const ConsentCommon = require('./util/consent-common');
+const consentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const SurveyHistory = require('./util/survey-history');
 const MultiIndexHistory = require('./util/multi-index-history');
@@ -34,7 +34,9 @@ describe('survey consent unit', function surveyConsentUnit() {
 
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
-    const consentCommon = new ConsentCommon(hxConsent, hxConsentDocument, generator);
+    const consentTests = new consentCommon.SpecTests({
+        hxConsent, history: hxConsentDocument, generator,
+    });
     const hxSurvey = new SurveyHistory();
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
@@ -319,7 +321,7 @@ describe('survey consent unit', function surveyConsentUnit() {
             return models.answer.createAnswers({ userId, surveyId: survey.id, answers })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then((err) => {
-                    const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
+                    const expected = consentTests.getSurveyConsentDocuments(expectedInfo);
                     comparator.consentDocuments(expected, err.consentDocuments);
                 });
         };
@@ -335,7 +337,7 @@ describe('survey consent unit', function surveyConsentUnit() {
             }
             return models.surveyConsentDocument.listSurveyConsentDocuments({ userId, surveyId, action }, options)
                 .then((result) => {
-                    const expected = _.cloneDeep(consentCommon.getSurveyConsentDocuments(expectedInfo));
+                    const expected = _.cloneDeep(consentTests.getSurveyConsentDocuments(expectedInfo));
                     if (detail) {
                         const ids = expected.map(({ id }) => id);
                         const contents = hxConsentDocument.getContents(ids);
@@ -456,7 +458,7 @@ describe('survey consent unit', function surveyConsentUnit() {
             return models.answer.getAnswers({ userId, surveyId: survey.id })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then((err) => {
-                    const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
+                    const expected = consentTests.getSurveyConsentDocuments(expectedInfo);
                     comparator.consentDocuments(expected, err.consentDocuments);
                 });
         };

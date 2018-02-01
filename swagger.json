@@ -2020,6 +2020,8 @@
                 "operationId": "bulkCreateSignatures",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "consent_documents",
@@ -2286,6 +2288,16 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -2318,6 +2330,16 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -2345,6 +2367,8 @@
                 "operationId": "getUserConsentDocuments",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2353,6 +2377,11 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -2380,6 +2409,8 @@
                 "operationId": "getUserConsentDocumentsByName",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2388,6 +2419,11 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -6320,6 +6356,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 },
                 "content": {
                     "type": "string",

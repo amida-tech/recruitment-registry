@@ -40,32 +40,50 @@ exports.listConsents = function listConsents(req, res) {
 
 exports.getConsentDocuments = function getConsentDocuments(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    req.models.consent.getConsentDocuments(id, { language })
+    const options = {
+        role: _.get(req, 'swagger.params.role.value'),
+        roleOnly: _.get(req, 'swagger.params.role-only.value'),
+        language: _.get(req, 'swagger.params.language.value'),
+    };
+    req.models.consent.getConsentDocuments(id, options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getConsentDocumentsByName = function getConsentDocumentsByName(req, res) {
     const name = _.get(req, 'swagger.params.name.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    req.models.consent.getConsentDocumentsByName(name, { language })
+    const options = {
+        role: _.get(req, 'swagger.params.role.value'),
+        roleOnly: _.get(req, 'swagger.params.role-only.value'),
+        language: _.get(req, 'swagger.params.language.value'),
+    };
+    req.models.consent.getConsentDocumentsByName(name, options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getUserConsentDocuments = function getUserConsentDocuments(req, res) {
+    const { id: userId, role } = req.user;
     const id = _.get(req, 'swagger.params.id.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    req.models.consent.getUserConsentDocuments(req.user.id, id, { language })
+    const options = {
+        role,
+        roleOnly: _.get(req, 'swagger.params.role-only.value'),
+        language: _.get(req, 'swagger.params.language.value'),
+    };
+    req.models.consent.getUserConsentDocuments(userId, id, options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getUserConsentDocumentsByName = function getUserConsentDocumentsByName(req, res) {
+    const { id: userId, role } = req.user;
     const name = _.get(req, 'swagger.params.name.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    req.models.consent.getUserConsentDocumentsByName(req.user.id, name, { language })
+    const options = {
+        role,
+        roleOnly: _.get(req, 'swagger.params.role-only.value'),
+        language: _.get(req, 'swagger.params.language.value'),
+    };
+    req.models.consent.getUserConsentDocumentsByName(userId, name, options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

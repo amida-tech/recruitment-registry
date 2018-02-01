@@ -122,6 +122,35 @@ const BaseTests = class BaseTests {
                 });
         };
     }
+
+    getUpdateCommentHistoryFn(typeIndex) {
+        const self = this;
+        return function getUpdateCommentHistory() {
+            const hx = self.hxConsentDocument;
+            const typeId = hx.typeId(typeIndex);
+            return self.getUpdateCommentHistoryPx(typeId)
+                .then((result) => {
+                    const servers = hx.serversHistory().filter(h => (h.typeId === typeId));
+                    const comments = _.map(servers, 'updateComment');
+                    expect(result).to.deep.equal(comments);
+                });
+        };
+    }
+
+    getTranslatedUpdateCommentHistoryFn(typeIndex, language) {
+        const self = this;
+        return function getTranslatedUpdateCommentHistory() {
+            const hx = self.hxConsentDocument;
+            const typeId = hx.typeId(typeIndex);
+            return self.getTranslatedUpdateCommentHistoryPx(typeId, language)
+                .then((result) => {
+                    const servers = hx.translatedServersHistory(language)
+                        .filter(h => (h.typeId === typeId));
+                    const comments = _.map(servers, 'updateComment');
+                    expect(result).to.deep.equal(comments);
+                });
+        };
+    }
 };
 
 const SpecTests = class ConsentTypeSpecTests extends BaseTests {
@@ -156,6 +185,14 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
 
     listConsentDocumentsPx(options) {
         return this.models.consentDocument.listConsentDocuments(options);
+    }
+
+    getUpdateCommentHistoryPx(typeId) {
+        return this.models.consentDocument.getUpdateCommentHistory(typeId);
+    }
+
+    getTranslatedUpdateCommentHistoryPx(typeId, language) {
+        return this.models.consentDocument.getUpdateCommentHistory(typeId, language);
     }
 };
 
@@ -211,6 +248,14 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
         }
         return this.rrSuperTest.get('/consent-documents', false, 200, params)
             .then(res => res.body);
+    }
+
+    getUpdateCommentHistoryPx(typeId) {
+        return this.rrSuperTest.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200);
+    }
+
+    getTranslatedUpdateCommentHistoryPx(typeId, language) {
+        return this.rrSuperTest.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200, { language });
     }
 };
 

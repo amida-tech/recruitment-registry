@@ -14,7 +14,7 @@ const RRSuperTest = require('./util/rr-super-test');
 const config = require('../config');
 const Generator = require('./util/generator');
 const History = require('./util/history');
-const ConsentCommon = require('./util/consent-common');
+const consentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const SurveyHistory = require('./util/survey-history');
 const MultiIndexHistory = require('./util/multi-index-history');
@@ -36,7 +36,9 @@ describe('survey consent integration', function surveyConsentIntegration() {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
-    const consentCommon = new ConsentCommon(hxConsent, hxConsentDocument, generator);
+    const consentTests = new consentCommon.IntegrationTests(rrSuperTest, {
+        hxConsent, history: hxConsentDocument, generator,
+    });
     const hxSurvey = new SurveyHistory();
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
@@ -399,7 +401,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
             rrSuperTest.post('/answers', input, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
-                    const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
+                    const expected = consentTests.getSurveyConsentDocuments(expectedInfo);
                     comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
@@ -415,7 +417,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
             }
             rrSuperTest.get('/survey-consent-documents', true, 200, query)
                 .expect((res) => {
-                    const expected = _.cloneDeep(consentCommon.getSurveyConsentDocuments(expectedInfo));
+                    const expected = _.cloneDeep(consentTests.getSurveyConsentDocuments(expectedInfo));
                     if (detail) {
                         const ids = expected.map(({ id }) => id);
                         const contents = hxConsentDocument.getContents(ids);
@@ -685,7 +687,7 @@ describe('survey consent integration', function surveyConsentIntegration() {
             rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
-                    const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
+                    const expected = consentTests.getSurveyConsentDocuments(expectedInfo);
                     comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);

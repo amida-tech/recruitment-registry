@@ -4,6 +4,7 @@ const chai = require('chai');
 
 const models = require('../../models');
 const translator = require('./translator');
+const errSpec = require('./err-handler-spec');
 
 const expect = chai.expect;
 
@@ -118,6 +119,16 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
 
     translateConsentTypePx(translation, language) {
         return this.models.consentType.updateConsentTypeText(translation, language);
+    }
+
+    errorDeleteConsentTypeFn(index, errKey) {
+        const self = this;
+        return function errorDeleteConsentType() {
+            const errFn = errSpec.expectedErrorHandlerFn(errKey);
+            const id = self.hxConsentType.id(index);
+            return self.deleteConsentTypePx(id)
+                .then(errSpec.throwingHandler, errFn);
+        };
     }
 };
 

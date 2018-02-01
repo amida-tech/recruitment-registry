@@ -90,7 +90,12 @@ module.exports = class ConsentDocumentDAO extends Translatable {
             })
                 .then((ids) => {
                     if (ids.length) {
-                        return ids.map(({ id }) => id);
+                        const result = ids.map(({ id }) => id);
+                        if (typeIds && typeIds.length) {
+                            const set = new Set(result);
+                            return typeIds.filter(r => set.has(r));
+                        }
+                        return result;
                     }
                     return 'empty';
                 });
@@ -114,22 +119,28 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         }
         return this.findTypeIds(options)
             .then((ids) => {
+                typeIds = ids;
                 if (ids === 'empty') {
                     return [];
                 }
-                typeIds = ids;
                 if (typeIds && typeIds.length) {
                     query.where = { typeId: { [Op.in]: typeIds } };
                 }
                 return this.db.ConsentDocument.findAll(query);
             })
             .then((documents) => {
+                if (typeIds === 'empty') {
+                    return [];
+                }
                 if (options.summary) {
                     return documents;
                 }
                 return this.updateAllTexts(documents, options.language);
             })
             .then((documents) => {
+                if (typeIds === 'empty') {
+                    return [];
+                }
                 if (options.history) {
                     return documents;
                 }
