@@ -376,6 +376,79 @@ const booleanOnly = {
     questions: [{ text: 'i am in', type: 'bool', required: true, isIdentifying: false }],
 };
 
+const variousQuestionTypes = {
+    name: 'surveyTypes',
+    questions: [
+        {
+            text: 'Is this a boolean?',
+            type: 'bool',
+            required: true,
+            isIdentifying: false,
+            language: 'en',
+        },
+        {
+            text: 'What do you desire?',
+            type: 'text',
+            required: true,
+            isIdentifying: false,
+            language: 'en',
+        },
+        {
+            text: '¿Cual es tu numero favorito?',
+            type: 'integer',
+            required: true,
+            isIdentifying: false,
+            language: 'es',
+        },
+        {
+            text: 'What is your zip or postal code?',
+            type: 'zip',
+            required: true,
+            isIdentifying: false,
+            language: 'en',
+        },
+        {
+            text: '¿Cuál es tu año de nacimiento?',
+            type: 'year',
+            required: true,
+            isIdentifying: false,
+            language: 'es',
+        },
+        {
+            text: 'Pick a date from the calendar',
+            type: 'date',
+            required: true,
+            isIdentifying: false,
+            language: 'en',
+        },
+        // {
+        //     text: 'Choose one',
+        //     type: 'choice',
+        //     required: true,
+        //     isIdentifying: false,
+        //     choices: [
+        //         { text: 'A' },
+        //         { text: 'B' },
+        //         { text: 'C' },
+        //         { text: 'D' },
+        //     ],
+        // },
+        // {
+        //     text: 'Choose several',
+        //     type: 'choices',
+        //     required: true,
+        //     isIdentifying: false,
+        //     choices: [
+        //         { text: 'One' },
+        //         { text: 'Two' },
+        //         { text: 'Three' },
+        //         { text: 'Four' },
+        //         { text: 'Five' },
+        //     ],
+        // },
+    ],
+};
+
 module.exports = {
     example,
     exampleAnswer,
@@ -389,4 +462,5 @@ module.exports = {
     travelSurvey,
     zipYOBProfileSurvey,
     booleanOnly,
+    variousQuestionTypes,
 };
