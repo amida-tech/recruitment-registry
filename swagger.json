@@ -2098,6 +2098,8 @@
                 "operationId": "getUserConsentDocument",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2134,6 +2136,8 @@
                 "operationId": "getUserConsentDocumentByTypeId",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",

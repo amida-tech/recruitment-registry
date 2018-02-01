@@ -90,6 +90,20 @@ const BaseTests = class BaseTests {
                 });
         };
     }
+
+    getConsentDocumentFn(userIndex, typeIndex) {
+        const self = this;
+        return function getConsentDocument() {
+            const hx = self.hxConsentDocument;
+            const userId = hx.userId(userIndex);
+            const id = hx.id(typeIndex);
+            return self.getConsentDocumentPx(userId, id)
+                .then((result) => {
+                    const expected = hx.serverWithSignatureInfo(userIndex, typeIndex);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const SpecTests = class ConsentTypeSpecTests extends BaseTests {
@@ -154,6 +168,10 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
             return self.models.userConsentDocument.listUserConsentDocuments(userId)
                 .then(errSpec.throwingHandler, errFn);
         };
+    }
+
+    getConsentDocumentPx(userId, id) {
+        return this.models.userConsentDocument.getUserConsentDocument(userId, id);
     }
 };
 
@@ -222,6 +240,11 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
             const consentDocumentId = hx.id(typeIndex);
             return self.rrSuperTest.post('/consent-signatures', { consentDocumentId }, 400);
         };
+    }
+
+    getConsentDocumentPx(userId, id) {
+        return this.rrSuperTest.get(`/user-consent-documents/${id}`, true, 200)
+            .then(res => res.body);
     }
 };
 

@@ -80,8 +80,12 @@ describe('user consent document/signature unit', function userConsentDocumentUni
         verifyConsentDocuments(index, [0, 1, 3, 4, 6, 7], 'es');
 
         [1, 4, 7].forEach((docIndex) => {
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
             it(`user ${index} signs consent document of type ${docIndex}`,
                 userTests.signConsentTypeFn(index, docIndex));
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
         });
 
         verifyConsentDocuments(index, [0, 3, 6], 'es');
@@ -91,8 +95,12 @@ describe('user consent document/signature unit', function userConsentDocumentUni
         verifyConsentDocuments(index, [0, 2, 3, 5, 6, 8], 'es');
 
         [2, 5, 8].forEach((docIndex) => {
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
             it(`user ${index} signs consent document of type ${docIndex}`,
                 userTests.signConsentTypeFn(index, docIndex));
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
         });
 
         verifyConsentDocuments(index, [0, 3, 6], 'es');

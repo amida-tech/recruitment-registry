@@ -59,6 +59,18 @@ module.exports = class ConsentDocumentHistory {
         return this.activeConsentDocuments[typeIndex];
     }
 
+    serverWithSignatureInfo(userIndex, typeIndex) {
+        const cd = _.cloneDeep(this.activeConsentDocuments[typeIndex]);
+        const signature = this.signatures[userIndex].find(r => r.id === cd.id);
+        if (signature) {
+            cd.signature = true;
+            cd.language = signature.language;
+        } else {
+            cd.signature = false;
+        }
+        return cd;
+    }
+
     translatedServer(typeIndex, language) {
         const server = this.activeConsentDocuments[typeIndex];
         const tr = this.hxDocument.serverTranslation(server.id, language);

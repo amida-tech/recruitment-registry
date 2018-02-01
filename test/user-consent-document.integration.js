@@ -99,8 +99,12 @@ describe('user consent document/signature integration', function userConsentDocu
 
         it(`login as user ${index}`, shared.loginIndexFn(history.hxUser, index));
         [1, 4, 7].forEach((docIndex) => {
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
             it(`user ${index} signs consent document of type ${docIndex}`,
                 userTests.signConsentTypeFn(index, docIndex));
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
         });
         it(`logout as user ${index}`, shared.logoutFn());
 
@@ -112,8 +116,12 @@ describe('user consent document/signature integration', function userConsentDocu
 
         it(`login as user ${index}`, shared.loginIndexFn(history.hxUser, index));
         [2, 5, 8].forEach((docIndex) => {
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
             it(`user ${index} signs consent document of type ${docIndex}`,
                 userTests.signConsentTypeFn(index, docIndex));
+            it(`user ${index} get consent document of type ${docIndex}`,
+                userTests.getConsentDocumentFn(index, docIndex));
         });
         it(`logout as user ${index}`, shared.logoutFn());
 
