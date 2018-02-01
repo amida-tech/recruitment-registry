@@ -90,6 +90,11 @@ module.exports = class QuestionDAO extends Translatable {
                 if (choiceSetId) {
                     baseFields.choiceSetId = choiceSetId;
                 }
+                if (question.meta && question.meta.scaleLimits) {
+                    if (question.meta.scaleLimits.min > question.meta.scaleLimits.max) {
+                        throw new RRError('questionScaleMinGTMax');
+                    }
+                }
                 return Question.create(baseFields, { transaction, raw: true })
                     .then((result) => {
                         const { text, instruction } = question;

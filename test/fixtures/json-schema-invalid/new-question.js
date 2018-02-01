@@ -25,4 +25,7 @@ module.exports = [{
     text: 'Example',
     type: 'text',
     oneOfChoices: ['a', 'b', 'c'],
+}, {
+    text: 'Example',
+    type: 'scale',
 }];
