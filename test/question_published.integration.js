@@ -35,11 +35,11 @@ describe('question published integration', () => {
 
         it('list published questions (complete)', tests.listQuestionsFn({
             indices,
-            scope: 'summary',
+            scope: 'complete',
             surveyPublished: true,
         }));
 
-        it('list published questions (complete)', tests.listQuestionsFn({
+        it('list published questions (summary)', tests.listQuestionsFn({
             indices,
             scope: 'summary',
             surveyPublished: true,
