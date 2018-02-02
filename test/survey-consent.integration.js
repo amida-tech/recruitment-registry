@@ -128,17 +128,6 @@ describe('survey consent integration', function surveyConsentIntegration() {
         };
     };
 
-    // const listConsentDocumentsFn = function () {
-    //     return function listConsentDocuments() {
-    //         return rrSuperTest.get('/consent-documents', false, 200)
-    //             .then((res) => {
-    //                 const types = _.range(typeCount);
-    //                 const expected = hxConsentDocument.serversInList(types, { keepTypeId: true });
-    //                 comparator.consentDocuments(expected, res.body);
-    //             });
-    //     };
-    // };
-
     const listConsentDocumentsSurveyFn = function () {
         return function listConsentDocumentsSurvey() {
             return rrSuperTest.get('/consent-documents', false, 200, { surveys: true })

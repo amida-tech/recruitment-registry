@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
 
@@ -137,9 +139,7 @@ const BaseTests = class BaseTests {
             return self.listConsentDocumentsPx(id, options)
                 .then((consent) => {
                     const typeIndices = self.consentSpecs[consentIndex];
-                    const expected = self.formExpectedConsent(
-                        consentIndex, typeIndices, null, options,
-                    );
+                    const expected = self.formExpectedConsent(consentIndex, typeIndices, null, options);
                     comparator.consent(expected, consent);
                 });
         };
@@ -152,9 +152,7 @@ const BaseTests = class BaseTests {
             return self.listTranslatedConsentDocumentsPx(id, 'es')
                 .then((consent) => {
                     const typeIndices = self.consentSpecs[consentIndex];
-                    const expected = self.formTranslatedExpectedConsent(
-                        consentIndex, typeIndices, undefined, { language: 'es' },
-                    );
+                    const expected = self.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, { language: 'es' });
                     comparator.consent(expected, consent);
                     translator.isConsentDocumentTranslated(consent, 'es');
                 });
@@ -181,9 +179,7 @@ const BaseTests = class BaseTests {
             return self.listTranslatedConsentDocumentsByNamePx(name, 'es')
                 .then((consent) => {
                     const typeIndices = self.consentSpecs[consentIndex];
-                    const expected = self.formTranslatedExpectedConsent(
-                        consentIndex, typeIndices, undefined, { language: 'es' },
-                    );
+                    const expected = self.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, { language: 'es' });
                     comparator.consent(expected, consent);
                     translator.isConsentDocumentTranslated(consent, 'es');
                 });
@@ -207,9 +203,7 @@ const BaseTests = class BaseTests {
                         }
                         return r;
                     }, {});
-                    const expected = self.formExpectedConsent(
-                        index, typeIndices, signatures, daoOptions,
-                    );
+                    const expected = self.formExpectedConsent(index, typeIndices, signatures, daoOptions);
                     comparator.consent(expected, consent);
                 });
         };
@@ -232,9 +226,7 @@ const BaseTests = class BaseTests {
                         }
                         return r;
                     }, {});
-                    const expected = self.formTranslatedExpectedConsent(
-                        index, typeIndices, signatures, { language, role },
-                    );
+                    const expected = self.formTranslatedExpectedConsent(index, typeIndices, signatures, { language, role });
                     comparator.consent(expected, consent);
                     translator.isConsentDocumentTranslated(consent, language);
                 });
@@ -258,9 +250,7 @@ const BaseTests = class BaseTests {
                         }
                         return r;
                     }, {});
-                    const expected = self.formExpectedConsent(
-                        index, typeIndices, signatures, daoOptions,
-                    );
+                    const expected = self.formExpectedConsent(index, typeIndices, signatures, daoOptions);
                     comparator.consent(expected, consent);
                 });
         };
@@ -283,9 +273,7 @@ const BaseTests = class BaseTests {
                         }
                         return r;
                     }, {});
-                    const expected = self.formTranslatedExpectedConsent(
-                        index, typeIndices, signatures, { language, role },
-                    );
+                    const expected = self.formTranslatedExpectedConsent(index, typeIndices, signatures, { language, role });
                     translator.isConsentDocumentTranslated(consent, language);
                     comparator.consent(expected, consent);
                 });

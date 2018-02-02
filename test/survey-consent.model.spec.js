@@ -100,10 +100,6 @@ describe('survey consent unit', function surveyConsentUnit() {
         };
     };
 
-    // it('error: get profile survey with no consent documents of existing types', () => models.profileSurvey.getProfileSurvey()
-    //        .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
-    //
-
     _.range(typeCount).forEach((i) => {
         it(`create consent document of type ${i}`, docTests.createConsentDocumentFn(i));
     });
