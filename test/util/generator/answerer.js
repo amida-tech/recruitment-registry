@@ -95,15 +95,16 @@ module.exports = class Answerer {
     }
 
     scale(question) {
+        const answerIndex = this.answerIndex;
         const { min, max } = question.meta.scaleLimits;
         if (min !== undefined && max !== undefined) {
-            return { numberValue: (min + max) / 2 };
+            return { numberValue: min + (answerIndex % (max - min)) };
         }
         if (min !== undefined) {
-            return { numberValue: min + 0.5 };
+            return { numberValue: min + answerIndex };
         }
         if (max !== undefined) {
-            return { numberValue: max - 0.5 };
+            return { numberValue: max - answerIndex };
         }
         return { numberValue: 0 };
     }

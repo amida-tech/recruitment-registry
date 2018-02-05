@@ -4440,9 +4440,6 @@
                         "$ref": "#/definitions/newChoice"
                     },
                     "minItems": 1
-                },
-                "scaleLimits": {
-                    "$ref": "#/definitions/scaleLimits"
                 }
             },
             "minProperties": 2,
@@ -4764,9 +4761,6 @@
                         "$ref": "#/definitions/choice"
                     },
                     "minItems": 1
-                },
-                "scaleLimits": {
-                    "$ref": "#/definitions/scaleLimits"
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
@@ -5856,9 +5850,6 @@
                         "$ref": "#/definitions/choice"
                     }
                 },
-                "scaleLimits": {
-                    "$ref": "#/definitions/scaleLimits"
-                },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 }
@@ -6026,24 +6017,8 @@
                     "items": {
                         "$ref": "#/definitions/newChoice"
                     }
-                },
-                "scaleLimits": {
-                    "$ref": "#/definitions/scaleLimits"
                 }
             },
-            "additionalProperties": false
-        },
-        "scaleLimits": {
-            "type": "object",
-            "properties": {
-                "min": {
-                    "type": "number"
-                },
-                "max": {
-                    "type": "number"
-                }
-            },
-            "minProperties": 1,
             "additionalProperties": false
         },
         "linkedAnswer": {

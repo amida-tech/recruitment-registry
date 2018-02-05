@@ -24,7 +24,7 @@ module.exports = function Table(sequelize, DataTypes) {
                     const names = [
                         'text', 'choice', 'choices', 'bool', 'integer', 'float',
                         'zip', 'date', 'pounds', 'year', 'month', 'day',
-                        'feet-inches', 'blood-pressure', 'choice-ref',
+                        'feet-inches', 'blood-pressure', 'choice-ref', 'scale',
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);

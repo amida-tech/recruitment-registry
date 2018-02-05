@@ -290,10 +290,10 @@ module.exports = class AnswerDAO extends Base {
                             values = answers.map(({ numberValue }) => numberValue);
                         }
                         values.forEach((value) => {
-                            if (min !== null && value < min){
+                            if (min !== null && value < min) {
                                 throw new RRError('answerOutOfScale', value);
                             }
-                            if (max !== null && value > max){
+                            if (max !== null && value > max) {
                                 throw new RRError('answerOutOfScale', value);
                             }
                         });
