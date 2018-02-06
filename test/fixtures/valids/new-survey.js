@@ -84,17 +84,17 @@ module.exports = [
             required: true,
             text: 'Example1',
             type: 'scale',
-            meta: { scaleLimits: { min: 4, max: 9 } },
+            scaleLimits: { min: 4, max: 9 },
         }, {
             required: true,
             text: 'Example2',
             type: 'scale',
-            meta: { scaleLimits: { min: 4 } },
+            scaleLimits: { min: 4 },
         }, {
             required: true,
             text: 'Example3',
             type: 'scale',
-            meta: { scaleLimits: { max: 9 } },
+            scaleLimits: { max: 9 },
         }],
     },
 ];

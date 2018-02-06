@@ -165,11 +165,8 @@ module.exports = class QuestionGenerator {
 
     scale(options) {
         const question = this.body('scale');
-        if (!question.meta) {
-            question.meta = {};
-        }
         if (options.scaleLimits) {
-            Object.assign(question.meta, { scaleLimits: options.scaleLimits });
+            question.scaleLimits = options.scaleLimits;
             return question;
         }
         const scaleLimits = {};
@@ -180,7 +177,7 @@ module.exports = class QuestionGenerator {
         if (value === 1 || value === 2) {
             scaleLimits.max = 90.5 + value;
         }
-        Object.assign(question.meta, { scaleLimits });
+        question.scaleLimits = options.scaleLimits;
         return question;
     }
 

@@ -26,5 +26,5 @@ module.exports = [{
 }, {
     text: 'Example',
     type: 'scale',
-    meta: { scaleLimits: { min: 4, max: 9 } },
+    scaleLimits: { min: 4, max: 9 },
 }];

@@ -269,7 +269,7 @@ module.exports = class AnswerDAO extends Base {
 
     validateAnswerValues(userAnswers) {
         const ids = userAnswers.map(({ questionId }) => questionId);
-        const attributes = ['id', 'type', 'meta'];
+        const attributes = ['id', 'type', 'parameter'];
         const where = { id: { [Op.in]: ids } };
         return this.db.Question.findAll({ where, attributes, raw: true })
             .then(questions => _.keyBy(questions, 'id'))
@@ -279,9 +279,10 @@ module.exports = class AnswerDAO extends Base {
                     if (!question) {
                         throw new RRError('answerQxNotInSurvey');
                     }
-                    const { type, meta } = question;
+                    const { type, parameter } = question;
                     if (type === 'scale' && (answer || answers)) { // Currently only validating scale answer values
-                        const { min, max } = meta.scaleLimits;
+                        const paramSplit = parameter.split(':');
+                        const [min, max] = paramSplit.map(v => (v ? parseFloat(v) : null));
                         let values;
                         if (answer) {
                             values = [answer.numberValue];

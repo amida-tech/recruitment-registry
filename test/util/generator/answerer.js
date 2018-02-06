@@ -96,7 +96,7 @@ module.exports = class Answerer {
 
     scale(question) {
         const answerIndex = this.answerIndex;
-        const { min, max } = question.meta.scaleLimits;
+        const { min, max } = question.scaleLimits;
         if (min !== undefined && max !== undefined) {
             return { numberValue: min + (answerIndex % (max - min)) };
         }

@@ -85,6 +85,6 @@
 	"answerInvalidSurveyInAsses": "Survey does not belong to assessment.",
 	"feedbackSurveyNoDeletedDefault": "Invalid id(s) for feedback survey and/or linked survey.",
 	"feedbackSurveyNoWrongType": "Wrong type(s) for feedback survey and/or linked survey.",
-	"questionScaleMinGTMax": "Minimum value of scale type question must be less than maximum value",
-	"answerOutOfScale": "Answer to a scale type question must be within the minimum and maximum"
+	"questionScaleMinGTMax": "Scale question maximum cannot be greater than minimum.",
+	"answerOutOfScale": "Answer {{0}} is out of scale."
 }

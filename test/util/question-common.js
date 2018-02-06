@@ -11,9 +11,9 @@ const comparator = require('./comparator');
 const errSpec = require('./err-handler-spec');
 
 const scopeToFieldsMap = {
-    summary: ['id', 'isIdentifying', 'type', 'text', 'instruction'],
+    summary: ['id', 'isIdentifying', 'scaleLimits', 'type', 'text', 'instruction'],
     complete: null,
-    export: ['id', 'isIdentifying', 'type', 'text', 'instruction', 'choices', 'meta'],
+    export: ['id', 'isIdentifying', 'scaleLimits', 'type', 'text', 'instruction', 'choices', 'meta'],
 };
 
 const expect = chai.expect;
