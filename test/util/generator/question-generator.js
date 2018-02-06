@@ -177,7 +177,7 @@ module.exports = class QuestionGenerator {
         if (value === 1 || value === 2) {
             scaleLimits.max = 90.5 + value;
         }
-        question.scaleLimits = options.scaleLimits;
+        question.scaleLimits = scaleLimits;
         return question;
     }
 
