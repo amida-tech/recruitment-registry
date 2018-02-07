@@ -57,6 +57,7 @@ const file = require('./file.model');
 const smtpType = require('./smtp-type.model');
 const assessmentAnswer = require('./assessment-answer.model');
 const feedbackSurvey = require('./feedback-survey.model');
+const consentRole = require('./consent-role.model');
 
 const questionBelongsTo = function () {
     const result = {
@@ -106,6 +107,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Survey = survey(sequelize, Sequelize, schema);
     const ProfileSurvey = profileSurvey(sequelize, Sequelize, schema);
     const SurveyText = surveyText(sequelize, Sequelize, schema);
+    const ConsentRole = consentRole(sequelize, Sequelize, schema);
     const ConsentType = consentType(sequelize, Sequelize, schema);
     const ConsentTypeText = consentTypeText(sequelize, Sequelize, schema);
     const ConsentDocument = consentDocument(sequelize, Sequelize, schema);
@@ -179,6 +181,19 @@ const defineTables = function (sequelize, Sequelize, schema) {
     });
 
     SurveyQuestion.belongsTo(Question, questionBelongsTo());
+    SurveyQuestion.belongsTo(Survey, {
+        as: 'survey',
+        onUpdate: 'NO ACTION',
+        foreignKey: {
+            allowNull: false,
+            fieldName: 'surveyId',
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id',
+            },
+        },
+    });
 
     SurveySection.belongsTo(Section, {
         as: 'section',
@@ -294,6 +309,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         SmtpType,
         SurveyType,
         FeedbackSurvey,
+        ConsentRole,
         schema,
     };
 };

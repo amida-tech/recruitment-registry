@@ -119,7 +119,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/user"
                         }
@@ -146,7 +146,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -164,7 +164,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/user"
                         }
@@ -191,7 +191,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -215,7 +215,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -379,7 +379,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/survey"
                         }
@@ -453,7 +453,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -489,7 +489,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/survey"
                         }
@@ -999,7 +999,7 @@
                 }],
                 "responses": {
                     "200" : {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/profileSurvey"
                         }
@@ -1209,7 +1209,7 @@
                 }],
                 "responses": {
                     "204" : {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1221,7 +1221,7 @@
                 "operationId": "getProfileSurveyId",
                 "responses": {
                     "200" : {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "type": "integer"
                         }
@@ -1236,7 +1236,7 @@
                 "operationId": "deleteProfileSurveyId",
                 "responses": {
                     "204" : {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1419,6 +1419,12 @@
                     "description": "identifying flag",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "survey-published",
+                    "in": "query",
+                    "description": "in a published survey",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -1564,7 +1570,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1734,7 +1740,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1784,6 +1790,36 @@
                     "description": "Include survey information",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "history",
+                    "in": "query",
+                    "description": "Include historical documents as well",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "summary",
+                    "in": "query",
+                    "description": "Ignore content and update comments",
+                    "required": false,
+                    "type": "boolean",
+                    "default": true
+                }, {
+                    "name": "keep-type-id",
+                    "in": "query",
+                    "description": "Keep type id",
+                    "required": false,
+                    "type": "boolean",
+                    "default": true
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -1920,7 +1956,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1935,6 +1971,8 @@
                 "operationId": "createSignature",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "consent_document",
@@ -1988,6 +2026,8 @@
                 "operationId": "bulkCreateSignatures",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "consent_documents",
@@ -2015,6 +2055,8 @@
                 "summary": "Lists consent documents (section)",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2029,10 +2071,16 @@
                     "description": "Flag to include signed documents",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only include role specific consents",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/consentDocumentDashboard"
                         }
@@ -2056,6 +2104,8 @@
                 "operationId": "getUserConsentDocument",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2092,6 +2142,8 @@
                 "operationId": "getUserConsentDocumentByTypeId",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2246,6 +2298,16 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -2278,6 +2340,16 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -2305,6 +2377,8 @@
                 "operationId": "getUserConsentDocuments",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2313,6 +2387,11 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -2340,6 +2419,8 @@
                 "operationId": "getUserConsentDocumentsByName",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2348,6 +2429,11 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -2580,7 +2666,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2923,7 +3009,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/assessmentList"
                         }
@@ -2950,7 +3036,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/assessment"
                         }
@@ -2968,7 +3054,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3025,7 +3111,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/userAssessmentList"
                         }
@@ -3058,7 +3144,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3121,7 +3207,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/questionId"
                         }
@@ -3157,7 +3243,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/answerIds"
                         }
@@ -3296,7 +3382,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3441,7 +3527,7 @@
                 "summary": "Gets research site",
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/researchSite"
                         }
@@ -3468,7 +3554,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3483,7 +3569,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3516,7 +3602,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3585,7 +3671,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/registry"
                         }
@@ -3603,7 +3689,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3699,7 +3785,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/filter"
                         }
@@ -3728,7 +3814,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3745,7 +3831,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3823,7 +3909,7 @@
                 }],
                 "responses": {
                     "200": {
-                        "description": "Successul response",
+                        "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/cohort"
                         }
@@ -3873,7 +3959,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3978,7 +4064,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3994,7 +4080,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4021,7 +4107,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4089,8 +4175,37 @@
                 }],
                 "responses": {
                     "204": {
-                        "description": "Successul response"
+                        "description": "Successful response"
                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/demographics": {
+            "x-swagger-router-controller": "demographics.controller",
+            "get": {
+                "operationId": "listDemographics",
+                "summary": "List demographics",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/demographics"
+                        }
+                     },
                     "default": {
                         "$ref": "#/responses/genericError"
                     }
@@ -5869,8 +5984,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/question"
-            },
-            "minLength": 1
+            }
         },
         "questionTextUpdate": {
             "type": "object",
@@ -6306,6 +6420,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
+                },
                 "content": {
                     "type": "string",
                     "minLength": 1
@@ -6338,6 +6455,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 }
             },
             "additionalProperties": false
@@ -6361,6 +6481,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 }
             },
             "additionalProperties": false
@@ -6451,7 +6574,7 @@
         },
         "consentDocumentInfo": {
             "type": "object",
-            "required": ["id", "name", "title"],
+            "required": ["id"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -6477,8 +6600,18 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
+                },
                 "signature": {
                     "type": "boolean"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "updateComment": {
+                    "type": "string"
                 },
                 "language": {
                     "type": "string",
@@ -7624,6 +7757,25 @@
                     }
                 },
                 "additionalProperties": false
+            }
+        },
+        "consentRole": {
+            "type": "string",
+            "enum": ["participant", "clinician"]
+        },
+        "demographic": {
+            "type": "object",
+            "properties": {
+                "registrationDate": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": true
+        },
+        "demographics": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/demographic"
             }
         }
     }

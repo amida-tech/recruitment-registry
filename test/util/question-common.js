@@ -158,13 +158,14 @@ const BaseTests = class BaseTests {
                 if (typeof options === 'string') {
                     query = { scope: options };
                 } else {
-                    query = options;
+                    query = _.omit(options, 'indices');
                 }
             }
+            const indices = options && options.indices;
             return self.listQuestionsPx(query)
                 .then((questions) => {
                     const fields = getFieldsForList(query && query.scope);
-                    let expected = hxQuestion.listServers(fields);
+                    let expected = hxQuestion.listServers(fields, indices);
                     if (options && options.federated) {
                         const federatedMap = self.hxIdentifiers.federated;
                         expected = expected.reduce((r, question) => {
@@ -343,7 +344,11 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
     }
 
     listQuestionsPx(query) {
-        return this.rrSuperTest.get('/questions', true, 200, query).then(res => res.body);
+        const options = query && _.omit(query, ['surveyPublished']);
+        if (query && query.surveyPublished) {
+            options['survey-published'] = true;
+        }
+        return this.rrSuperTest.get('/questions', true, 200, options).then(res => res.body);
     }
 
     addIdentifierPx(questionId, allIdentifiers) {

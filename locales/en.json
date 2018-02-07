@@ -30,6 +30,7 @@
 	"smtpNotSpecified": "Smtp specifications are not specified.",
 	"smtpTextNotSpecified": "Email content and/or subject not specified for reset token.",
 	"surveyConsentInvalidTypeForConsent": "Consent does not exists or does not include the Consent Type as section.",
+	"surveyConsentNoRoleType": "Role assigned consent types cannot be assigned to surveys.",
 	"invalidOrExpiredPWToken": "Password reset token is invalid or has expired.",
 	"invalidEmail": "Email is invalid.",
 	"authenticationError": "Authentication error.",
@@ -86,5 +87,6 @@
 	"feedbackSurveyNoDeletedDefault": "Invalid id(s) for feedback survey and/or linked survey.",
 	"feedbackSurveyNoWrongType": "Wrong type(s) for feedback survey and/or linked survey.",
 	"questionScaleMinGTMax": "Scale question maximum cannot be greater than minimum.",
-	"answerOutOfScale": "Answer {{0}} is out of scale."
+	"answerOutOfScale": "Answer {{0}} is out of scale.",
+	"consentDocumentRoleOnlyWithoutRole": "Role only option cannot be specified without a specified role"
 }

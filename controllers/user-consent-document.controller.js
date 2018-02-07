@@ -5,11 +5,14 @@ const _ = require('lodash');
 const shared = require('./shared.js');
 
 exports.listUserConsentDocuments = function listUserConsentDocuments(req, res) {
+    const { id: userId, role } = req.user;
     const options = {
+        role,
         language: _.get(req, 'swagger.params.language.value'),
         includeSigned: _.get(req, 'swagger.params.include-signed.value'),
+        roleOnly: _.get(req, 'swagger.params.role-only.value'),
     };
-    req.models.userConsentDocument.listUserConsentDocuments(req.user.id, options)
+    req.models.userConsentDocument.listUserConsentDocuments(userId, options)
         .then(consentDocuments => res.status(200).json(consentDocuments))
         .catch(shared.handleError(res));
 };

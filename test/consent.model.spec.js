@@ -6,298 +6,220 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
 const History = require('./util/history');
-const ConsentCommon = require('./util/consent-common');
+const consentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
-const models = require('../models');
-const translator = require('./util/translator');
-const comparator = require('./util/comparator');
 
-const expect = chai.expect;
-const generator = new Generator();
+const consentTypeCommon = require('./util/consent-type-common');
+const consentDocumentCommon = require('./util/consent-document-common');
 
-const shared = new SharedSpec(generator);
-
-describe('consent unit', () => {
+describe('consent unit', function consentUnit() {
     const userCount = 4;
-    const typeCount = 12;
+    const typeCount = 22;
+
+    const consentSpecs = [
+        [0, 1, 2, 3, 4],         // consent 0
+        [8, 5, 10, 11],          // consent 1
+        [2, 3, 6, 7],            // consent 2
+        [8, 11, 9],              // consent 3
+        [12, 13, 14],            // consent 4, all participant role types
+        [17, 18, 19],            // consent 5, all clinician role types
+        [15, 16, 20, 21, 0, 5],  // consent 6, mixed roles no roles
+    ];
+
+    const generator = new Generator();
+
+    const shared = new SharedSpec(generator);
 
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
-    const consentCommon = new ConsentCommon(hxConsent, history, generator);
+    const typeTests = new consentTypeCommon.SpecTests({
+        generator, hxConsentType: history.hxType,
+    });
+    const docTests = new consentDocumentCommon.SpecTests({
+        generator, hxConsentDocument: history,
+    });
+    const tests = new consentCommon.SpecTests({
+        hxConsent, history, generator, consentSpecs,
+    });
 
     before(shared.setUpFn());
 
-    _.range(typeCount).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
+    _.range(typeCount - 10).forEach((index) => {
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn());
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
     });
 
-    _.range(userCount).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(history.hxUser));
+    // 12 - 17 participant types
+    _.range(typeCount - 10, typeCount - 5).forEach((index) => {
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn(({ role: 'participant' })));
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
     });
 
-    const consentSpecs = [
-        [0, 1, 2, 3, 4], // consent 0. Sections of types 0, 1, 2, 3, 4
-        [8, 5, 10, 11], // consent 1. Sections of types 8, 5, 11, 12
-        [2, 3, 6, 7], // consent 2. Sections of types 2, 3, 6, 7
-        [8, 11, 9], // consent 3. Sections of types 8, 11, 9
-    ];
+    // 17 - 22 clinician types
+    _.range(typeCount - 5, typeCount).forEach((index) => {
+        it(`create consent type ${index}`,
+            typeTests.createConsentTypeFn({ role: 'clinician' }));
+        it(`add translated (es) consent type ${index}`,
+            typeTests.translateConsentTypeFn(index, 'es'));
+    });
+
+    _.range(userCount).forEach((index) => {
+        const role = index < 2 ? 'participant' : 'clinician';
+        it(`create user ${index}`, shared.createUserFn(history.hxUser, { role }));
+    });
 
     consentSpecs.forEach((typeIndices, index) => {
-        it(`create consent ${index}`, shared.createConsentFn(hxConsent, history, typeIndices));
-        it(`get/verify consent ${index}`, shared.verifyConsentFn(hxConsent, index));
+        it(`create consent ${index}`,
+            shared.createConsentFn(hxConsent, history, typeIndices));
+        it(`get consent ${index}`,
+            shared.verifyConsentFn(hxConsent, index));
     });
 
     _.range(consentSpecs.length).forEach((index) => {
-        it(`get/verify consent by name ${index}`, () => {
-            const name = hxConsent.client(index).name;
-            return models.consent.getConsentByName(name)
-                .then((consent) => {
-                    const expected = hxConsent.server(index);
-                    expect(consent).to.deep.equal(expected);
-                });
-        });
+        it(`get consent by name ${index}`,
+            tests.getConsentByNameFn(index));
     });
 
-    const listConsentsFn = function () {
-        return models.consent.listConsents()
-            .then((consents) => {
-                const expected = hxConsent.listServers();
-                expect(consents).to.deep.equal(expected);
-            });
-    };
+    it('list consents', tests.listConsentsFn());
 
-    it('list/verify consents', listConsentsFn);
+    it('error: delete consent type when on a consent',
+        typeTests.errorDeleteConsentTypeFn(6, 'consentTypeDeleteOnConsent'));
 
-    it('delete consent 2', () => {
-        const id = hxConsent.id(2);
-        return models.consent.deleteConsent(id)
-            .then(() => {
-                hxConsent.remove(2);
-            });
-    });
+    it('delete consent 2', tests.deleteConsentFn(2));
 
-    it('list/verify consents', listConsentsFn);
-
-    const getUserConsentDocuments = function (userIndex, index, signatureIndices) {
-        const id = hxConsent.id(index);
-        const userId = history.userId(userIndex);
-        return models.consent.getUserConsentDocuments(userId, id)
-            .then((consent) => {
-                const typeIndices = consentSpecs[index];
-                const signatures = signatureIndices.reduce((r, i) => {
-                    if (Array.isArray(i)) {
-                        r[i[0]] = i[1];
-                    } else {
-                        r[i] = 'en';
-                    }
-                    return r;
-                }, {});
-                const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
-                comparator.consent(expected, consent);
-            });
-    };
-
-    const getTranslatedUserConsentDocuments = function (userIndex, index, signatureIndices, language) {
-        const id = hxConsent.id(index);
-        const userId = history.userId(userIndex);
-        return models.consent.getUserConsentDocuments(userId, id, { language })
-            .then((consent) => {
-                const typeIndices = consentSpecs[index];
-                const signatures = signatureIndices.reduce((r, i) => {
-                    if (Array.isArray(i)) {
-                        r[i[0]] = i[1];
-                    } else {
-                        r[i] = 'en';
-                    }
-                    return r;
-                }, {});
-                const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
-                comparator.consent(expected, consent);
-                translator.isConsentDocumentTranslated(consent, language);
-            });
-    };
-
-    const getUserConsentDocumentsByName = function (userIndex, index, signatureIndices) {
-        const name = hxConsent.server(index).name;
-        const userId = history.userId(userIndex);
-        return models.consent.getUserConsentDocumentsByName(userId, name)
-            .then((consent) => {
-                const typeIndices = consentSpecs[index];
-                const signatures = signatureIndices.reduce((r, i) => {
-                    if (Array.isArray(i)) {
-                        r[i[0]] = i[1];
-                    } else {
-                        r[i] = 'en';
-                    }
-                    return r;
-                }, {});
-                const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
-                comparator.consent(expected, consent);
-            });
-    };
-
-    const getTranslatedUserConsentDocumentsByName = function (userIndex, index, signatureIndices, language) {
-        const name = hxConsent.server(index).name;
-        const userId = history.userId(userIndex);
-        return models.consent.getUserConsentDocumentsByName(userId, name, { language })
-            .then((consent) => {
-                const typeIndices = consentSpecs[index];
-                const signatures = signatureIndices.reduce((r, i) => {
-                    if (Array.isArray(i)) {
-                        r[i[0]] = i[1];
-                    } else {
-                        r[i] = 'en';
-                    }
-                    return r;
-                }, {});
-                const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
-                translator.isConsentDocumentTranslated(consent, language);
-                comparator.consent(expected, consent);
-            });
-    };
+    it('list consents', tests.listConsentsFn());
 
     _.range(3).forEach((i) => {
-        it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
+        it(`create/verify consent document of type ${i}`,
+            docTests.createConsentDocumentFn(i));
+        it(`add translated (es) consent document ${i}`,
+            docTests.translateConsentDocumentFn(i, 'es'));
     });
 
-    it('error: get consent 0 documents', () => {
-        const id = hxConsent.id(0);
-        return models.consent.getConsentDocuments(id)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
-    });
+    it('error: get consent 0 documents',
+        tests.errorGetConsentFn(0, 'noSystemConsentDocuments'));
 
     _.range(3, typeCount).forEach((i) => {
-        it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
+        it(`create/verify consent document of type ${i}`,
+            docTests.createConsentDocumentFn(i));
+        it(`add translated (es) consent document ${i}`,
+            docTests.translateConsentDocumentFn(i, 'es'));
     });
 
-    [0, 1, 3].forEach((consentIndex) => {
-        it(`get/verify consent ${consentIndex} documents`, () => {
-            const id = hxConsent.id(consentIndex);
-            return models.consent.getConsentDocuments(id)
-                .then((consent) => {
-                    const typeIndices = consentSpecs[consentIndex];
-                    const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                    comparator.consent(expected, consent);
-                });
-        });
+    [0, 1, 3, 4, 5, 6].forEach((consentIndex) => {
+        it(`list consent ${consentIndex} documents`,
+            tests.listConsentDocumentsFn(consentIndex));
 
-        it(`get/verify translated (es) consent ${consentIndex} documents`, () => {
-            const id = hxConsent.id(consentIndex);
-            return models.consent.getConsentDocuments(id, { language: 'es' })
-                .then((consent) => {
-                    const typeIndices = consentSpecs[consentIndex];
-                    const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
-                    comparator.consent(expected, consent);
-                    translator.isConsentDocumentTranslated(consent, 'es');
-                });
-        });
+        it(`list translated (es) consent ${consentIndex} documents`,
+            tests.listTranslatedConsentDocumentsFn(consentIndex));
 
-        it(`get/verify consent ${consentIndex} documents by name`, () => {
-            const name = hxConsent.server(consentIndex).name;
-            return models.consent.getConsentDocumentsByName(name)
-                .then((consent) => {
-                    const typeIndices = consentSpecs[consentIndex];
-                    const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                    comparator.consent(expected, consent);
-                });
-        });
+        it(`list consent ${consentIndex} documents by name`,
+            tests.listConsentDocumentsByNameFn(consentIndex));
 
-        it(`get/verify translated (es) consent ${consentIndex} documents by name`, () => {
-            const name = hxConsent.server(consentIndex).name;
-            return models.consent.getConsentDocumentsByName(name, { language: 'es' })
-                .then((consent) => {
-                    const typeIndices = consentSpecs[consentIndex];
-                    const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
-                    comparator.consent(expected, consent);
-                    translator.isConsentDocumentTranslated(consent, 'es');
-                });
+        it(`list translated (es) consent ${consentIndex} documents by name`,
+            tests.listTranslatedConsentDocumentsByNameFn(consentIndex));
+
+        ['participant', 'clinician'].forEach((role) => {
+            it(`list consent ${consentIndex} documents (for role ${role})`,
+                tests.listConsentDocumentsFn(consentIndex, { role }));
+            it(`list consent ${consentIndex} documents (for role ${role} role only)`,
+                tests.listConsentDocumentsFn(consentIndex, { role, roleOnly: true }));
         });
 
         _.range(userCount).forEach((userIndex) => {
-            it(`get/verify user consent ${consentIndex} documents`, () => getUserConsentDocuments(userIndex, consentIndex, []));
-            it(`get/verify user consent ${consentIndex} documents by name`, () => getUserConsentDocumentsByName(userIndex, consentIndex, []));
-            it(`get/verify translated (es) user consent ${consentIndex} documents`, () => getTranslatedUserConsentDocuments(userIndex, consentIndex, [], 'es'));
-            it(`get/verify translated (es) user consent ${consentIndex} documents by name`, () => getTranslatedUserConsentDocumentsByName(userIndex, consentIndex, [], 'es'));
+            it(`get/verify user consent ${consentIndex} documents`,
+                tests.getUserConsentDocumentsFn(userIndex, consentIndex, []));
+            it(`get/verify user consent ${consentIndex} documents (role only)`,
+                tests.getUserConsentDocumentsFn(userIndex, consentIndex, [], { roleOnly: true }));
+            it(`get/verify user consent ${consentIndex} documents by name`,
+                tests.getUserConsentDocumentsByNameFn(userIndex, consentIndex, []));
+            it(`get/verify translated (es) user consent ${consentIndex} documents`,
+                tests.getTranslatedUserConsentDocumentsFn(userIndex, consentIndex, [], 'es'));
+            it(`get/verify translated (es) user consent ${consentIndex} documents by name`,
+                tests.getTranslatedUserConsentDocumentsByNameFn(userIndex, consentIndex, [], 'es'));
         });
     });
 
-    const signDocumentsFn = function (userIndex, index, newSignatureIndices, expectedSignatureIndices, language) {
-        return function signDocuments() {
-            const userId = history.userId(userIndex);
-            const documentIds = newSignatureIndices.map(i => history.id(i));
-            return models.consentSignature.bulkCreateSignatures(documentIds, { userId, language })
-                .then(() => getUserConsentDocuments(userIndex, index, expectedSignatureIndices));
-        };
-    };
+    it('user 0 signs consent 0 (1, 2, 3)', tests.signDocumentsFn(0, 0, [1, 2, 3], 'es'));
+    it('user 1 signs consent 1 (5, 10, 11)', tests.signDocumentsFn(1, 1, [5, 10, 11], 'en'));
+    it('user 2 signs consent 3 (8, 9, 10)', tests.signDocumentsFn(2, 3, [8, 9, 10]));
+    it('user 3 signs consent 0 (0, 2, 3, 4)', tests.signDocumentsFn(3, 0, [0, 2, 3, 4]));
 
-    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], [
+
+    it('get/verify user 0 consent 0 documents', tests.getUserConsentDocumentsFn(0, 0, [
         [1, 'es'],
         [2, 'es'],
         [3, 'es'],
-    ], 'es'));
-    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11], [5, 10, 11], 'en'));
-    it('user 2 signs consent 3 (8, 9, 10)', signDocumentsFn(2, 3, [8, 9, 10], [8, 9, 10]));
-    it('user 3 signs consent 0 (0, 2, 3, 4)', signDocumentsFn(3, 0, [0, 2, 3, 4], [0, 2, 3, 4]));
+    ]));
+    it('get/verify user 0 consent 0 documents by name', tests.getUserConsentDocumentsByNameFn(0, 0, [
+        [1, 'es'],
+        [2, 'es'],
+        [3, 'es'],
+    ]));
+    it('get/verify user 1 consent 1 documents', tests.getUserConsentDocumentsFn(1, 1, [5, 10, 11]));
+    it('get/verify user 2 consent 3 documents', tests.getUserConsentDocumentsFn(2, 3, [8, 9, 10]));
+    it('get/verify user 3 consent 0 documents', tests.getUserConsentDocumentsFn(3, 0, [0, 2, 3, 4]));
 
     [2, 10, 8, 4].forEach((typeIndex) => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
-        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
+        it(`create/verify consent document of type ${typeIndex}`, docTests.createConsentDocumentFn(typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, docTests.translateConsentDocumentFn(typeIndex, 'es'));
     });
 
-    it('get/verify user 0 consent 0 documents', () => getUserConsentDocuments(0, 0, [
+    it('get/verify user 0 consent 0 documents', tests.getUserConsentDocumentsFn(0, 0, [
             [1, 'es'],
             [3, 'es'],
     ]));
-    it('get/verify user 0 consent 0 documents by name', () => getUserConsentDocumentsByName(0, 0, [
+    it('get/verify user 0 consent 0 documents by name', tests.getUserConsentDocumentsByNameFn(0, 0, [
             [1, 'es'],
             [3, 'es'],
     ]));
-    it('get/verify user 1 consent 1 documents', () => getUserConsentDocuments(1, 1, [5, 11]));
-    it('get/verify user 2 consent 3 documents', () => getUserConsentDocuments(2, 3, [9]));
-    it('get/verify user 3 consent 0 documents', () => getUserConsentDocuments(3, 0, [0, 3]));
+    it('get/verify user 1 consent 1 documents',
+        tests.getUserConsentDocumentsFn(1, 1, [5, 11]));
+    it('get/verify user 2 consent 3 documents',
+        tests.getUserConsentDocumentsFn(2, 3, [9]));
+    it('get/verify user 3 consent 0 documents',
+        tests.getUserConsentDocumentsFn(3, 0, [0, 3]));
 
-    it('get/verify translated (es) user 1 consent 1 documents', () => getTranslatedUserConsentDocuments(1, 1, [5, 11], 'es'));
-    it('get/verify translated (es) user 2 consent 3 documents', () => getTranslatedUserConsentDocuments(2, 3, [9], 'es'));
-    it('get/verify translated (es) user 3 consent 0 documents', () => getTranslatedUserConsentDocuments(3, 0, [0, 3], 'es'));
+    it('get/verify translated (es) user 1 consent 1 documents',
+        tests.getTranslatedUserConsentDocumentsFn(1, 1, [5, 11], 'es'));
+    it('get/verify translated (es) user 2 consent 3 documents',
+        tests.getTranslatedUserConsentDocumentsFn(2, 3, [9], 'es'));
+    it('get/verify translated (es) user 3 consent 0 documents',
+        tests.getTranslatedUserConsentDocumentsFn(3, 0, [0, 3], 'es'));
 
-    it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2], [0, [1, 'es'], 2, [3, 'es']], 'en'));
-    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], [5, [8, 'es'],
-        [10, 'es'], 11,
-    ], 'es'));
-    it('user 2 signs consent 3 (8, 11)', signDocumentsFn(2, 3, [8, 11], [8, 9, 11]));
-    it('user 3 signs consent 0 (2, 4)', signDocumentsFn(3, 0, [2, 4], [0, 2, 3, 4]));
+    it('user 0 signs consent 0 (0, 2)', tests.signDocumentsFn(0, 0, [0, 2], 'en'));
+    it('user 1 signs consent 1 (8, 10)', tests.signDocumentsFn(1, 1, [8, 10], 'es'));
+    it('user 2 signs consent 3 (8, 11)', tests.signDocumentsFn(2, 3, [8, 11]));
+    it('user 3 signs consent 0 (2, 4)', tests.signDocumentsFn(3, 0, [2, 4]));
+
+    it('get/verify user 0 consent 0 documents',
+        tests.getUserConsentDocumentsFn(0, 0, [0, [1, 'es'], 2, [3, 'es']]));
+
+    it('get/verify user 1 consent 1 documents',
+        tests.getUserConsentDocumentsFn(1, 1, [5, [8, 'es'], [10, 'es'], 11]));
+
+    it('get/verify user 2 consent 3 documents', tests.getUserConsentDocumentsFn(2, 3, [8, 9, 11]));
+
+    it('get/verify user 3 consent 0 documents', tests.getUserConsentDocumentsFn(3, 0, [0, 2, 3, 4]));
 
     [2, 10].forEach((typeIndex) => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
-        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
+        it(`create/verify consent document of type ${typeIndex}`,
+            docTests.createConsentDocumentFn(typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`,
+            docTests.translateConsentDocumentFn(typeIndex, 'es'));
     });
 
-    it('update history for type 2', () => {
-        const typeId = history.typeId(2);
-        return models.consentDocument.getUpdateCommentHistory(typeId)
-            .then((result) => {
-                const servers = history.serversHistory().filter(h => (h.typeId === typeId));
-                const comments = _.map(servers, 'updateComment');
-                expect(result).to.deep.equal(comments);
-            });
-    });
+    it('update history for type 2', docTests.getUpdateCommentHistoryFn(2));
 
-    it('translated (es) update history for type 2', () => {
-        const typeId = history.typeId(2);
-        return models.consentDocument.getUpdateCommentHistory(typeId, 'es')
-            .then((result) => {
-                const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
-                const comments = _.map(servers, 'updateComment');
-                expect(result).to.deep.equal(comments);
-            });
-    });
+    it('translated (es) update history for type 2',
+        docTests.getTranslatedUpdateCommentHistoryFn(2, 'es'));
 });
