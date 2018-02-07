@@ -137,6 +137,9 @@ module.exports = class SurveyGenerator {
         const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
+        if (options.status) {
+            result.status = options.status;
+        }
 
         result.questions = questionIds.map((id) => {
             let required = Boolean(surveyIndex % 2);

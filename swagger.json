@@ -1419,6 +1419,12 @@
                     "description": "identifying flag",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "survey-published",
+                    "in": "query",
+                    "description": "in a published survey",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -5969,8 +5975,7 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/question"
-            },
-            "minLength": 1
+            }
         },
         "questionTextUpdate": {
             "type": "object",
