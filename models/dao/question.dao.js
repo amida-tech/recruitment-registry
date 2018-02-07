@@ -320,7 +320,6 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     findQuestions({ scope, ids, surveyId, surveyPublished, commonOnly, isIdentifying }) {
-        const attributes = ['id', 'type', 'isIdentifying'];
         const attributes = ['id', 'type', 'isIdentifying', 'parameter'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
@@ -658,6 +657,16 @@ module.exports = class QuestionDAO extends Translatable {
                     }
                     return null;
                 });
+                const { scaleLimits } = patch;
+                if (scaleLimits && question.scaleLimits && question.type === 'scale') {
+                    if (!_.isEqual(question.scaleLimits, scaleLimits)) {
+                        const combined = _.cloneDeep(question.scaleLimits);
+                        Object.assign(combined, scaleLimits);
+                        const parameter = parameterJsonToString({ scaleLimits: combined });
+
+                        Object.assign(record, { parameter });
+                    }
+                }
                 if (!_.isEmpty(record)) {
                     return this.db.Question.update(record, { where: { id }, transaction: tx });
                 }

@@ -38,10 +38,36 @@ describe('question patch unit', function questionPatchUnit() {
     _.range(6).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
     });
+    _.range(2).forEach((index) => {
+        it(`create question ${index} (scale)`, tests.createQuestionFn({
+            type: 'scale',
+            scaleLimits: { min: 22, max: 42 },
+        }));
+    });
 
-    _.range(10).forEach((index) => {
+    _.range(12).forEach((index) => {
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
+
+    [
+        { scaleLimits: { min: 0, max: 10 } },
+        { scaleLimits: { min: 9 } },
+        { scaleLimits: { max: 11 } },
+    ].forEach((patch, index) => {
+        it(`patch question 10 scaleLimits (${index})`, tests.patchQuestionFn(10, patch));
+        it(`verify question 10 scaleLimits (${index})`, tests.verifyQuestionFn(10));
+    });
+    [
+        { scaleLimits: { min: 1, max: 0 } },
+        { scaleLimits: { min: 999999 } },
+        { scaleLimits: { max: -999999 } },
+    ].forEach((patch, index) => {
+        const options = {
+            error: 'questionScaleMinGTMax',
+        };
+        it(`error: patch invalid scaleLimits (${index})`, tests.errorPatchQuestionFn(11, patch, options));
+    });
+
 
     [
         { text: 'patch_1', instruction: 'instruction_1' },
