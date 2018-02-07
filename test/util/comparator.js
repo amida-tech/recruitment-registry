@@ -381,6 +381,7 @@ const comparator = {
         } else {
             expect(client.length).to.equal(0);
         }
+        expect(server).to.deep.equal(expected);
         return expected;
     },
     consent(client, server) {

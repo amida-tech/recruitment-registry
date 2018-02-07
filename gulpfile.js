@@ -3,7 +3,7 @@
 const gulp = require('gulp');
 const plato = require('es6-plato');
 const lintRules = require('./.eslintrc.js');
-const filename = require('./readAnalysisFile.js');
+const filename = require('./readAnalysisFile.js'); // eslint-disable-line import/no-unresolved
 
 const src = filename.includes('.js') ? `./${filename}` : `./${filename}/**`;
 

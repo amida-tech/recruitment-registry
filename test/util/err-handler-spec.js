@@ -27,7 +27,9 @@ const expectedErrorHandlerFn = function (code, ...params) {
 const expectedSeqErrorHandlerFn = function (name, fields) {
     return function expectedSeqErrorHandler(err) {
         expect(err.name).to.equal(name);
-        expect(err.fields).to.deep.equal(fields);
+        if (fields) {
+            expect(err.fields).to.deep.equal(fields);
+        }
         return err;
     };
 };
