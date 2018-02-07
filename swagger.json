@@ -1790,6 +1790,36 @@
                     "description": "Include survey information",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "history",
+                    "in": "query",
+                    "description": "Include historical documents as well",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "summary",
+                    "in": "query",
+                    "description": "Ignore content and update comments",
+                    "required": false,
+                    "type": "boolean",
+                    "default": true
+                }, {
+                    "name": "keep-type-id",
+                    "in": "query",
+                    "description": "Keep type id",
+                    "required": false,
+                    "type": "boolean",
+                    "default": true
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -1941,6 +1971,8 @@
                 "operationId": "createSignature",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "consent_document",
@@ -1994,6 +2026,8 @@
                 "operationId": "bulkCreateSignatures",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "consent_documents",
@@ -2021,6 +2055,8 @@
                 "summary": "Lists consent documents (section)",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2033,6 +2069,12 @@
                     "name": "include-signed",
                     "in": "query",
                     "description": "Flag to include signed documents",
+                    "required": false,
+                    "type": "boolean"
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only include role specific consents",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -2062,6 +2104,8 @@
                 "operationId": "getUserConsentDocument",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2098,6 +2142,8 @@
                 "operationId": "getUserConsentDocumentByTypeId",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2252,6 +2298,16 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -2284,6 +2340,16 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
+                }, {
+                    "name": "role",
+                    "in": "query",
+                    "description": "Allowed role",
+                    "type": "string"
                 }],
                 "responses": {
                     "200": {
@@ -2311,6 +2377,8 @@
                 "operationId": "getUserConsentDocuments",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2319,6 +2387,11 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -2346,6 +2419,8 @@
                 "operationId": "getUserConsentDocumentsByName",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2354,6 +2429,11 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "role-only",
+                    "in": "query",
+                    "description": "Only role specific documents",
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -6315,6 +6395,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
+                },
                 "content": {
                     "type": "string",
                     "minLength": 1
@@ -6347,6 +6430,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 }
             },
             "additionalProperties": false
@@ -6370,6 +6456,9 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
                 }
             },
             "additionalProperties": false
@@ -6460,7 +6549,7 @@
         },
         "consentDocumentInfo": {
             "type": "object",
-            "required": ["id", "name", "title"],
+            "required": ["id"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -6486,8 +6575,18 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "role": {
+                    "$ref": "#/definitions/consentRole"
+                },
                 "signature": {
                     "type": "boolean"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "updateComment": {
+                    "type": "string"
                 },
                 "language": {
                     "type": "string",
@@ -7634,6 +7733,10 @@
                 },
                 "additionalProperties": false
             }
+        },
+        "consentRole": {
+            "type": "string",
+            "enum": ["participant", "clinician"]
         },
         "demographic": {
             "type": "object",

@@ -12,7 +12,6 @@ const config = require('../../config');
 const appgen = require('../../app-generator');
 const models = require('../../models');
 const Generator = require('./generator');
-const translator = require('./translator');
 const comparator = require('./comparator');
 const errHandler = require('./err-handler-spec');
 
@@ -140,7 +139,8 @@ class SharedIntegration {
             }
             return rrSuperTest.post('/users', user, 201)
                 .then((res) => {
-                    history.push(user, { id: res.body.id });
+                    const server = Object.assign({ id: res.body.id }, user);
+                    history.push(user, server);
                 });
         };
     }
@@ -153,22 +153,6 @@ class SharedIntegration {
                     expect(!!res.body.id).to.equal(true);
                 })
                 .end(done);
-        };
-    }
-
-    createConsentTypeFn(history) {
-        const rrSuperTest = this.rrSuperTest;
-        const generator = this.generator;
-        return function createConsentType(done) {
-            const cst = generator.newConsentType();
-            rrSuperTest.post('/consent-types', cst, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.pushType(cst, res.body);
-                    return done();
-                });
         };
     }
 
@@ -214,55 +198,6 @@ class SharedIntegration {
             const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
             typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
             rrSuperTest.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
-        };
-    }
-
-    createConsentDocumentFn(history, typeIndex) {
-        const rrSuperTest = this.rrSuperTest;
-        const generator = this.generator;
-        return function createConsentDocument(done) {
-            const typeId = history.typeId(typeIndex);
-            const cs = generator.newConsentDocument({ typeId });
-            rrSuperTest.post('/consent-documents', cs, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.push(typeIndex, cs, res.body);
-                    return done();
-                });
-        };
-    }
-
-    translateConsentTypeFn(index, language, hxType) {
-        const rrSuperTest = this.rrSuperTest;
-        return function translateConsentType(done) {
-            const server = hxType.server(index);
-            const translation = translator.translateConsentType(server, language);
-            rrSuperTest.patch(`/consent-types/text/${language}`, translation, 204)
-                .end((err) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxType.translate(index, language, translation);
-                    return done();
-                });
-        };
-    }
-
-    translateConsentDocumentFn(index, language, history) {
-        const rrSuperTest = this.rrSuperTest;
-        return function translateConsentDocument(done) {
-            const server = history.server(index);
-            const translation = translator.translateConsentDocument(server, language);
-            rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204)
-                .end((err) => {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.hxDocument.translateWithServer(server, language, translation);
-                    return done();
-                });
         };
     }
 

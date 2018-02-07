@@ -4,6 +4,7 @@ const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 
 const Translatable = require('./translatable');
 
@@ -13,6 +14,9 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     constructor(db, dependencies) {
         super(db, 'ConsentDocumentText', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
+
+        const cbDeleteType = options => this.beforeConsentTypeDestroy(options);
+        db.ConsentType.addHook('beforeBulkDestroy', 'consentDocument', cbDeleteType);
     }
 
     static finalizeDocumentFields(document, fields, options) {
@@ -64,10 +68,43 @@ module.exports = class ConsentDocumentDAO extends Translatable {
             });
     }
 
-    listConsentDocuments(options = {}) {
-        const ConsentDocument = this.db.ConsentDocument;
+    findTypeIds(options) {
+        const { role, roleOnly, typeIds } = options;
+        if (roleOnly && !role) {
+            return RRError.reject('consentDocumentRoleOnlyWithoutRole');
+        }
+        if (role) {
+            let where = { role };
+            if (!roleOnly) {
+                where = { [Op.or]: [where, { role: null }] };
+            }
+            if (typeIds && typeIds.length) {
+                where.id = typeIds;
+            }
+            const findOptions = { where };
+            if (options.transaction) {
+                findOptions.transaction = options.transaction;
+            }
+            return this.db.ConsentType.findAll({
+                raw: true, attributes: ['id'], where,
+            })
+                .then((ids) => {
+                    if (ids.length) {
+                        const result = ids.map(({ id }) => id);
+                        if (typeIds && typeIds.length) {
+                            const set = new Set(result);
+                            return typeIds.filter(r => set.has(r));
+                        }
+                        return result;
+                    }
+                    return 'empty';
+                });
+        }
+        return SPromise.resolve(typeIds);
+    }
 
-        const typeIds = options.typeIds;
+    listConsentDocuments(options = {}) {
+        let typeIds;
         const createdAtColumn = this.timestampColumn('consent_document', 'created');
         const query = {
             raw: true,
@@ -77,21 +114,34 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         if (options.transaction) {
             query.transaction = options.transaction;
         }
-        if (typeIds && typeIds.length) {
-            query.where = { typeId: { [Op.in]: typeIds } };
+        if (options.history) {
+            query.paranoid = !options.history;
         }
-        if (Object.prototype.hasOwnProperty.call(options, 'paranoid')) {
-            query.paranoid = options.paranoid;
-        }
-        return ConsentDocument.findAll(query)
+        return this.findTypeIds(options)
+            .then((ids) => {
+                typeIds = ids;
+                if (ids === 'empty') {
+                    return [];
+                }
+                if (typeIds && typeIds.length) {
+                    query.where = { typeId: { [Op.in]: typeIds } };
+                }
+                return this.db.ConsentDocument.findAll(query);
+            })
             .then((documents) => {
+                if (typeIds === 'empty') {
+                    return [];
+                }
                 if (options.summary) {
                     return documents;
                 }
                 return this.updateAllTexts(documents, options.language);
             })
             .then((documents) => {
-                if (options.noTypeExpand) {
+                if (typeIds === 'empty') {
+                    return [];
+                }
+                if (options.history) {
                     return documents;
                 }
                 const opt = {};
@@ -201,5 +251,11 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         })
             .then(documents => this.updateAllTexts(documents, language))
             .then(documents => _.map(documents, 'updateComment'));
+    }
+
+    beforeConsentTypeDestroy(options) {
+        const { where: whereType, transaction } = options;
+        const where = { typeId: whereType.id };
+        return this.db.ConsentDocument.destroy({ where, transaction });
     }
 };

@@ -12,20 +12,39 @@ module.exports = class SurveyConsentDAO extends Base {
         Object.assign(this, dependencies);
     }
 
+    validateTypeId(typeId) {
+        return this.db.ConsentType.findById(typeId, {
+            raw: true, attributes: ['id', 'role'],
+        })
+            .then((record) => {
+                if (!record) {
+                    return RRError.reject('surveyConsentInvalidTypeForConsent');
+                }
+                if (record.role) {
+                    return RRError.reject('surveyConsentNoRoleType');
+                }
+                return null;
+            });
+    }
+
     createSurveyConsent({ surveyId, consentId, consentTypeId, action }) {
         const SurveyConsent = this.db.SurveyConsent;
         const ConsentSection = this.db.ConsentSection;
-        if (!consentId) {
-            return SurveyConsent.create({ surveyId, consentTypeId, action })
-                .then(({ id }) => ({ id }));
-        }
-        return ConsentSection.count({ where: { consentId, typeId: consentTypeId } })
-            .then((count) => {
-                if (count) {
-                    return SurveyConsent.create({ surveyId, consentId, consentTypeId, action })
+        return this.validateTypeId(consentTypeId)
+            .then(() => {
+                if (!consentId) {
+                    return SurveyConsent.create({ surveyId, consentTypeId, action })
                         .then(({ id }) => ({ id }));
                 }
-                return RRError.reject('surveyConsentInvalidTypeForConsent');
+                return ConsentSection.count({ where: { consentId, typeId: consentTypeId } })
+                    .then((count) => {
+                        if (count) {
+                            const record = { surveyId, consentId, consentTypeId, action };
+                            return SurveyConsent.create(record)
+                                .then(({ id }) => ({ id }));
+                        }
+                        return RRError.reject('surveyConsentInvalidTypeForConsent');
+                    });
             });
     }
 

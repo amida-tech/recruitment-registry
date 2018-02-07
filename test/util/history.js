@@ -13,6 +13,7 @@ class History {
         this.translations = {};
         this.idIndex = {};
         this.patches = {};
+        this.removeHooks = [];
     }
 
     reset() {
@@ -51,6 +52,7 @@ class History {
                     this.currentIndex[i] = this.currentIndex[i] - 1;
                 }
             });
+            this.removeHooks.forEach(hook => hook(index));
         }
     }
 
@@ -179,6 +181,10 @@ class History {
             result = result.map(element => _.pick(element, fields || this.listFields));
         }
         return result;
+    }
+
+    pushRemoveHook(hook) {
+        this.removeHooks.push(hook);
     }
 }
 

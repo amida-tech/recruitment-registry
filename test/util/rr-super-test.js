@@ -122,7 +122,7 @@ module.exports = class RRSupertest {
             this.userAudit.push({ username: this.username, operation: 'get', endpoint });
         }
         let r = this.server.get(this.baseUrl + endpoint);
-        if (query) {
+        if (query && !_.isEmpty(query)) {
             r = r.query(query);
         }
         return r.expect(status);

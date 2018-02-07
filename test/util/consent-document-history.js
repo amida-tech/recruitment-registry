@@ -11,18 +11,11 @@ module.exports = class ConsentDocumentHistory {
         this.hxUser = new History();
         this.hxType = new History();
         this.hxDocument = new History();
-        this.activeConsentDocuments = [];
+        this.activeConsentDocuments = {};
         this.signatures = _.range(userCount).map(() => []);
-    }
-
-    pushType(client, server) {
-        this.hxType.pushWithId(client, server.id);
-        this.activeConsentDocuments.push(null);
-    }
-
-    deleteType(typeIndex) {
-        this.hxType.remove(typeIndex);
-        this.activeConsentDocuments[typeIndex] = {};
+        this.hxType.pushRemoveHook((index) => {
+            this.activeConsentDocuments[index] = {};
+        });
     }
 
     typeId(typeIndex) {
@@ -31,6 +24,10 @@ module.exports = class ConsentDocumentHistory {
 
     userId(userIndex) {
         return this.hxUser.id(userIndex);
+    }
+
+    user(userIndex) {
+        return this.hxUser.server(userIndex);
     }
 
     listTypes() {
@@ -62,31 +59,87 @@ module.exports = class ConsentDocumentHistory {
         return this.activeConsentDocuments[typeIndex];
     }
 
+    serverWithSignatureInfo(userIndex, typeIndex) {
+        const cd = _.cloneDeep(this.activeConsentDocuments[typeIndex]);
+        const signature = this.signatures[userIndex].find(r => r.id === cd.id);
+        if (signature) {
+            cd.signature = true;
+            cd.language = signature.language;
+        } else {
+            cd.signature = false;
+        }
+        return cd;
+    }
+
     translatedServer(typeIndex, language) {
         const server = this.activeConsentDocuments[typeIndex];
         const tr = this.hxDocument.serverTranslation(server.id, language);
         return tr || server;
     }
 
-    serversInList(typeIndices, keepTypeId) {
-        const result = typeIndices.map((index) => {
+    serversInList(typeIndices, options = {}) {
+        const result = typeIndices.reduce((r, index) => {
             const type = this.hxType.server(index);
             const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
                 title: type.title,
             };
-            if (keepTypeId) {
+            const role = type.role;
+            if (options.roleOnly && !role) {
+                return r;
+            }
+            if (options.role && role && (role !== options.role)) {
+                return r;
+            }
+            if (role) {
+                doc.role = role;
+            }
+            if (options.detailed) {
+                doc.type = type.type;
+                doc.content = this.activeConsentDocuments[index].content;
+                doc.updateComment = this.activeConsentDocuments[index].updateComment || '';
+            }
+            if (options.keepTypeId) {
                 doc.typeId = type.id;
             }
-            return doc;
-        });
+            r.push(doc);
+            return r;
+        }, []);
+        return _.sortBy(result, 'id');
+    }
+
+    listServers(options = {}) {
+        let typeIndices = options.typeIndices;
+        if (!typeIndices) {
+            const allTypeIndices = Object.keys(this.activeConsentDocuments);
+            typeIndices = allTypeIndices.filter((index) => {
+                const doc = this.activeConsentDocuments[index];
+                return !_.isEmpty(doc);
+            });
+        }
+        let result;
+        if (options.language) {
+            result = this.translatedServersInList(typeIndices, {
+                language: options.language,
+                keepTypeId: true,
+            });
+        } else {
+            result = this.serversInList(typeIndices, {
+                keepTypeId: true,
+                detailed: options.detailed,
+                role: options.role,
+                roleOnly: options.roleOnly,
+            });
+        }
         return _.sortBy(result, 'id');
     }
 
     getContents(ids) {
         const map = new Map();
-        this.activeConsentDocuments.forEach((d) => {
+        const n = this.hxType.length();
+        _.range(n).forEach((index) => {
+            const d = this.activeConsentDocuments[index];
             if (d) {
                 map.set(d.id, d.content);
             }
@@ -94,15 +147,32 @@ module.exports = class ConsentDocumentHistory {
         return ids.map(id => map.get(id));
     }
 
-    serversInListWithSigned(userIndex) {
+    serversInListWithSigned(userIndex, options) {
         const signatureMap = new Map(this.signatures[userIndex].map(signature => [signature.id, signature]));
-        const result = this.activeConsentDocuments.reduce((r, { id }, index) => {
+        const n = this.hxType.length();
+        const result = _.range(n).reduce((r, index) => {
+            const id = _.get(this.activeConsentDocuments[index], 'id');
             if (!id) {
                 return r;
             }
-            const { name, title } = this.hxType.server(index);
+            const { name, title, role } = this.hxType.server(index);
+            if (options.roleOnly && !role) {
+                return r;
+            }
+            if (options.role && role && (role !== options.role)) {
+                return r;
+            }
             const info = { id, name, title };
+            if (role) {
+                info.role = role;
+            }
             const signature = signatureMap.get(info.id);
+            if (!options.includeSigned) {
+                if (!signature) {
+                    r.push(info);
+                }
+                return r;
+            }
             if (signature) {
                 info.signature = true;
                 info.language = signature.language;
@@ -115,15 +185,31 @@ module.exports = class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
-    translatedServersInList(typeIndices, language) {
-        const result = typeIndices.map((index) => {
+    translatedServersInList(typeIndices, options) {
+        const { language, keepTypeId } = options;
+        const result = typeIndices.reduce((r, index) => {
             const type = this.hxType.translatedServer(index, language);
-            return {
+            const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
                 title: type.title,
             };
-        });
+            const role = type.role;
+            if (options.roleOnly && !role) {
+                return r;
+            }
+            if (options.role && role && (role !== options.role)) {
+                return r;
+            }
+            if (role) {
+                doc.role = role;
+            }
+            if (keepTypeId) {
+                doc.typeId = this.hxType.id(index);
+            }
+            r.push(doc);
+            return r;
+        }, []);
         return _.sortBy(result, 'id');
     }
 

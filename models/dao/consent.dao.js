@@ -2,12 +2,16 @@
 
 const _ = require('lodash');
 
+const RRError = require('../../lib/rr-error');
 const Base = require('./base');
 
 module.exports = class ConsentDAO extends Base {
     constructor(db, dependencies) {
         super(db);
         Object.assign(this, dependencies);
+
+        const cbDeleteType = options => this.beforeConsentTypeDestroy(options);
+        db.ConsentType.addHook('beforeBulkDestroy', 'consent', cbDeleteType);
     }
 
     fillSections(result) {
@@ -73,10 +77,20 @@ module.exports = class ConsentDAO extends Base {
         const ConsentSection = this.db.ConsentSection;
         const consentDocument = this.consentDocument;
         return function fnFillConsentDocuments(result) {
-            return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: ['line'] })
+            return ConsentSection.findAll({
+                where: { consentId: id },
+                raw: true,
+                attributes: ['typeId', 'line'],
+                order: ['line'],
+            })
                 .then((sections) => {
                     const typeIds = _.map(sections, 'typeId');
-                    const opt = { typeIds, typeOrder: true };
+                    const opt = {
+                        typeIds,
+                        typeOrder: true,
+                        role: options.role,
+                        roleOnly: options.roleOnly,
+                    };
                     if (options.language) {
                         opt.language = options.language;
                     }
@@ -90,8 +104,7 @@ module.exports = class ConsentDAO extends Base {
     }
 
     getConsentDocuments(id, options) {
-        const Consent = this.db.Consent;
-        return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
+        return this.db.Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
             .then(this.fillConsentDocuments(id, options));
     }
 
@@ -133,5 +146,17 @@ module.exports = class ConsentDAO extends Base {
     getUserConsentDocumentsByName(userId, name, options) {
         return this.getConsentDocumentsByName(name, options)
             .then(this.fillUserConsentDocuments(userId));
+    }
+
+    beforeConsentTypeDestroy(options) {
+        const { where: whereType, transaction } = options;
+        const where = { typeId: whereType.id };
+        return this.db.ConsentSection.count({ where, transaction })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('consentTypeDeleteOnConsent');
+                }
+                return null;
+            });
     }
 };

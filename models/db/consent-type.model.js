@@ -20,6 +20,16 @@ module.exports = function consentType(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        role: {
+            type: Sequelize.TEXT,
+            references: {
+                model: {
+                    schema,
+                    tableName: 'consent_role',
+                },
+                key: 'name',
+            },
+        },
     }, {
         freezeTableName: true,
         tableName,
