@@ -1,11 +1,9 @@
 'use strict';
 
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('question', 'parameter', {
+    up: (queryInterface, Sequelize) => queryInterface.addColumn('question', 'parameter', {
         type: Sequelize.TEXT,
         allowNull: true,
-        defaultValue: null
-    });
-  },
+        defaultValue: null,
+    }).then(() => queryInterface.sequelize.query('INSERT INTO question_type(name, created_at) VALUES (\'scale\', NOW())')),
 };
