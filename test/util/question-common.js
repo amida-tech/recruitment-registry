@@ -187,10 +187,7 @@ const BaseTests = class BaseTests {
         const self = this;
         return function patchQuestion() {
             const question = self.hxQuestion.server(index);
-            if (question.scaleLimits && patch.scaleLimits) {
-                _.merge(question.scaleLimits, patch.scaleLimits);
-            }
-            Object.assign(question, _.omit(patch, 'scaleLimits'));
+            Object.assign(question, patch);
             _.forOwn(patch, (value, key) => {
                 if (value === null) {
                     if (key === 'common') {
@@ -212,10 +209,7 @@ const BaseTests = class BaseTests {
         const self = this;
         return function patchQuestion() {
             const question = _.cloneDeep(self.hxQuestion.server(index));
-            if (question.scaleLimits && patch.scaleLimits) {
-                _.merge(question.scaleLimits, patch.scaleLimits);
-            }
-            Object.assign(question, _.omit(patch, 'scaleLimits'));
+            Object.assign(question, patch);
             let errFn;
             if (options.errorParam) {
                 errFn = errSpec.expectedErrorHandlerFn(options.error, options.errorParam);

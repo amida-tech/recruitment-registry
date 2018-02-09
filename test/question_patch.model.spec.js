@@ -58,9 +58,9 @@ describe('question patch unit', function questionPatchUnit() {
         it(`verify question 10 scaleLimits (${index})`, tests.verifyQuestionFn(10));
     });
     [
+        { scaleLimits: { min: 10, max: 0 } },
+        { scaleLimits: { min: 5, max: 0 } },
         { scaleLimits: { min: 1, max: 0 } },
-        { scaleLimits: { min: 999999 } },
-        { scaleLimits: { max: -999999 } },
     ].forEach((patch, index) => {
         const options = {
             error: 'questionScaleMinGTMax',

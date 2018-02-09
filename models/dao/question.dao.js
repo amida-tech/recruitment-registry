@@ -660,10 +660,7 @@ module.exports = class QuestionDAO extends Translatable {
                 const { scaleLimits } = patch;
                 if (scaleLimits && question.scaleLimits && question.type === 'scale') {
                     if (!_.isEqual(question.scaleLimits, scaleLimits)) {
-                        const combined = _.cloneDeep(question.scaleLimits);
-                        Object.assign(combined, scaleLimits);
-                        const parameter = parameterJsonToString({ scaleLimits: combined });
-
+                        const parameter = parameterJsonToString({ scaleLimits });
                         Object.assign(record, { parameter });
                     }
                 }
