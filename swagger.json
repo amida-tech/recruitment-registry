@@ -4638,6 +4638,9 @@
                         "$ref": "#/definitions/choicePatch"
                     },
                     "minItems": 1
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 }
             },
             "minProperties": 2,

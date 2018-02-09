@@ -170,11 +170,11 @@ module.exports = class QuestionGenerator {
             return question;
         }
         const scaleLimits = {};
-        const value = this.index % 3;
-        if (value === 0 || value === 1) {
+        const value = this.index % 5;
+        if (value <= 3) {
             scaleLimits.min = 10.5 + value;
         }
-        if (value === 1 || value === 2) {
+        if (value >= 2) {
             scaleLimits.max = 90.5 + value;
         }
         question.scaleLimits = scaleLimits;
