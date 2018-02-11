@@ -98,6 +98,17 @@ module.exports = class RRSupertest {
         return this.update('patch', endpoint, payload, status, header);
     }
 
+    put(endpoint, payload, status, query) {
+        if (status < 401 && this.username) {
+            this.userAudit.push({ username: this.username, operation: 'put', endpoint });
+        }
+        let r = this.server.put(this.baseUrl + endpoint);
+        if (query && !_.isEmpty(query)) {
+            r = r.query(query);
+        }
+        return r.send(payload).expect(status);
+    }
+
     authPost(endpoint, payload, status, header) {
         const { user } = payload;
         if (status < 401) {

@@ -55,4 +55,17 @@ module.exports = class ConsentTypeDAO extends Translatable {
             where: { id }, transaction,
         }));
     }
+
+    putConsentTypeTx(id, { name, title, type, role }, options = {}, transaction) {
+        const record = { name, type, role: role || null };
+        return this.db.ConsentType.update(record, { where: { id }, transaction })
+            .then(() => {
+                const textRecord = { id, title, language: options.language || 'en' };
+                return this.createTextTx(textRecord, transaction);
+            });
+    }
+
+    putConsentType(id, fields, options = {}) {
+        return this.transaction(tx => this.putConsentTypeTx(id, fields, options, tx));
+    }
 };

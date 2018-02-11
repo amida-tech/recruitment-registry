@@ -73,4 +73,20 @@ describe('consent unit', function consentTypeUnit() {
     it('list consent types', tests.listConsentTypesFn());
     it('list translated (es) consent types', tests.listTranslatedConsentTypesFn('es'));
     it('list translated (fr) consent types', tests.listTranslatedConsentTypesFn('fr'));
+
+    [1, 1, 1, 12, 12, 12].forEach((index, roleIndex) => {
+        const role = roles[roleIndex % 3];
+        const options = { role };
+        it(`put consent type ${index} (role: ${role})`, tests.putConsentTypeFn(index, options));
+        it(`get consent type ${index}`, tests.getConsentTypeFn(index));
+    });
+
+    [0, 0, 0, 13, 13, 13].forEach((index, roleIndex) => {
+        const role = roles[roleIndex % 3];
+        const options = { role, language: 'es' };
+        it(`put translated (es) consent type ${index} (role: ${role})`,
+            tests.putConsentTypeFn(index, options));
+        it(`get translated consent type ${index}`,
+            tests.getTranslatedConsentTypeFn(index, 'es'));
+    });
 });

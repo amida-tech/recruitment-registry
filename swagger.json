@@ -1699,6 +1699,37 @@
                     }
                 }
             },
+            "put": {
+                "summary": "Puts consent type",
+                "operationId": "putConsentType",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newConsentType",
+                    "in": "body",
+                    "description": "Replacement consent type.",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newConsentType"
+                    }
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "delete": {
                 "summary": "Deletes consent type",
                 "operationId": "deleteConsentType",
