@@ -28,11 +28,17 @@ const consentTypeColumnRole = function (queryInterface, Sequelize) {
     });
 };
 
+const consentTypeColumnUpdatedAt = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('consent_type', 'updated_at', {
+        type: Sequelize.DATE,
+    });
+};
+
 module.exports = {
     up(queryInterface, Sequelize) {
         return consentRole(queryInterface, Sequelize)
             .then(() => consentTypeColumnRole(queryInterface, Sequelize))
-            .then(() => queryInterface.sequelize.query('INSERT INTO consent_role(name, created_at) VALUES (\'participant\', NOW())'))
+            .then(() => consentTypeColumnUpdatedAt(queryInterface, Sequelize))
             .then(() => queryInterface.sequelize.query('INSERT INTO consent_role(name, created_at) VALUES (\'clinician\', NOW())'));
     },
 };
