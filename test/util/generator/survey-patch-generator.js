@@ -76,6 +76,13 @@ const specHandler = {
             }
         });
     },
+    patchScaleQuestions(patch, generator, spec) {
+        patch.questions.forEach(question => {
+            if (question.type === 'scale') {
+                question.scaleLimits = spec.patch.scaleLimits;
+            }
+        });
+    },
     patchQuestionChoice(patch, generator, spec) {
         const question = patch.questions[spec.questionIndex];
         const choice = question.choices[spec.questionChoiceIndex];
@@ -170,6 +177,15 @@ const patchComparators = {
         keys.forEach((key) => {
             if (spec.patch[key] === null) {
                 delete question[key];
+            }
+        });
+    },
+    patchScaleQuestions(spec, survey, surveyPatch, patchedSurvey) {
+        survey.questions.forEach((question, index) => {
+            if (question.type === 'scale') {
+                const patchedQuestion = patchedSurvey.questions[index];
+                expect(question.scaleLimits).not.deep.equal(patchedQuestion.scaleLimits);
+                question.scaleLimits = spec.patch.scaleLimits;
             }
         });
     },

@@ -107,4 +107,15 @@ module.exports = [{
             instruction: null,
         },
     }],
+}, { // ^9, v 10
+    surveyIndex: 2,
+    mods: [{
+        purpose: 'patchScaleQuestions',
+        patch: {
+          scaleLimits: {
+              min: 0,
+              max: 10
+          }
+        }
+    }],
 }];
