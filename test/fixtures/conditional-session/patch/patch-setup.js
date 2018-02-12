@@ -113,19 +113,19 @@ module.exports = [{
         questionIndex: 4,
         purpose: 'patchQuestion',
         patch: {
-          scaleLimits: {
-              min: 0,
-              max: 10
-          }
-        }
+            scaleLimits: {
+                min: 0,
+                max: 10,
+            },
+        },
     }, {
         questionIndex: 5,
         purpose: 'patchQuestion',
         patch: {
-          scaleLimits: {
-              min: -9,
-              max: 0
-          }
-        }
+            scaleLimits: {
+                min: -9,
+                max: 0,
+            },
+        },
     }],
 }];

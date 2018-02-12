@@ -90,8 +90,8 @@ module.exports = [{
     type: 'scale',
     scaleLimits: {
         min: 4,
-        max: 5
-    }
+        max: 5,
+    },
 }, {
     surveyIndex: 6,
     purpose: 'type',
@@ -99,8 +99,8 @@ module.exports = [{
     type: 'scale',
     scaleLimits: {
         min: 0,
-        max: 1
-    }
+        max: 1,
+    },
 }, { // Survey 7
     purpose: 'completeSurvey',
     surveyIndex: 7,
