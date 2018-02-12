@@ -108,13 +108,23 @@ module.exports = [{
         },
     }],
 }, { // ^9, v 10
-    surveyIndex: 2,
+    surveyIndex: 6,
     mods: [{
-        purpose: 'patchScaleQuestions',
+        questionIndex: 4,
+        purpose: 'patchQuestion',
         patch: {
           scaleLimits: {
               min: 0,
               max: 10
+          }
+        }
+    }, {
+        questionIndex: 5,
+        purpose: 'patchQuestion',
+        patch: {
+          scaleLimits: {
+              min: -9,
+              max: 0
           }
         }
     }],
