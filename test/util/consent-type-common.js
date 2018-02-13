@@ -26,6 +26,37 @@ const BaseTests = class BaseTests {
         };
     }
 
+    putConsentTypeFn(index, options = {}) {
+        const self = this;
+        return function createConsentType() {
+            const consentType = self.generator.newConsentType();
+            let translation;
+            if (options.language) {
+                translation = translator.translateConsentType(consentType, options.language);
+                consentType.title = translation.title;
+            }
+            if (options.role) {
+                consentType.role = options.role;
+            }
+            const id = self.hxConsentType.id(index);
+            return self.putConsentTypePx(id, consentType, options)
+                .then(() => {
+                    const server = self.hxConsentType.server(index);
+                    const title = server.title;
+                    Object.assign(server, consentType);
+                    if (!options.role) {
+                        delete server.role;
+                    }
+                    if (options.language && options.language !== 'en') {
+                        server.title = title;
+                    }
+                    if (options.language) {
+                        self.hxConsentType.translate(index, options.language, translation);
+                    }
+                });
+        };
+    }
+
     getConsentTypeFn(index) {
         const self = this;
         return function getConsentType() {
@@ -105,6 +136,10 @@ const SpecTests = class ConsentTypeSpecTests extends BaseTests {
         return this.models.consentType.createConsentType(consent);
     }
 
+    putConsentTypePx(id, consentType, options) {
+        return this.models.consentType.putConsentType(id, consentType, options);
+    }
+
     getConsentTypePx(id, options = {}) {
         return this.models.consentType.getConsentType(id, options);
     }
@@ -141,6 +176,14 @@ const IntegrationTests = class ConsentTypeIntegrationTests extends BaseTests {
     createConsentTypePx(consentType) {
         return this.rrSuperTest.post('/consent-types', consentType, 201)
             .then(res => res.body);
+    }
+
+    putConsentTypePx(id, consentType, options) {
+        const query = {};
+        if (options.language) {
+            query.language = options.language;
+        }
+        return this.rrSuperTest.put(`/consent-types/${id}`, consentType, 204, query);
     }
 
     getConsentTypePx(id, options = {}) {

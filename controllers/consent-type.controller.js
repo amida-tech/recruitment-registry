@@ -40,3 +40,13 @@ exports.deleteConsentType = function deleteConsentType(req, res) {
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
+
+exports.putConsentType = function putConsentType(req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    req.models.consentType.putConsentType(id, req.body, options)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
