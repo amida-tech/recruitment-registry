@@ -4441,7 +4441,7 @@
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
                 "date", "year", "month", "day", "choice-ref", "open-choice",
-                "pounds", "zip", "feet-inches", "blood-pressure", "file"
+                "pounds", "zip", "feet-inches", "blood-pressure", "file", "scale"
             ]
         },
         "questionMeta": {
@@ -4586,6 +4586,9 @@
                         "$ref": "#/definitions/newChoice"
                     },
                     "minItems": 1
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 }
             },
             "minProperties": 2,
@@ -4666,6 +4669,9 @@
                         "$ref": "#/definitions/choicePatch"
                     },
                     "minItems": 1
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 }
             },
             "minProperties": 2,
@@ -4753,7 +4759,7 @@
                     "$ref": "#/definitions/enableWhen"
                 }
             },
-            "maxProperties": 4,
+            "maxProperties": 6,
             "additionalProperties": false
         },
         "sectionTextUpdate": {
@@ -4907,6 +4913,9 @@
                         "$ref": "#/definitions/choice"
                     },
                     "minItems": 1
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
@@ -5996,6 +6005,9 @@
                         "$ref": "#/definitions/choice"
                     }
                 },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
+                },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 }
@@ -6162,8 +6174,24 @@
                     "items": {
                         "$ref": "#/definitions/newChoice"
                     }
+                },
+                "scaleLimits": {
+                    "$ref": "#/definitions/scaleLimits"
                 }
             },
+            "additionalProperties": false
+        },
+        "scaleLimits": {
+            "type": "object",
+            "properties": {
+                "min": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
+                }
+            },
+            "minProperties": 1,
             "additionalProperties": false
         },
         "linkedAnswer": {

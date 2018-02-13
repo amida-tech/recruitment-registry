@@ -55,6 +55,9 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
             return { dateRange };
         },
         float(value) { return { floatValue: parseFloat(value) }; },
+        scale(value) {
+            return { numberValue: parseFloat(value) };
+        },
         bloodPressure(value) {
             const pieces = value.split('-');
             return {

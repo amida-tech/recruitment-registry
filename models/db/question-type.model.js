@@ -26,7 +26,7 @@ module.exports = function questionType(sequelize, Sequelize, schema) {
                         'text', 'choice', 'choices', 'bool', 'integer',
                         'float', 'zip', 'date', 'pounds', 'year', 'month',
                         'day', 'feet-inches', 'blood-pressure', 'choice-ref',
-                        'open-choice', 'file',
+                        'open-choice', 'file', 'scale',
                     ];
                     return this.bulkCreate(names.map(name => ({ name })));
                 }

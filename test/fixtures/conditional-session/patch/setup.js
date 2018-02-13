@@ -83,6 +83,24 @@ module.exports = [{
     questionIndex: 3,
     type: 'choice',
     choiceCount: 5,
+}, {
+    surveyIndex: 6,
+    purpose: 'type',
+    questionIndex: 4,
+    type: 'scale',
+    scaleLimits: {
+        min: 4,
+        max: 5,
+    },
+}, {
+    surveyIndex: 6,
+    purpose: 'type',
+    questionIndex: 5,
+    type: 'scale',
+    scaleLimits: {
+        min: 0,
+        max: 1,
+    },
 }, { // Survey 7
     purpose: 'completeSurvey',
     surveyIndex: 7,

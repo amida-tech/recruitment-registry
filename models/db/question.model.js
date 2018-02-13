@@ -64,6 +64,9 @@ module.exports = function question(sequelize, Sequelize, schema) {
             allowNull: false,
             defaultValue: false,
         },
+        parameter: {
+            type: Sequelize.TEXT,
+        },
     }, {
         freezeTableName: true,
         tableName,

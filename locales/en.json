@@ -86,5 +86,7 @@
 	"answerInvalidSurveyInAsses": "Survey does not belong to assessment.",
 	"feedbackSurveyNoDeletedDefault": "Invalid id(s) for feedback survey and/or linked survey.",
 	"feedbackSurveyNoWrongType": "Wrong type(s) for feedback survey and/or linked survey.",
+	"questionScaleMinGTMax": "Scale question maximum cannot be greater than minimum.",
+	"answerOutOfScale": "Answer {{0}} is out of scale.",
 	"consentDocumentRoleOnlyWithoutRole": "Role only option cannot be specified without a specified role"
 }

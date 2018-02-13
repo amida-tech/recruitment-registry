@@ -78,5 +78,23 @@ module.exports = [
             id: 112,
             required: true,
         }],
+    }, {
+        name: 'name_15',
+        questions: [{
+            required: true,
+            text: 'Example1',
+            type: 'scale',
+            scaleLimits: { min: 4, max: 9 },
+        }, {
+            required: true,
+            text: 'Example2',
+            type: 'scale',
+            scaleLimits: { min: 4 },
+        }, {
+            required: true,
+            text: 'Example3',
+            type: 'scale',
+            scaleLimits: { max: 9 },
+        }],
     },
 ];

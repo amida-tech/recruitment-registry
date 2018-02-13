@@ -23,4 +23,8 @@ module.exports = [{
     text: 'Example',
     type: 'choices',
     choices: [{ text: 'x' }, { text: 'y', type: 'bool' }, { text: 'z', type: 'text' }],
+}, {
+    text: 'Example',
+    type: 'scale',
+    scaleLimits: { min: 4, max: 9 },
 }];
