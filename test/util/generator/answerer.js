@@ -94,6 +94,21 @@ module.exports = class Answerer {
         return { boolValue: (answerIndex % 2) === 0 };
     }
 
+    scale(question) {
+        const answerIndex = this.answerIndex;
+        const { min, max } = question.scaleLimits;
+        if (min !== undefined && max !== undefined) {
+            return { numberValue: min + (answerIndex % (max - min)) };
+        }
+        if (min !== undefined) {
+            return { numberValue: min + answerIndex };
+        }
+        if (max !== undefined) {
+            return { numberValue: max - answerIndex };
+        }
+        return { numberValue: 0 };
+    }
+
     selectChoice(choices) {
         const answerIndex = this.answerIndex;
         return choices[answerIndex % choices.length];

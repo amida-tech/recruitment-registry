@@ -14,10 +14,13 @@ const specialQuestionGenerator = {
         return surveyGenerator.questionGenerator.newMultiQuestion(options);
     },
     type(surveyGenerator, questionInfo) {
-        const { type, choiceCount, isIdentifying } = questionInfo;
+        const { type, choiceCount, isIdentifying, scaleLimits } = questionInfo;
         const options = { type };
         if (choiceCount) {
             options.choiceCount = choiceCount;
+        }
+        if (scaleLimits) {
+            options.scaleLimits = scaleLimits;
         }
         const question = surveyGenerator.questionGenerator.newQuestion(options);
         if (isIdentifying) {

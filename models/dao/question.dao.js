@@ -16,7 +16,32 @@ const cleanDBQuestion = function (question) {
     if (question.common === null) {
         result.common = false;
     }
+    if (result.type === 'scale' && result.parameter) {
+        const limits = question.parameter.split(':');
+        const scaleLimits = {};
+        if (limits[0]) {
+            scaleLimits.min = parseFloat(limits[0]);
+        }
+        if (limits[1]) {
+            scaleLimits.max = parseFloat(limits[1]);
+        }
+        Object.assign(result, { scaleLimits });
+        delete result.parameter;
+    }
     return result;
+};
+
+const parameterJsonToString = function (question) {
+    const scaleLimits = question.scaleLimits;
+    if (scaleLimits) {
+        const min = scaleLimits.min === undefined ? '' : scaleLimits.min;
+        const max = scaleLimits.max === undefined ? '' : scaleLimits.max;
+        if (min !== '' && max !== '' && min > max) {
+            throw new RRError('questionScaleMinGTMax');
+        }
+        return `${min}:${max}`;
+    }
+    return '';
 };
 
 const exportMetaQuestionProperties = function (meta, metaOptions, withChoice, fromQuestion) {
@@ -86,9 +111,13 @@ module.exports = class QuestionDAO extends Translatable {
         const Question = this.db.Question;
         return this.updateChoiceSetReference(question.choiceSetReference, transaction)
             .then((choiceSetId) => {
-                const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'text', 'instruction']);
+                const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'text', 'instruction', 'scaleLimits']);
                 if (choiceSetId) {
                     baseFields.choiceSetId = choiceSetId;
+                }
+                const parameter = parameterJsonToString(question);
+                if (parameter) {
+                    baseFields.parameter = parameter;
                 }
                 return Question.create(baseFields, { transaction, raw: true })
                     .then((result) => {
@@ -182,7 +211,7 @@ module.exports = class QuestionDAO extends Translatable {
     getQuestion(qid, options = {}) {
         const Question = this.db.Question;
         const language = options.language;
-        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common', 'isIdentifying'];
+        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common', 'isIdentifying', 'parameter'];
         return Question.findById(qid, { raw: true, attributes })
             .then((question) => {
                 if (!question) {
@@ -291,7 +320,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     findQuestions({ scope, ids, surveyId, surveyPublished, commonOnly, isIdentifying }) {
-        const attributes = ['id', 'type', 'isIdentifying'];
+        const attributes = ['id', 'type', 'isIdentifying', 'parameter'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
@@ -452,8 +481,10 @@ module.exports = class QuestionDAO extends Translatable {
 
     exportQuestions(options = {}) {
         return this.listQuestions({ scope: 'export' })
-            .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {  // eslint-disable-line no-param-reassign, max-len
+            .then(questions => questions.reduce((r, { id, type, text, scaleLimits, instruction, meta, choices }) => {  // eslint-disable-line no-param-reassign, max-len
                 const questionLine = { id, type, text, instruction };
+                const parameter = parameterJsonToString({ scaleLimits });
+                Object.assign(questionLine, { parameter });
                 if (meta && options.meta) {
                     Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, choices, true)); // eslint-disable-line max-len
                 }
@@ -503,6 +534,9 @@ module.exports = class QuestionDAO extends Translatable {
                         question = { text: record.text, type: record.type, key: record.key };
                         if (record.instruction) {
                             question.instruction = record.instruction;
+                        }
+                        if (record.parameter) {
+                            question.parameter = record.parameter;
                         }
                         if (options.meta) {
                             const meta = importMetaQuestionProperties(record, options.meta, 'question'); // eslint-disable-line max-len
@@ -623,6 +657,13 @@ module.exports = class QuestionDAO extends Translatable {
                     }
                     return null;
                 });
+                const { scaleLimits } = patch;
+                if (scaleLimits && question.scaleLimits && question.type === 'scale') {
+                    if (!_.isEqual(question.scaleLimits, scaleLimits)) {
+                        const parameter = parameterJsonToString({ scaleLimits });
+                        Object.assign(record, { parameter });
+                    }
+                }
                 if (!_.isEmpty(record)) {
                     return this.db.Question.update(record, { where: { id }, transaction: tx });
                 }
