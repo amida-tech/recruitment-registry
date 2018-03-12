@@ -3,10 +3,34 @@
 /* eslint no-param-reassign: 0, max-len: 0 */
 
 const _ = require('lodash');
+const moment = require('moment');
+
 const models = require('../../../models');
 
 const SurveyGenerator = require('./survey-generator');
 const Answerer = require('./answerer');
+
+const numDaysToDate = function (numDays) {
+    let m = moment();
+    if (numDays > 0) {
+        m = m.add(numDays, 'days');
+    } else {
+        m = m.subtract(-numDays, 'days');
+    }
+    return m.format('YYYY-MM-DD');
+};
+
+const getDateRangeEnableWhen = function (dateRangeSpec) {
+    const dateRange = {};
+    const { minNumberDays, maxNumberDays } = dateRangeSpec;
+    if (minNumberDays) {
+        dateRange.min = numDaysToDate(minNumberDays);
+    }
+    if (maxNumberDays) {
+        dateRange.max = numDaysToDate(maxNumberDays);
+    }
+    return dateRange;
+};
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -139,12 +163,17 @@ const specialAnswerer = {
 const surveyManipulator = {
     surveyEnableWhen(survey, conditionalInfo, generator) {
         const { hxSurvey, answerer } = generator;
-        const { answerSurveyIndex, answerQuestionIndex, logic } = conditionalInfo;
+        const { answerSurveyIndex, answerQuestionIndex, logic, dateRange } = conditionalInfo;
         const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
         const question = questions[answerQuestionIndex];
         let rule;
         if (logic === 'equals' || logic === 'not-equals') {
             rule = answerer.answerQuestion(question);
+        } else if (logic === 'in') {
+            rule = {
+                questionId: question.id,
+                answer: { dateRange: getDateRangeEnableWhen(dateRange) },
+            };
         } else {
             rule = { questionId: question.id };
         }
@@ -242,10 +271,13 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     addAnswer(rule, questionInfo, question) {
-        const logic = questionInfo.logic;
+        const { logic, dateRange } = questionInfo;
         if (logic === 'equals' || logic === 'not-equals') {
             const options = _.pick(questionInfo, 'choiceIndex');
             rule.answer = this.answerer.answerRawQuestion(question, options);
+        }
+        if (logic === 'in') {
+            rule.answer = { dateRange: getDateRangeEnableWhen(dateRange) };
         }
     }
 

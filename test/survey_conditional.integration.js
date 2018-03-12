@@ -29,7 +29,7 @@ describe('conditional survey integration', function surveyConditionalIntegration
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
-    const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+    const counts = _.range(19).map(() => 8);
 
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();

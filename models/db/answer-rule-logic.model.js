@@ -29,6 +29,7 @@ module.exports = function answerRuleLogic(sequelize, Sequelize, schema) {
                         'exists',
                         'not-equals',
                         'not-exists',
+                        'in',
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
