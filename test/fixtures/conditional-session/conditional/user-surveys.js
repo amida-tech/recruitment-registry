@@ -104,4 +104,88 @@ module.exports = [{
         ruleSurveyIndex: 14,
         ruleIndex: 1,
     }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 4, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14],
+    surveyIndex: 15,
+    noAnswers: [2, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 0,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 20,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 18],
+    surveyIndex: 15,
+    noAnswers: [2, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 0,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: -40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 0,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 25,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -25,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }],
 }];

@@ -29,6 +29,29 @@ const comparators = {
 
         return !_.isEqual(answers, ruleAnswers);
     },
+    in(answers, ruleAnswers) {
+        if (!(answers && answers.length)) {
+            return false;
+        }
+        if (answers.length !== 1 || ruleAnswers.length !== 1) {
+            return false; // not yet implemented
+        }
+        const ruleValue = _.get(ruleAnswers, '0.value');
+        const value = _.get(answers, '0.value');
+        if (value && ruleValue) {
+            const [min, max] = ruleValue.split(':');
+            if (min && max) {
+                return value >= min && value <= max;
+            }
+            if (min) {
+                return value >= min;
+            }
+            if (max) {
+                return value <= max;
+            }
+        }
+        return false;
+    },
 };
 
 const compareAnswersToRuleAnswers = function (logic, answers, ruleAnswers) {
