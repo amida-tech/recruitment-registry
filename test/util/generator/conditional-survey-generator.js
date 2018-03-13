@@ -158,6 +158,10 @@ const specialAnswerer = {
     selectchoice(generator, questions, question, answerInfo) {
         return generator.answerer.answerChoiceQuestion(question, answerInfo.selectionChoice);
     },
+    datenumdays(generator, questions, question, answerInfo) {
+        const dateValue = numDaysToDate(answerInfo.numDays);
+        return { questionId: question.id, answer: { dateValue } };
+    },
 };
 
 const surveyManipulator = {

@@ -19,6 +19,7 @@ class SharedSpec {
     constructor(generator, inputModels) {
         this.models = inputModels || models;
         this.generator = generator || new Generator();
+        this.throwingHandler = errHandler.throwingHandler;
     }
 
     setUpFn(force = true) {
@@ -116,10 +117,6 @@ class SharedSpec {
             typeIndices.forEach(typeIndex => history.sign(typeIndex, userIndex));
             return m.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
         };
-    }
-
-    throwingHandler() { // eslint-disable-line class-methods-use-this
-        return errHandler.throwingHandler;
     }
 
     expectedErrorHandler(code, ...params) { // eslint-disable-line class-methods-use-this
