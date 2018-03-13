@@ -10,6 +10,7 @@ const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const dbUtil = require('../../lib/db-util');
 const importUtil = require('../../import/import-util');
+const zipUtil = require('../../lib/zip-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -366,6 +367,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRuleAnswerValue(ruleId, ruleAnswer, transaction) {
+        console.log('>>>>> createRuleAnswerValue');
         const AnswerRuleValue = this.db.AnswerRuleValue;
         if (!(ruleId && ruleAnswer)) {
             return null;
@@ -408,6 +410,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRulesForEnableWhen(baseObject, enableWhen, transaction) {
+        console.log('>>>>> createRulesForEnableWhen');
         return this.db.AnswerRule.destroy({ where: baseObject, transaction })
             .then(() => {
                 const promises = enableWhen.map((p, line) => {
@@ -458,19 +461,38 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyEnableWhen(surveyId, enableWhen, transaction) {
+        console.log('>>>>> createSurveyEnableWhen');
         const baseObject = { surveyId, sectionId: null, questionId: null };
         return this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
     }
 
     createRulesForSurvey(id, survey, transaction) {
+        console.log('>>>>> createRulesForSurvey');
         const enableWhen = survey.enableWhen;
         if (enableWhen) {
+
+            // FIXME: Confirm if this is where we should add the zipwise logic
+            // NOTE: For now, this seems the most logical place...
+
+            enableWhen.forEach((condition) => {
+                if(condition.answer.meta.zipRangeValue) {
+                    console.log('>>>>> answer.textValue: ', condition.answer.textValue);
+                    console.log('>>>>> answer.meta.zipRangeValue: ', condition.answer.meta.zipRangeValue);
+                    zipUtil.findVicinity(condition.answer.textValue, condition.answer.meta.zipRangeValue)
+                    .then((results) => {
+                        console.log('>>>>> createRulesForSurvey > zipUtil.findVicinity > results: ', results);
+                    });
+                    // TODO: what .then()...?
+                }
+            });
+
             return this.createSurveyEnableWhen(id, enableWhen, transaction).then(() => ({ id }));
         }
         return ({ id });
     }
 
     createEnableWhensTx({ surveyId, questions, sections }, transaction) {
+        console.log('>>>>> createEnableWhensTx');
         return this.createRulesForQuestions(surveyId, questions, transaction)
             .then(() => {
                 if (sections) {
@@ -597,6 +619,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyTx(survey, userId, transaction) {
+        console.log('>>>>> createSurveyTx');
         const fields = _.omit(survey, [
             'name', 'description', 'sections', 'questions', 'identifier', 'enableWhen',
         ]);
@@ -606,6 +629,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurvey(survey, userId = 1) {
+        console.log('>>>>> createSurvey');
         return this.transaction(transaction => this.createSurveyTx(survey, userId, transaction));
     }
 
@@ -894,6 +918,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     replaceSurveyTx(originalId, replacement, userId, transaction) {
+        console.log('>>>>> replaceSurveyTx');
         return this.db.Survey.findById(originalId)
             .then((survey) => {
                 if (!survey) {
@@ -929,10 +954,12 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     replaceSurvey(id, replacement, userId = 1) {
+        console.log('>>>>> replaceSurvey');
         return this.transaction(tx => this.replaceSurveyTx(id, replacement, userId, tx));
     }
 
     createOrReplaceSurvey(surveyInfo, userId = 1) {
+        console.log('>>>>> createOrReplaceSurvey');
         const newSurvey = _.omit(surveyInfo, 'parentId');
         const parentId = surveyInfo.parentId;
         if (parentId) {

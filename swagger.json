@@ -5947,10 +5947,13 @@
                 "code": {
                     "type": "string",
                     "minLength": 1
+                },
+                "meta": {
+                    "type": "object"
                 }
             },
             "minProperties": 1,
-            "maxProperties": 1,
+            "maxProperties": 2,
             "additionalProperties": false
         },
         "question": {

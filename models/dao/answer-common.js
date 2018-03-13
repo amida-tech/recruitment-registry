@@ -297,7 +297,7 @@ const prepareAnswerForDB = function (answer) {
     }
     const keys = Object.keys(answer);
     const numKeys = keys.length;
-    if (numKeys > 1) {
+    if (numKeys > 1 && !answer.meta) {
         keys.sort();
         throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
     }
