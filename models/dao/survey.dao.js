@@ -465,6 +465,7 @@ module.exports = class SurveyDAO extends Translatable {
                 zipUtil.findVicinity(condition.answer.textValue, condition.answer.meta.zipRangeValue)
                 .then((results) => {
                     // TODO (next JIRA ticket for table structure/ingestion -- RR-949):
+                    // --- Store the value in this.db.Answer.meta...?
                 });
             }
         });

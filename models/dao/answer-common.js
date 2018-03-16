@@ -5,6 +5,7 @@ const _ = require('lodash');
 const RRError = require('../../lib/rr-error');
 
 const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
+    console.log('>>>>> getValueAnswerGenerator');
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value) { return { textValue: value }; },
@@ -85,6 +86,7 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
 }());
 
 const getChoiceAnswerGenerator = (function getChoiceAnswerGeneratorGen() {
+    console.log('>>>>> getChoiceAnswerGenerator');
     const fns = {
         choice(entries) { return { choice: entries[0].questionChoiceId }; },
         openChoice(entries) {
@@ -113,6 +115,7 @@ const getChoiceAnswerGenerator = (function getChoiceAnswerGeneratorGen() {
 }());
 
 const generateAnswer = function (type, entries, multiple) {
+    console.log('>>>>> generateAnswer');
     if (multiple) {
         const fn = getValueAnswerGenerator(type);
         const result = entries.map((entry) => {
@@ -152,6 +155,7 @@ const generateAnswer = function (type, entries, multiple) {
 };
 
 const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
+    console.log('>>>>> getFilterAnswerGenerator');
     const fns = {
         choice(answer) { return { choice: answer.questionChoiceId }; },
         openChoice(answer) {
@@ -193,6 +197,7 @@ const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
 }());
 
 const generateFilterAnswers = function (type, answers) {
+    console.log('>>>>> generateFilterAnswers');
     const fn = getFilterAnswerGenerator(type);
     return answers.map(answer => fn(answer));
 };
@@ -214,6 +219,7 @@ const answerValueToDBFormat = {
         return { value };
     },
     textValue(value) {
+        console.log('>>>>> answerValueToDBFormat > textValue: ', value);
         return { value };
     },
     numberValue(value) {
@@ -257,6 +263,7 @@ const answerValueToDBFormat = {
 
 const choiceValueToDBFormat = {
     choices(value) {
+        console.log('>>>>> choiceValueToDBFormat > choices > value: ', value);
         return value.map((r) => {
             const questionChoiceId = r.id;
             delete r.id;
@@ -283,6 +290,7 @@ const choiceValueToDBFormat = {
 };
 
 const prepareAnswerForDB = function (answer) {
+    console.log('>>>>> prepareAnswerForDB');
     if (Array.isArray(answer)) {
         return answer.map((singleAnswer) => {
             const multipleIndex = singleAnswer.multipleIndex;
@@ -321,6 +329,7 @@ const prepareAnswerForDB = function (answer) {
 };
 
 const prepareFilterAnswerForDB = function (answer) {
+    console.log('>>>>> prepareFilterAnswerForDB');
     const dbAnswer = {};
     if (answer.choice) {
         dbAnswer.questionChoiceId = answer.choice;
@@ -336,10 +345,12 @@ const prepareFilterAnswerForDB = function (answer) {
 };
 
 const prepareFilterAnswersForDB = function (answers) {
+    console.log('>>>>> prepareFilterAnswersForDB');
     return answers.map(answer => prepareFilterAnswerForDB(answer));
 };
 
 const getFilterAnswers = function (dao, Table, { where, order }) {
+    console.log('>>>>> getFilterAnswers');
     const attributes = ['questionId', 'questionChoiceId', 'value', 'exclude'];
     const include = [
         { model: dao.db.Question, as: 'question', attributes: ['type'] },

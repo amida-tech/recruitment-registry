@@ -30,6 +30,10 @@ module.exports = function answerRuleValue(sequelize, Sequelize, schema) {
         value: {
             type: Sequelize.TEXT,
         },
+        // NOTE: new...
+        meta: {
+            type: Sequelize.JSON,
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
