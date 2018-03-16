@@ -47,7 +47,7 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
             return true;
         }
     }
-    if (logic === 'in') {
+    if (logic === 'in-date-range') {
         if (!questionAnswer) {
             return false;
         }

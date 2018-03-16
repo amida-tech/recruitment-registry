@@ -29,7 +29,7 @@ const comparators = {
 
         return !_.isEqual(answers, ruleAnswers);
     },
-    in(answers, ruleAnswers) {
+    'in-date-range': function (answers, ruleAnswers) {
         if (!(answers && answers.length)) {
             return false;
         }

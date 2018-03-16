@@ -1,6 +1,6 @@
 'use strict';
 
-const sql = 'INSERT INTO answer_rule_logic (name, created_at) VALUES (\'in\', NOW())';
+const sql = 'INSERT INTO answer_rule_logic (name, created_at) VALUES (\'in-date-range\', NOW())';
 
 module.exports = {
     up(queryInterface) {

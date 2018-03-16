@@ -143,7 +143,7 @@ module.exports = [{
     surveyIndex: 15,
     purpose: 'enableWhen',
     questionIndex: 4,
-    logic: 'in',
+    logic: 'in-date-range',
     relativeIndex: 4,
     dateRange: {
         minNumberDays: -30,
@@ -152,7 +152,7 @@ module.exports = [{
     surveyIndex: 15,
     purpose: 'enableWhen',
     questionIndex: 5,
-    logic: 'in',
+    logic: 'in-date-range',
     relativeIndex: 4,
     dateRange: {
         maxNumberDays: 30,
@@ -161,7 +161,7 @@ module.exports = [{
     surveyIndex: 15,
     purpose: 'enableWhen',
     questionIndex: 6,
-    logic: 'in',
+    logic: 'in-date-range',
     relativeIndex: 4,
     dateRange: {
         minNumberDays: -20,
@@ -171,7 +171,7 @@ module.exports = [{
     surveyIndex: 16,
     surveyLevel: true,
     purpose: 'surveyEnableWhen',
-    logic: 'in',
+    logic: 'in-date-range',
     answerSurveyIndex: 15,
     answerQuestionIndex: 0,
     dateRange: {
@@ -182,7 +182,7 @@ module.exports = [{
     surveyIndex: 17,
     surveyLevel: true,
     purpose: 'surveyEnableWhen',
-    logic: 'in',
+    logic: 'in-date-range',
     answerSurveyIndex: 15,
     answerQuestionIndex: 1,
     dateRange: {
@@ -192,7 +192,7 @@ module.exports = [{
     surveyIndex: 18,
     surveyLevel: true,
     purpose: 'surveyEnableWhen',
-    logic: 'in',
+    logic: 'in-date-range',
     answerSurveyIndex: 15,
     answerQuestionIndex: 1,
     dateRange: {

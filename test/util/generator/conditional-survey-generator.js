@@ -173,7 +173,7 @@ const surveyManipulator = {
         let rule;
         if (logic === 'equals' || logic === 'not-equals') {
             rule = answerer.answerQuestion(question);
-        } else if (logic === 'in') {
+        } else if (logic === 'in-date-range') {
             rule = {
                 questionId: question.id,
                 answer: { dateRange: getDateRangeEnableWhen(dateRange) },
@@ -280,7 +280,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const options = _.pick(questionInfo, 'choiceIndex');
             rule.answer = this.answerer.answerRawQuestion(question, options);
         }
-        if (logic === 'in') {
+        if (logic === 'in-date-range') {
             rule.answer = { dateRange: getDateRangeEnableWhen(dateRange) };
         }
     }
