@@ -2,10 +2,10 @@
 
 module.exports = [{
     skipAnswering: true,
-    missingSurveys: [8, 10, 11, 12, 14],
+    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18],
 }, {
     status: 'in-progress',
-    missingSurveys: [8, 10, 11, 12, 14],
+    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18],
     surveyIndex: 2,
     noAnswers: [0, 6],
     specialAnswers: [{
@@ -20,11 +20,11 @@ module.exports = [{
 }, {
     status: 'completed',
     noAnswers: [2, 3, 4],
-    missingSurveys: [8, 10, 11, 12, 14],
+    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18],
     surveyIndex: 2,
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 12, 14],
+    missingSurveys: [10, 11, 12, 14, 16, 17, 18],
     surveyIndex: 2,
     noAnswers: [2, 3],
     specialAnswers: [{
@@ -34,7 +34,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [12, 14],
+    missingSurveys: [12, 14, 16, 17, 18],
     surveyIndex: 9,
     noAnswers: [4],
     specialAnswers: [{
@@ -44,7 +44,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14],
+    missingSurveys: [10, 11, 14, 16, 17, 18],
     surveyIndex: 9,
     specialAnswers: [{
         type: 'samerulesurvey',
@@ -53,12 +53,12 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14],
+    missingSurveys: [10, 11, 14, 16, 17, 18],
     surveyIndex: 13,
     noAnswers: [0, 1, 5, 6],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11],
+    missingSurveys: [10, 11, 16, 17, 18],
     surveyIndex: 13,
     noAnswers: [0, 2, 3, 4, 5, 7],
     specialAnswers: [{
@@ -74,7 +74,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11],
+    missingSurveys: [10, 11, 16, 17, 18],
     surveyIndex: 13,
     noAnswers: [0, 2, 3, 4, 5, 7],
     specialAnswers: [{
@@ -87,21 +87,105 @@ module.exports = [{
         questionIndex: 6,
         ruleSurveyIndex: 14,
         ruleIndex: 1,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17, 18],
+    surveyIndex: 13,
+    noAnswers: [0, 2, 3, 4, 5, 7],
+    specialAnswers: [{
+        type: 'differentrulesurveymulti',
+        questionIndex: 1,
+        ruleSurveyIndex: 14,
+        ruleIndex: 0,
+    }, {
+        type: 'samerulesurveymulti',
+        questionIndex: 6,
+        ruleSurveyIndex: 14,
+        ruleIndex: 1,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 4, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
     }],
 }, {
     status: 'completed',
     missingSurveys: [10, 11, 14],
-    surveyIndex: 13,
-    noAnswers: [0, 2, 3, 4, 5, 7],
+    surveyIndex: 15,
+    noAnswers: [2, 6],
     specialAnswers: [{
-        type: 'differentrulesurveymulti',
-        questionIndex: 1,
-        ruleSurveyIndex: 14,
-        ruleIndex: 0,
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 0,
     }, {
-        type: 'samerulesurveymulti',
-        questionIndex: 6,
-        ruleSurveyIndex: 14,
-        ruleIndex: 1,
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 20,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 18],
+    surveyIndex: 15,
+    noAnswers: [2, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 0,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: -40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 0,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: 25,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 15,
+    noAnswers: [2, 5, 6],
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -25,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
     }],
 }];

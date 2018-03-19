@@ -5543,6 +5543,9 @@
                     "type": "string",
                     "format": "date"
                 },
+                "dateRange": {
+                    "$ref": "#/definitions/dateRange"
+                },
                 "numberValue": {
                     "type": "number"
                 },
@@ -5632,19 +5635,7 @@
                     "format": "date"
                 },
                 "dateRange": {
-                    "type": "object",
-                    "properties": {
-                        "min": {
-                            "type": "string",
-                            "format": "date"
-                        },
-                        "max": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    "minProperties": 1,
-                    "additionalProperties": false
+                    "$ref": "#/definitions/dateRange"
                 },
                 "yearRange": {
                     "type": "object",
@@ -5771,19 +5762,7 @@
                     "additionalProperties": false
                 },
                 "dateRange": {
-                    "type": "object",
-                    "properties": {
-                        "min": {
-                            "type": "string",
-                            "format": "date"
-                        },
-                        "max": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    "minProperties": 1,
-                    "additionalProperties": false
+                    "$ref": "#/definitions/dateRange"
                 },
                 "yearRange": {
                     "type": "object",
@@ -5900,6 +5879,9 @@
                 "dateValue": {
                     "type": "string",
                     "format": "date"
+                },
+                "dateRange": {
+                    "$ref": "#/definitions/dateRange"
                 },
                 "numberValue": {
                     "type": "number"
@@ -7814,6 +7796,21 @@
             "items": {
                 "$ref": "#/definitions/demographic"
             }
+        },
+        "dateRange": {
+            "type": "object",
+            "properties": {
+                "min": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "max": {
+                    "type": "string",
+                    "format": "date"
+                }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
         }
     }
 }
