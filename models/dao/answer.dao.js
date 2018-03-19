@@ -47,6 +47,15 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
             return true;
         }
     }
+    if (logic === 'in-zip-range') {
+        const zipValue = answer.textValue;
+        const zipRangeValue = answer.meta.zipRangeValue; // TODO: Move to answer-level?
+
+        // -- or accept new zipRange answerType...?
+
+        // TODO: Logic for determining if user has zipcode within range of rangeValue...
+        return true;
+    }
     return false;
 };
 
