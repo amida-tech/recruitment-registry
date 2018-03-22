@@ -8,7 +8,19 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     console.log('>>>>> getValueAnswerGenerator');
     const fns = {
         text(value) { return { textValue: value }; },
-        zip(value) { return { textValue: value }; },
+        zip(value, meta) {
+            if(meta) {
+                return {
+                    textValue: value,
+                    meta: meta,
+                };
+            }
+            else {
+                return {
+                    textValue: value,
+                };
+            }
+        },
         year(value) {
             if (value.indexOf(':') < 0) {
                 return { yearValue: value };
@@ -115,9 +127,12 @@ const getChoiceAnswerGenerator = (function getChoiceAnswerGeneratorGen() {
 }());
 
 const generateAnswer = function (type, entries, multiple) {
-    console.log('>>>>> generateAnswer');
+    console.log('>>>>> generateAnswer > type: ', type);
+    console.log('>>>>> generateAnswer > entries: ', entries);
+    console.log('>>>>> generateAnswer > multiple: ', multiple);
     if (multiple) {
         const fn = getValueAnswerGenerator(type);
+        console.log('>>>>> answer-common > getValueAnswerGenerator(type)[a]: ', getValueAnswerGenerator(type));
         const result = entries.map((entry) => {
             const answer = { multipleIndex: entry.multipleIndex };
             if (type === 'choice' || type === 'open-choice') {
@@ -131,7 +146,7 @@ const generateAnswer = function (type, entries, multiple) {
                     },
                 });
             } else {
-                Object.assign(answer, fn(entry.value));
+                Object.assign(answer, entry.meta ? fn(entry.value, entry.meta) : fn(entry.value));
             }
             return answer;
         });
@@ -151,7 +166,9 @@ const generateAnswer = function (type, entries, multiple) {
         return fnChoices(entries);
     }
     const fn = getValueAnswerGenerator(type);
-    return fn(entries[0].value);
+    console.log('>>>>> answer-common > getValueAnswerGenerator(type)[b]: ', getValueAnswerGenerator(type));
+    console.log('>>>>> answer-common > fn(entries[0].value): ', fn(entries[0].value));
+    return entries[0].meta ? fn(entries[0].value, entries[0].meta) : fn(entries[0].value);
 };
 
 const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {

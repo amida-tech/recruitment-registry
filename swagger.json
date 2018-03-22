@@ -5611,6 +5611,9 @@
                 "dayValue": {
                     "type": "string",
                     "pattern": "^\\d{2}$"
+                },
+                "meta": {
+                    "type": "object"
                 }
             },
             "minProperties": 1,

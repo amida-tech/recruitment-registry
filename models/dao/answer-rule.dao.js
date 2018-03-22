@@ -12,6 +12,7 @@ const Op = Sequelize.Op;
 
 module.exports = class AnswerRuleDAO extends Base {
     getSurveyAnswerRules({ surveyId }) {
+        console.log('>>>>> getSurveyAnswerRules');
         const AnswerRule = this.db.AnswerRule;
         const AnswerRuleValue = this.db.AnswerRuleValue;
         const Question = this.db.Question;
@@ -46,11 +47,12 @@ module.exports = class AnswerRuleDAO extends Base {
                 });
                 return AnswerRuleValue.findAll({
                     where: { ruleId: { [Op.in]: ruleIds } },
-                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    attributes: ['ruleId', 'questionChoiceId', 'value', 'meta'],
                     raw: true,
                     include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }],
                 })
                     .then((answerRuleValues) => {
+                        console.log('>>>>> getSurveyAnswerRules > answerRuleValues: ', answerRuleValues);
                         if (answerRuleValues.length) {
                             answerRuleValues.forEach((r) => {
                                 if (r['questionChoice.type']) {
@@ -63,6 +65,7 @@ module.exports = class AnswerRuleDAO extends Base {
                                 const entries = groupedResult[ruleId];
                                 if (entries) {
                                     const rule = rules[ruleId];
+                                    // FIXME: ...?
                                     rule.answer = answerCommon.generateAnswer(rule.type, entries);
                                 }
                             });
@@ -70,6 +73,10 @@ module.exports = class AnswerRuleDAO extends Base {
                         ruleIds.forEach((ruleId) => {
                             delete rules[ruleId].type;
                         });
+
+                        // TODO: resultWithMeta?
+                        console.log('>>>>> getSurveyAnswerRules > result.answer: ', result.answer);
+
                         return result;
                     });
             });
@@ -152,6 +159,9 @@ module.exports = class AnswerRuleDAO extends Base {
     }
 
     importAnswerRules(stream, { sectionIdMap, questionIdMap, surveyIdMap }) {
+
+        console.log('>>>>> importAnswerRules');
+
         const AnswerRule = this.db.AnswerRule;
         const AnswerRuleValue = this.db.AnswerRuleValue;
         const converter = new ImportCSVConverter({ checkType: false });

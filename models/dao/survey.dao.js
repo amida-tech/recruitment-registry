@@ -373,15 +373,29 @@ module.exports = class SurveyDAO extends Translatable {
         }
         if (ruleAnswer) {
             const dbAnswers = answerCommon.prepareAnswerForDB(ruleAnswer);
-            const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
-                const record = {
-                    ruleId,
-                    questionChoiceId: questionChoiceId || null,
-                    value: (value !== undefined ? value : null),
-                };
-                return AnswerRuleValue.create(record, { transaction });
-            });
-            return SPromise.all(pxs);
+            if(ruleAnswer.meta) {
+                const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
+                    const record = {
+                        ruleId,
+                        questionChoiceId: questionChoiceId || null,
+                        value: (value !== undefined ? value : null),
+                        meta: ruleAnswer.meta,
+                    };
+                    return AnswerRuleValue.create(record, { transaction });
+                });
+                return SPromise.all(pxs);
+            }
+            else {
+                const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
+                    const record = {
+                        ruleId,
+                        questionChoiceId: questionChoiceId || null,
+                        value: (value !== undefined ? value : null),
+                    };
+                    return AnswerRuleValue.create(record, { transaction });
+                });
+                return SPromise.all(pxs);
+            }
         }
         return null;
     }
@@ -409,6 +423,8 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRulesForEnableWhen(baseObject, enableWhen, transaction) {
+        console.log('>>>>> createRulesForEnableWhen > baseObject: ', baseObject);
+        console.log('>>>>> createRulesForEnableWhen > enableWhen: ', enableWhen);
         return this.db.AnswerRule.destroy({ where: baseObject, transaction })
             .then(() => {
                 const promises = enableWhen.map((p, line) => {
@@ -418,6 +434,7 @@ module.exports = class SurveyDAO extends Translatable {
                         answerQuestionId: p.questionId,
                         answerSurveyId: p.surveyId || null,
                     }, baseObject);
+                    console.log('>>>>> createRulesForEnableWhen > answerRule: ', answerRule);
                     return this.db.AnswerRule.create(answerRule, { transaction })
                         .then(({ id }) => this.createRuleAnswerValue(id, p.answer, transaction));
                 });
@@ -460,16 +477,27 @@ module.exports = class SurveyDAO extends Translatable {
 
     createSurveyEnableWhen(surveyId, enableWhen, transaction) {
         const baseObject = { surveyId, sectionId: null, questionId: null };
-        enableWhen.forEach((condition) => {
+
+        const promises = enableWhen.map((condition) => {
+            console.log('>>>>> createSurveyEnableWhen > condition: ', condition);
             if(condition.answer && condition.answer.meta && condition.answer.meta.zipRangeValue) {
-                zipUtil.findVicinity(condition.answer.textValue, condition.answer.meta.zipRangeValue)
-                .then((results) => {
-                    // TODO (next JIRA ticket for table structure/ingestion -- RR-949):
-                    // --- Store the value in this.db.Answer.meta...?
-                });
+                return zipUtil.findVicinity(condition.answer.textValue, condition.answer.meta.zipRangeValue)
+                    .then((zipList) => {
+                        const updatedCondition = condition;
+                        updatedCondition.answer.meta.inRangeValue = zipList;
+                        console.log('>>>>> createSurveyEnableWhen > updatedCondition: ', updatedCondition);
+                        return updatedCondition;
+                    });
+            }
+            else {
+                return condition;
             }
         });
-        return this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
+        return SPromise.all(promises).then((results) => {
+            console.log('>>>>> createSurveyEnableWhen > promises: ', promises);
+            console.log('>>>>> createSurveyEnableWhen > results: ', results);
+            return this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
+        });
     }
 
     createRulesForSurvey(id, survey, transaction) {
