@@ -99,11 +99,6 @@ describe('question unit', function questionUnit() {
 
     it('list all questions (default - summary)', tests.listQuestionsFn());
 
-    it('error: get multiple with non-existent id', function errorMultipleNonExistant() {
-        return models.question.listQuestions({ ids: [1, 99999] })
-            .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
-    });
-
     const translateQuestionFn = function (index, language) {
         return function translateQuestion() {
             const server = hxQuestion.server(index);

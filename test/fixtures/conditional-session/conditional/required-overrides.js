@@ -27,4 +27,8 @@ module.exports = {
     '13-1': false,
     '13-5': false,
     '13-6': false,
+    '15-0': true,
+    '15-1': true,
+    '15-4': true,
+    '15-6': true,
 };

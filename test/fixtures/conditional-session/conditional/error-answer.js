@@ -227,4 +227,122 @@ module.exports = [{
     caseIndex: 1,
     noAnswers: [4],
     error: 'answerRequiredMissing',
+}, {
+    surveyIndex: 15,
+    caseIndex: 0,
+    noAnswers: [1, 2, 5, 6],
+    error: 'answerRequiredMissing',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -10,
+    }],
+}, {
+    surveyIndex: 15,
+    caseIndex: 1,
+    noAnswers: [5, 6],
+    error: 'answerRequiredMissing',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 2,
+        numDays: 0,
+    }],
+}, {
+    surveyIndex: 15,
+    caseIndex: 2,
+    noAnswers: [5, 6],
+    error: 'answerRequiredMissing',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 2,
+        numDays: 0,
+    }],
+}, {
+    surveyIndex: 15,
+    caseIndex: 3,
+    noAnswers: [],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 2,
+        numDays: 0,
+    }],
+}, {
+    surveyIndex: 15,
+    caseIndex: 4,
+    noAnswers: [5],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 2,
+        numDays: 30,
+    }],
+}, {
+    surveyIndex: 15,
+    caseIndex: 5,
+    noAnswers: [5],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -10,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 2,
+        numDays: -30,
+    }],
+}, {
+    surveyIndex: 15,
+    caseIndex: 6,
+    noAnswers: [5, 6],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'datenumdays',
+        questionIndex: 0,
+        numDays: -40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 1,
+        numDays: 40,
+    }, {
+        type: 'datenumdays',
+        questionIndex: 2,
+        numDays: -30,
+    }],
 }];

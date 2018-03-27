@@ -47,6 +47,23 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
             return true;
         }
     }
+    if (logic === 'in-date-range') {
+        if (!questionAnswer) {
+            return false;
+        }
+        const dateValue = _.get(questionAnswer, 'answer.dateValue');
+        const { min, max } = answer.dateRange;
+        if (!dateValue || !(min || max)) {
+            return false;
+        }
+        if (min && dateValue < min) {
+            return false;
+        }
+        if (max && dateValue > max) {
+            return false;
+        }
+        return true;
+    }
     return false;
 };
 
