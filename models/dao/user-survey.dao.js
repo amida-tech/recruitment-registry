@@ -52,6 +52,19 @@ const comparators = {
         }
         return false;
     },
+    'in-zip-range': function (answers, ruleAnswers) {
+        const answersValues = answers.map(answer => answer.value);
+        let found = false;
+        for(let i = 0; i < ruleAnswers.length; i++) {
+            const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
+            if(inZipRangeValues) {
+                found = answersValues.some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
+                break;
+            }
+        }
+        console.log('>>>>> in-zip-range > found: ', found);
+        return found;
+    },
 };
 
 const compareAnswersToRuleAnswers = function (logic, answers, ruleAnswers) {
@@ -140,6 +153,7 @@ module.exports = class UserSurveyDAO extends Base {
                         const { logic, answerQuestionId, answerSurveyId, values } = rule;
                         const key = `${answerSurveyId}-${answerQuestionId}`;
                         const answers = answerMap[key];
+                        console.log('>>>>> disabledSurveysOnAnswers > answerSurveyId: ', answerSurveyId);
                         return compareAnswersToRuleAnswers(logic, answers, values);
                     });
                     if (!enabled) {
@@ -151,6 +165,7 @@ module.exports = class UserSurveyDAO extends Base {
     }
 
     disabledSurveysOnRules(statusMap, userId) {
+        console.log('>>>>> disabledSurveysOnRules');
         const where = {
             questionId: null,
             sectionId: null,
@@ -174,7 +189,7 @@ module.exports = class UserSurveyDAO extends Base {
                 const ruleIds = answerRules.map(r => r.id);
                 return this.db.AnswerRuleValue.findAll({
                     where: { ruleId: { [Op.in]: ruleIds } },
-                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    attributes: ['ruleId', 'questionChoiceId', 'value', 'meta'],
                     raw: true,
                 })
                     .then((answerRuleValues) => {
@@ -201,6 +216,7 @@ module.exports = class UserSurveyDAO extends Base {
     }
 
     listUserSurveys(userId, options) {
+        console.log('>>>>> listUserSurveys');
         const type = constNames.defaultSurveyType;
         const listSurveysOptions = Object.assign({ type }, options);
         return this.survey.listSurveys(listSurveysOptions)
