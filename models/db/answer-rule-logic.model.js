@@ -30,6 +30,7 @@ module.exports = function answerRuleLogic(sequelize, Sequelize, schema) {
                         'not-equals',
                         'not-exists',
                         'in-date-range',
+                        'in-zip-range',
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
