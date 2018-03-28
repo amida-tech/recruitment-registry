@@ -9,6 +9,8 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value, meta) {
+            console.log('>>>>> answer-common > fn.zip > value: ', value);
+            console.log('>>>>> answer-common > fn.zip > meta: ', meta);
             if(meta) {
                 return {
                     textValue: value,
@@ -146,7 +148,7 @@ const generateAnswer = function (type, entries, multiple) {
                     },
                 });
             } else {
-                Object.assign(answer, fn(entry.value));
+                Object.assign(answer, entry.meta ? fn(entry.value, entry.meta) : fn(entry.value));
             }
             return answer;
         });
@@ -168,7 +170,7 @@ const generateAnswer = function (type, entries, multiple) {
     const fn = getValueAnswerGenerator(type);
     console.log('>>>>> answer-common > getValueAnswerGenerator(type)[b]: ', getValueAnswerGenerator(type));
     console.log('>>>>> answer-common > fn(entries[0].value): ', fn(entries[0].value));
-    return fn(entries[0].value);
+    return entries[0].meta ? fn(entries[0].value, entries[0].meta) : fn(entries[0].value);
 };
 
 const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
