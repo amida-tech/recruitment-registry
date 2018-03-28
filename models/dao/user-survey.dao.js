@@ -198,6 +198,7 @@ module.exports = class UserSurveyDAO extends Base {
                             answerRules.forEach((r) => {
                                 const values = groupedResult[r.id];
                                 if (values) {
+                                    console.log('>>>>> user-survey.DAO > values: ', values);
                                     r.values = values.map(v => _.omit(v, 'ruleId'));
                                 }
                             });

@@ -102,7 +102,10 @@ describe('conditional survey unit', function surveyConditionalUnit() {
 
     conditionalSession.errorAnswer.forEach((errorSetup) => {
         it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, () => {
+            // console.log('>>>>> error: survey > conditionalSession: ', conditionalSession);
+            console.log('>>>>> error: survey > errorSetup: ', errorSetup);
             const { surveyIndex, error } = errorSetup;
+            // console.log('>>>>> error: survey > error: ', error);
             const survey = hxSurvey.server(surveyIndex);
             const answers = surveyGenerator.answersWithConditions(errorSetup);
             const input = {
@@ -110,7 +113,12 @@ describe('conditional survey unit', function surveyConditionalUnit() {
                 surveyId: survey.id,
                 answers,
             };
-
+            console.log('>>>>> error: survey > survey: ', survey);
+            console.log('>>>>> error: survey > answers: ', answers);
+            // answers.forEach((answer) => {
+            //     console.log('>>>>> error: survey > answer.answer: ', answer.answer);
+            // });
+            console.log('>>>>> error: survey > input: ', input);
             return models.answer.createAnswers(input)
                 .then(shared.throwingHandler, shared.expectedErrorHandler(error));
         });

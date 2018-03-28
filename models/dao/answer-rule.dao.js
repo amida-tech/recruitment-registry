@@ -52,14 +52,18 @@ module.exports = class AnswerRuleDAO extends Base {
                     include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }],
                 })
                     .then((answerRuleValues) => {
-                        console.log('>>>>> getSurveyAnswerRules > answerRuleValues: ', answerRuleValues);
                         if (answerRuleValues.length) {
+                            console.log('>>>>> getSurveyAnswerRules > answerRuleValues[1]: ', answerRuleValues);
                             answerRuleValues.forEach((r) => {
                                 if (r['questionChoice.type']) {
                                     r.choiceType = r['questionChoice.type'];
                                 }
                                 delete r['questionChoice.type'];
+                                if(r.meta === null) {
+                                    delete r.meta;
+                                }
                             });
+                            console.log('>>>>> getSurveyAnswerRules > answerRuleValues[2]: ', answerRuleValues);
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
                             ruleIds.forEach((ruleId) => {
                                 const entries = groupedResult[ruleId];
