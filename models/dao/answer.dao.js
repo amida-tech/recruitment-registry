@@ -63,6 +63,7 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
         if (max && dateValue > max) {
             return false;
         }
+        return true;
     }
     // NOTE: Is this for question-level...?
     // if (logic === 'in-zip-range') {
