@@ -193,6 +193,11 @@ module.exports = class UserSurveyDAO extends Base {
                     raw: true,
                 })
                     .then((answerRuleValues) => {
+                        answerRuleValues.forEach((answerRuleValue) => {
+                            if(answerRuleValue.meta === null) {
+                                delete answerRuleValue.meta;
+                            }
+                        });
                         if (answerRuleValues.length) {
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
                             answerRules.forEach((r) => {

@@ -8,7 +8,19 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     console.log('>>>>> getValueAnswerGenerator');
     const fns = {
         text(value) { return { textValue: value }; },
-        zip(value) { return { textValue: value }; },
+        zip(value, meta) {
+            if(meta) {
+                return {
+                    textValue: value,
+                    meta: meta,
+                };
+            }
+            else {
+                return {
+                    textValue: value,
+                };
+            }
+        },
         year(value) {
             if (value.indexOf(':') < 0) {
                 return { yearValue: value };
@@ -310,6 +322,8 @@ const prepareAnswerForDB = function (answer) {
     }
     const keys = Object.keys(answer);
     const numKeys = keys.length;
+    console.log('!!!!!!!!!!!!!! prepareAnswerForDB > answer: ', answer);
+    // console.log('!!!!!!!!!!!!!! prepareAnswerForDB > answer.meta: ', answer.meta);
     if (numKeys > 1 && !answer.meta) {
         keys.sort();
         throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
