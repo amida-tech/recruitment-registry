@@ -20,6 +20,7 @@ const Op = Sequelize.Op;
 const fedQxChoiceQuery = queryrize.readQuerySync('federated-question-choice-select.sql');
 
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
+    console.log('>>>>> evaluateAnswerRule');
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
             return true;
@@ -63,15 +64,16 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
             return false;
         }
     }
-    if (logic === 'in-zip-range') {
-        const zipValue = answer.textValue;
-        const zipRangeValue = answer.meta.zipRangeValue; // TODO: Move to answer-level?
-
-        // -- or accept new zipRange answerType...?
-
-        // TODO: Logic for determining if user has zipcode within range of rangeValue...
-        return true;
-    }
+    // NOTE: Is this for question-level...?
+    // if (logic === 'in-zip-range') {
+    //     const zipValue = answer.textValue;
+    //     const zipRangeValue = answer.meta.zipRangeValue; // TODO: Move to answer-level?
+    //
+    //     // -- or accept new zipRange answerType...?
+    //
+    //     // TODO: Logic for determining if user has zipcode within range of rangeValue...
+    //     return true;
+    // }
     return false;
 };
 

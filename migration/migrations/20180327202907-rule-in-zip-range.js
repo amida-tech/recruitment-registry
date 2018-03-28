@@ -9,8 +9,8 @@ const ruleAnswerValueMetaColumn = function (queryInterface, Sequelize) {
 };
 
 module.exports = {
-    up(queryInterface) {
-        return ruleAnswerValueMetaColumn(queryInterface, sequelize)
+    up(queryInterface, Sequelize) {
+        return ruleAnswerValueMetaColumn(queryInterface, Sequelize)
             .then(() => queryInterface.sequelize.query(sql));
     },
 };
