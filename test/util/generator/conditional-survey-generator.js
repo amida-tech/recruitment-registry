@@ -32,6 +32,16 @@ const getDateRangeEnableWhen = function (dateRangeSpec) {
     return dateRange;
 };
 
+const getZipRangeEnableWhen = function(zipRangeSpec) {
+    const zipRange = {};
+    const { value, meta } = zipRangeSpec;
+    if(meta) {
+        zipRange.value = value;
+        zipRange.meta = meta;
+    }
+    return zipRange;
+}
+
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
         const options = { type: 'text', max: questionInfo.selectionCount };
@@ -167,7 +177,7 @@ const specialAnswerer = {
 const surveyManipulator = {
     surveyEnableWhen(survey, conditionalInfo, generator) {
         const { hxSurvey, answerer } = generator;
-        const { answerSurveyIndex, answerQuestionIndex, logic, dateRange } = conditionalInfo;
+        const { answerSurveyIndex, answerQuestionIndex, logic, dateRange, value, meta } = conditionalInfo;
         const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
         const question = questions[answerQuestionIndex];
         let rule;
@@ -177,6 +187,17 @@ const surveyManipulator = {
             rule = {
                 questionId: question.id,
                 answer: { dateRange: getDateRangeEnableWhen(dateRange) },
+            };
+        } else if(logic === 'in-zip-range') {
+            rule = {
+                questionId: question.id,
+                answer: {
+                    textValue: value,
+                    meta: {
+                        zipRangeValue: meta.zipRangeValue,
+                        inRangeValue: meta.inRangeValue,
+                    },
+                },
             };
         } else {
             rule = { questionId: question.id };

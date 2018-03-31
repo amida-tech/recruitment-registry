@@ -20,7 +20,7 @@ const Op = Sequelize.Op;
 const fedQxChoiceQuery = queryrize.readQuerySync('federated-question-choice-select.sql');
 
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
-    console.log('>>>>> evaluateAnswerRule');
+    console.log('>>>>> answer.DAO > evaluateAnswerRule');
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
             return true;
@@ -65,16 +65,21 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
         }
         return true;
     }
-    // NOTE: Is this for question-level...?
-    // if (logic === 'in-zip-range') {
-    //     const zipValue = answer.textValue;
-    //     const zipRangeValue = answer.meta.zipRangeValue; // TODO: Move to answer-level?
-    //
-    //     // -- or accept new zipRange answerType...?
-    //
-    //     // TODO: Logic for determining if user has zipcode within range of rangeValue...
-    //     return true;
-    // }
+    // NOTE: What scenario are these evaluations for?
+    if (logic === 'in-zip-range') {
+        console.log('>>>>> answer.DAO > evaluateAnswerRule > in-zip-range > answer: ', answer);
+        console.log('>>>>> answer.DAO > evaluateAnswerRule > in-zip-range > questionAnswer: ', answer);
+        // let found = false;
+        // for(let i = 0; i < ruleAnswers.length; i++) {
+        //     const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
+        //     if(inZipRangeValues) {
+        //         found = answersValues.some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
+        //         break;
+        //     }
+        // }
+        // console.log('>>>>> in-zip-range > found: ', found);
+        // return found;
+    }
     return false;
 };
 
@@ -445,6 +450,7 @@ module.exports = class AnswerDAO extends Base {
     }
 
     createAnswers(input) {
+        console.log('>>>>> answer.DAO > createAnswers > input: ', input);
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 

@@ -198,4 +198,49 @@ module.exports = [{
     dateRange: {
         minNumberDays: -30,
     },
+}, { // Survey 19
+    surveyIndex: 19,
+    purpose: 'enableWhen',
+    questionIndex: 4,
+    logic: 'in-zip-range',
+    relativeIndex: 4,
+    textValue: '20001',
+    meta: {
+        zipRangeValue: '5',
+        inRangeValues: [
+            '20001','20060','20005','20059','20055','20538','20056','20417',
+            '20223','20572','20507','20268','20239','20548','20527','20529',
+            '20081','20424','20422','20401','20071','20573','20211','20426',
+            '20535',
+        ],
+    },
+}, {
+    surveyIndex: 19,
+    purpose: 'enableWhen',
+    questionIndex: 5,
+    logic: 'in-zip-range',
+    relativeIndex: 4,
+    textValue: '10001',
+    meta: {
+        zipRangeValue: '5',
+        inRangeValues: [
+            '10001','10199','10156','10018','10117','10116','10119','10123',
+            '10122','10121','10087','10060','10157','10138','10036','10120',
+            '10109','10011','10118','10113','10185','10129','10124','10108',
+            '10114','10110','10101','10102','10175','10020',
+        ],
+    },
+}, {
+    surveyIndex: 19,
+    purpose: 'enableWhen',
+    questionIndex: 6,
+    logic: 'in-zip-range',
+    relativeIndex: 4,
+    textValue: '90001',
+    meta: {
+        zipRangeValue: '5',
+        inRangeValues: [
+            '90001','90052',
+        ],
+    },
 }];
