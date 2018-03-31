@@ -41,16 +41,10 @@ describe('conditional survey integration', function surveyConditionalIntegration
         requiredOverrides: conditionalSession.requiredOverrides,
         counts,
     });
-
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
-
     const numOfCases = counts.length;
-
-    console.log('>>>>> survey_conditional.integration TEST > numOfCases: ', numOfCases);
-
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest, generator);
-
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
@@ -190,7 +184,6 @@ describe('conditional survey integration', function surveyConditionalIntegration
                     answers,
                     status,
                 };
-                console.log('>>>>> survey_conditional.integration TEST > numOfCases: ', numOfCases);
                 return rrSuperTest.post(`/user-surveys/${survey.id}/answers`, input, 204);
             });
         }

@@ -12,7 +12,6 @@ const Op = Sequelize.Op;
 
 module.exports = class AnswerRuleDAO extends Base {
     getSurveyAnswerRules({ surveyId }) {
-        console.log('>>>>> getSurveyAnswerRules');
         const AnswerRule = this.db.AnswerRule;
         const AnswerRuleValue = this.db.AnswerRuleValue;
         const Question = this.db.Question;
@@ -53,7 +52,6 @@ module.exports = class AnswerRuleDAO extends Base {
                 })
                     .then((answerRuleValues) => {
                         if (answerRuleValues.length) {
-                            console.log('>>>>> getSurveyAnswerRules > answerRuleValues[1]: ', answerRuleValues);
                             answerRuleValues.forEach((r) => {
                                 if (r['questionChoice.type']) {
                                     r.choiceType = r['questionChoice.type'];
@@ -63,7 +61,6 @@ module.exports = class AnswerRuleDAO extends Base {
                                     delete r.meta;
                                 }
                             });
-                            console.log('>>>>> getSurveyAnswerRules > answerRuleValues[2]: ', answerRuleValues);
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
                             ruleIds.forEach((ruleId) => {
                                 const entries = groupedResult[ruleId];
@@ -77,10 +74,6 @@ module.exports = class AnswerRuleDAO extends Base {
                         ruleIds.forEach((ruleId) => {
                             delete rules[ruleId].type;
                         });
-
-                        // TODO: resultWithMeta?
-                        console.log('>>>>> getSurveyAnswerRules > result.answer: ', result.answer);
-
                         return result;
                     });
             });
@@ -163,9 +156,6 @@ module.exports = class AnswerRuleDAO extends Base {
     }
 
     importAnswerRules(stream, { sectionIdMap, questionIdMap, surveyIdMap }) {
-
-        console.log('>>>>> importAnswerRules');
-
         const AnswerRule = this.db.AnswerRule;
         const AnswerRuleValue = this.db.AnswerRuleValue;
         const converter = new ImportCSVConverter({ checkType: false });

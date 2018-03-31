@@ -62,7 +62,6 @@ const comparators = {
                 break;
             }
         }
-        console.log('>>>>> in-zip-range > found: ', found);
         return found;
     },
 };
@@ -153,7 +152,6 @@ module.exports = class UserSurveyDAO extends Base {
                         const { logic, answerQuestionId, answerSurveyId, values } = rule;
                         const key = `${answerSurveyId}-${answerQuestionId}`;
                         const answers = answerMap[key];
-                        console.log('>>>>> disabledSurveysOnAnswers > answerSurveyId: ', answerSurveyId);
                         return compareAnswersToRuleAnswers(logic, answers, values);
                     });
                     if (!enabled) {
@@ -165,7 +163,6 @@ module.exports = class UserSurveyDAO extends Base {
     }
 
     disabledSurveysOnRules(statusMap, userId) {
-        console.log('>>>>> disabledSurveysOnRules');
         const where = {
             questionId: null,
             sectionId: null,
@@ -203,7 +200,6 @@ module.exports = class UserSurveyDAO extends Base {
                             answerRules.forEach((r) => {
                                 const values = groupedResult[r.id];
                                 if (values) {
-                                    console.log('>>>>> user-survey.DAO > values: ', values);
                                     r.values = values.map(v => _.omit(v, 'ruleId'));
                                 }
                             });
@@ -222,7 +218,6 @@ module.exports = class UserSurveyDAO extends Base {
     }
 
     listUserSurveys(userId, options) {
-        console.log('>>>>> listUserSurveys');
         const type = constNames.defaultSurveyType;
         const listSurveysOptions = Object.assign({ type }, options);
         return this.survey.listSurveys(listSurveysOptions)

@@ -20,7 +20,6 @@ const Op = Sequelize.Op;
 const fedQxChoiceQuery = queryrize.readQuerySync('federated-question-choice-select.sql');
 
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
-    console.log('>>>>> answer.DAO > evaluateAnswerRule');
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
             return true;
@@ -67,8 +66,6 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     }
     // NOTE: What scenario are these evaluations for?
     if (logic === 'in-zip-range') {
-        console.log('>>>>> answer.DAO > evaluateAnswerRule > in-zip-range > answer: ', answer);
-        console.log('>>>>> answer.DAO > evaluateAnswerRule > in-zip-range > questionAnswer: ', answer);
         // let found = false;
         // for(let i = 0; i < ruleAnswers.length; i++) {
         //     const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
@@ -77,7 +74,6 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
         //         break;
         //     }
         // }
-        // console.log('>>>>> in-zip-range > found: ', found);
         // return found;
     }
     return false;
@@ -450,7 +446,6 @@ module.exports = class AnswerDAO extends Base {
     }
 
     createAnswers(input) {
-        console.log('>>>>> answer.DAO > createAnswers > input: ', input);
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
