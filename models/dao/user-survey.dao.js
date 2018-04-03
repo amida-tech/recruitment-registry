@@ -55,10 +55,11 @@ const comparators = {
     'in-zip-range': function (answers, ruleAnswers) {
         const answersValues = answers.map(answer => answer.value);
         let found = false;
-        for(let i = 0; i < ruleAnswers.length; i++) {
+        for (let i = 0; i < ruleAnswers.length; i += 1) {
             const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
-            if(inZipRangeValues) {
-                found = answersValues.some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
+            if (inZipRangeValues) {
+                found = answersValues
+                    .some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
                 break;
             }
         }
@@ -190,13 +191,15 @@ module.exports = class UserSurveyDAO extends Base {
                     raw: true,
                 })
                     .then((answerRuleValues) => {
-                        answerRuleValues.forEach((answerRuleValue) => {
-                            if(answerRuleValue.meta === null) {
-                                delete answerRuleValue.meta;
+                        const updatedAnswerRuleValues = answerRuleValues.map((answerRuleValue) => {
+                            const updatedAnswerRuleValue = answerRuleValue;
+                            if (answerRuleValue.meta === null) {
+                                delete updatedAnswerRuleValue.meta;
                             }
+                            return updatedAnswerRuleValue;
                         });
-                        if (answerRuleValues.length) {
-                            const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
+                        if (updatedAnswerRuleValues.length) {
+                            const groupedResult = _.groupBy(updatedAnswerRuleValues, 'ruleId');
                             answerRules.forEach((r) => {
                                 const values = groupedResult[r.id];
                                 if (values) {

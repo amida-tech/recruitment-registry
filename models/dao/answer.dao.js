@@ -70,7 +70,8 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
         // for(let i = 0; i < ruleAnswers.length; i++) {
         //     const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
         //     if(inZipRangeValues) {
-        //         found = answersValues.some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
+        //         found = answersValues
+        //             .some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
         //         break;
         //     }
         // }

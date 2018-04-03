@@ -57,7 +57,7 @@ module.exports = class AnswerRuleDAO extends Base {
                                     r.choiceType = r['questionChoice.type'];
                                 }
                                 delete r['questionChoice.type'];
-                                if(r.meta === null) {
+                                if (r.meta === null) {
                                     delete r.meta;
                                 }
                             });

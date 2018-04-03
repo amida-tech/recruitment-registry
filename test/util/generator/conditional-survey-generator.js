@@ -32,15 +32,16 @@ const getDateRangeEnableWhen = function (dateRangeSpec) {
     return dateRange;
 };
 
-const getZipRangeEnableWhen = function(zipRangeSpec) {
-    const zipRange = {};
-    const { value, meta } = zipRangeSpec;
-    if(meta) {
-        zipRange.value = value;
-        zipRange.meta = meta;
-    }
-    return zipRange;
-}
+// TODO:
+// const getZipRangeEnableWhen = function (zipRangeSpec) {
+//     const zipRange = {};
+//     const { value, meta } = zipRangeSpec;
+//     if (meta) {
+//         zipRange.value = value;
+//         zipRange.meta = meta;
+//     }
+//     return zipRange;
+// };
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -188,7 +189,7 @@ const surveyManipulator = {
                 questionId: question.id,
                 answer: { dateRange: getDateRangeEnableWhen(dateRange) },
             };
-        } else if(logic === 'in-zip-range') {
+        } else if (logic === 'in-zip-range') {
             rule = {
                 questionId: question.id,
                 answer: {

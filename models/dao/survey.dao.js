@@ -373,7 +373,7 @@ module.exports = class SurveyDAO extends Translatable {
         }
         if (ruleAnswer) {
             const dbAnswers = answerCommon.prepareAnswerForDB(ruleAnswer);
-            if(ruleAnswer.meta) {
+            if (ruleAnswer.meta) {
                 const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
                     const record = {
                         ruleId,
@@ -385,17 +385,16 @@ module.exports = class SurveyDAO extends Translatable {
                 });
                 return SPromise.all(pxs);
             }
-            else {
-                const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
-                    const record = {
-                        ruleId,
-                        questionChoiceId: questionChoiceId || null,
-                        value: (value !== undefined ? value : null),
-                    };
-                    return AnswerRuleValue.create(record, { transaction });
-                });
-                return SPromise.all(pxs);
-            }
+
+            const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
+                const record = {
+                    ruleId,
+                    questionChoiceId: questionChoiceId || null,
+                    value: (value !== undefined ? value : null),
+                };
+                return AnswerRuleValue.create(record, { transaction });
+            });
+            return SPromise.all(pxs);
         }
         return null;
     }
@@ -476,21 +475,20 @@ module.exports = class SurveyDAO extends Translatable {
         const baseObject = { surveyId, sectionId: null, questionId: null };
 
         const promises = enableWhen.map((condition) => {
-            if(condition.answer && condition.answer.meta && condition.answer.meta.zipRangeValue) {
-                return zipUtil.findVicinity(condition.answer.textValue, condition.answer.meta.zipRangeValue)
+            if (condition.answer && condition.answer.meta && condition.answer.meta.zipRangeValue) {
+                return zipUtil.findVicinity(condition.answer.textValue,
+                    condition.answer.meta.zipRangeValue)
                     .then((zipList) => {
                         const updatedCondition = condition;
                         updatedCondition.answer.meta.inRangeValue = zipList;
                         return updatedCondition;
                     });
             }
-            else {
-                return condition;
-            }
+
+            return condition;
         });
-        return SPromise.all(promises).then((results) => {
-            return this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
-        });
+        return SPromise.all(promises)
+            .then(() => this.createRulesForEnableWhen(baseObject, enableWhen, transaction));
     }
 
     createRulesForSurvey(id, survey, transaction) {

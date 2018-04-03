@@ -8,17 +8,16 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value, meta) {
-            if(meta) {
+            if (meta) {
                 return {
                     textValue: value,
-                    meta: meta,
+                    meta,
                 };
             }
-            else {
-                return {
-                    textValue: value,
-                };
-            }
+
+            return {
+                textValue: value,
+            };
         },
         year(value) {
             if (value.indexOf(':') < 0) {
