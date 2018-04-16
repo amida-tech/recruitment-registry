@@ -86,11 +86,14 @@ module.exports = class QuestionGenerator {
     }
 
     choice(options = {}) {
-        const noOneOf = options.noOneOf;
+        const { noOneOf, choiceCount } = options;
         this.typeChoiceIndex += 1;
         const typeChoiceIndex = this.typeChoiceIndex;
         const question = this.body('choice');
-        const choices = this.newChoices(options.choiceCount);
+        if (choiceCount === 0) {
+            return question;
+        }
+        const choices = this.newChoices(choiceCount);
         if (((typeChoiceIndex % 3) === 0) && !noOneOf) {
             question.oneOfChoices = choices;
         } else if ((typeChoiceIndex % 3) === 1) {
@@ -125,6 +128,9 @@ module.exports = class QuestionGenerator {
         const question = this.body('choices');
         let choices;
         const choiceCount = options.choiceCount;
+        if (choiceCount === 0) {
+            return question;
+        }
         const newChoices = this.newChoices(choiceCount);
         if (this.choicesCode) {
             this.choicesCode = false;
