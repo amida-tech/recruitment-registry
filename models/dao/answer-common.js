@@ -306,9 +306,9 @@ const prepareAnswerForDB = function (answer) {
             return dbObject;
         });
     }
-    const keys = Object.keys(answer);
+    const keys = Object.keys(_.omit(answer, 'meta'));
     const numKeys = keys.length;
-    if (numKeys > 1 && !answer.meta) {
+    if (numKeys > 1) {
         keys.sort();
         throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
     }
