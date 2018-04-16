@@ -139,7 +139,7 @@ const generateAnswer = function (type, entries, multiple) {
                     },
                 });
             } else {
-                Object.assign(answer, entry.meta ? fn(entry.value, entry.meta) : fn(entry.value));
+                Object.assign(answer, fn(entry.value, entry.meta));
             }
             return answer;
         });
@@ -159,7 +159,7 @@ const generateAnswer = function (type, entries, multiple) {
         return fnChoices(entries);
     }
     const fn = getValueAnswerGenerator(type);
-    return entries[0].meta ? fn(entries[0].value, entries[0].meta) : fn(entries[0].value);
+    return fn(entries[0].value, entries[0].meta);
 };
 
 const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
