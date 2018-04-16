@@ -98,7 +98,12 @@ const specHandler = {
         const questionGenerator = generator.generator.questionGenerator;
         const newChoices = questionGenerator.newChoices(newChoiceCount);
         const newQxChoices = newChoices.map(ch => ({ text: ch }));
-        patch.questions[questionIndex].choices.push(...newQxChoices);
+        const { choices } = patch.questions[questionIndex];
+        if (choices) {
+            choices.push(...newQxChoices);
+        } else {
+            Object.assign(patch.questions[questionIndex], { choices: newQxChoices });
+        }
     },
 };
 
@@ -201,11 +206,17 @@ const patchComparators = {
         const choices = question.choices;
         const patchedQuestion = patchedSurvey.questions[questionIndex];
         const patchedChoices = patchedQuestion.choices;
-        expect(choices.length + newChoiceCount).to.equal(patchedChoices.length);
+        const choiceCount = (choices && choices.length) || 0;
+        const patchedCount = (patchedChoices && patchedChoices.length) || 0;
+        expect(choiceCount + newChoiceCount).to.equal(patchedCount);
         const questionPatch = surveyPatch.questions[questionIndex];
         comparator.question(questionPatch, patchedQuestion);
-        choices.length = 0;
-        choices.push(...patchedChoices);
+        if (choices) {
+            choices.length = 0;
+            choices.push(...patchedChoices);
+        } else {
+            question.choices = patchedChoices;
+        }
     },
 };
 

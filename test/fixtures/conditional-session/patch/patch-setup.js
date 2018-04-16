@@ -128,4 +128,15 @@ module.exports = [{
             },
         },
     }],
+}, { // ^10, v 11
+    surveyIndex: 9,
+    mods: [{
+        purpose: 'addChoices',
+        questionIndex: 2,
+        newChoiceCount: 4,
+    }, {
+        purpose: 'addChoices',
+        questionIndex: 5,
+        newChoiceCount: 4,
+    }],
 }];

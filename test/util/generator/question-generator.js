@@ -91,7 +91,7 @@ module.exports = class QuestionGenerator {
         const typeChoiceIndex = this.typeChoiceIndex;
         const question = this.body('choice');
         if (choiceCount === 0) {
-            return question;
+            return Object.assign(question, { choices: [] });
         }
         const choices = this.newChoices(choiceCount);
         if (((typeChoiceIndex % 3) === 0) && !noOneOf) {
@@ -129,7 +129,7 @@ module.exports = class QuestionGenerator {
         let choices;
         const choiceCount = options.choiceCount;
         if (choiceCount === 0) {
-            return question;
+            return Object.assign(question, { choices: [] });
         }
         const newChoices = this.newChoices(choiceCount);
         if (this.choicesCode) {
