@@ -66,7 +66,6 @@ module.exports = class AnswerRuleDAO extends Base {
                                 const entries = groupedResult[ruleId];
                                 if (entries) {
                                     const rule = rules[ruleId];
-                                    // FIXME: ...?
                                     rule.answer = answerCommon.generateAnswer(rule.type, entries);
                                 }
                             });

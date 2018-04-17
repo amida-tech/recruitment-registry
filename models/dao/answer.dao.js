@@ -64,19 +64,6 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
         }
         return true;
     }
-    // NOTE: What scenario are these evaluations for?
-    if (logic === 'in-zip-range') {
-        // let found = false;
-        // for(let i = 0; i < ruleAnswers.length; i++) {
-        //     const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
-        //     if(inZipRangeValues) {
-        //         found = answersValues
-        //             .some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
-        //         break;
-        //     }
-        // }
-        // return found;
-    }
     return false;
 };
 
