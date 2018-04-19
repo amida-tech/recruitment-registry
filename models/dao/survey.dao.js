@@ -378,9 +378,10 @@ module.exports = class SurveyDAO extends Translatable {
                     ruleId,
                     questionChoiceId: questionChoiceId || null,
                     value: (value !== undefined ? value : null),
-                    meta: ruleAnswer.meta || null,
+                    meta: ruleAnswer.meta,
                 };
-                return AnswerRuleValue.create(record, { transaction });
+                return AnswerRuleValue
+                    .create(!ruleAnswer.meta ? _.omit(record, 'meta') : record, { transaction });
             });
             return SPromise.all(pxs);
         }
@@ -461,21 +462,26 @@ module.exports = class SurveyDAO extends Translatable {
 
     createSurveyEnableWhen(surveyId, enableWhen, transaction) {
         const baseObject = { surveyId, sectionId: null, questionId: null };
-
-        const promises = enableWhen.reduce((condition) => {
+        const enableWhenWithZipRangeValue = _.cloneDeep(enableWhen);
+        const promises = enableWhenWithZipRangeValue.reduce((r, condition) => {
             if (condition.answer && condition.answer.meta && condition.answer.meta.zipRangeValue) {
-                return zipUtil.findVicinity(condition.answer.textValue,
+                const px = zipUtil.findVicinity(condition.answer.textValue,
                     condition.answer.meta.zipRangeValue)
-                    .then((zipList) => {
-                        const updatedCondition = condition;
-                        updatedCondition.answer.meta.inRangeValue = zipList;
-                        return updatedCondition;
-                    });
+                    .then(zipList => Object.assign(condition, {
+                        answer: {
+                            meta: {
+                                zipRangeValue: condition.answer.meta.zipRangeValue,
+                                inRangeValue: zipList,
+                            },
+                            textValue: condition.answer.textValue,
+                        },
+                    }));
+                r.push(px);
             }
-            // return condition;
-        });
-        return SPromise.all(promises)
-            .then(() => this.createRulesForEnableWhen(baseObject, enableWhen, transaction));
+            return r;
+        }, []);
+        return SPromise.all(promises).then(() => this.createRulesForEnableWhen(baseObject,
+            enableWhenWithZipRangeValue, transaction));
     }
 
     createRulesForSurvey(id, survey, transaction) {

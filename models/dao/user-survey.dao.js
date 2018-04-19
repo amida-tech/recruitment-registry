@@ -54,16 +54,18 @@ const comparators = {
     },
     'in-zip-range': function (answers, ruleAnswers) {
         const answersValues = answers.map(answer => answer.value);
-        let found = false;
-        for (let i = 0; i < ruleAnswers.length; i += 1) {
-            const inZipRangeValues = ruleAnswers[i].meta.inRangeValue;
-            if (inZipRangeValues) {
-                found = answersValues
-                    .some(answersValue => inZipRangeValues.indexOf(answersValue) >= 0);
-                break;
-            }
-        }
-        return found;
+        // Loop through the list of user's applicable anwsers
+        return answersValues.some(answersValue =>
+            // Loop through the list of ruleAnswers
+             ruleAnswers.some((ruleAnswer) => {
+                 let thing = false;
+                // Loop through the list of inRangeValues
+                 if (ruleAnswer.meta.inRangeValue) {
+                     thing = ruleAnswer.meta.inRangeValue
+                        .some(inRangeValue => answersValue === inRangeValue);
+                 }
+                 return thing;
+             }));
     },
 };
 
@@ -192,11 +194,10 @@ module.exports = class UserSurveyDAO extends Base {
                 })
                     .then((answerRuleValues) => {
                         const updatedAnswerRuleValues = answerRuleValues.map((answerRuleValue) => {
-                            const updatedAnswerRuleValue = answerRuleValue;
                             if (answerRuleValue.meta === null) {
-                                delete updatedAnswerRuleValue.meta;
+                                return _.omit(answerRuleValue, 'meta');
                             }
-                            return updatedAnswerRuleValue;
+                            return answerRuleValue;
                         });
                         if (updatedAnswerRuleValues.length) {
                             const groupedResult = _.groupBy(updatedAnswerRuleValues, 'ruleId');

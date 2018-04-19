@@ -32,17 +32,6 @@ const getDateRangeEnableWhen = function (dateRangeSpec) {
     return dateRange;
 };
 
-// TODO:
-// const getZipRangeEnableWhen = function (zipRangeSpec) {
-//     const zipRange = {};
-//     const { value, meta } = zipRangeSpec;
-//     if (meta) {
-//         zipRange.value = value;
-//         zipRange.meta = meta;
-//     }
-//     return zipRange;
-// };
-
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
         const options = { type: 'text', max: questionInfo.selectionCount };

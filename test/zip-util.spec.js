@@ -30,7 +30,7 @@ describe('zip-util unit', () => {
         });
     };
 
-    const sampleDataWithCustomDistance = zipUtilCommon.getSampleDataWithCustomDistance(generator);
+    const sampleDataWithCustomDistance = zipUtilCommon.getSampleData(generator, null, true);
     const stubRequestWithCustomDistanceGetSuccessful = function stubRequestWithCustomDistanceGetSuccessful() {
         return shared.stubRequestGet(null, {
             statusCode: 200,
