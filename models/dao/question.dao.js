@@ -461,10 +461,8 @@ module.exports = class QuestionDAO extends Translatable {
                     .then(() => {
                         if (scope !== 'summary') {
                             questions.forEach((q) => {
-                                if (isDirectChoiceType(q)) {
-                                    if (!q.choices) {
-                                        q.choices = [];
-                                    }
+                                if (isDirectChoiceType(q) && !q.choices) {
+                                    q.choices = [];
                                 }
                             });
                         }
