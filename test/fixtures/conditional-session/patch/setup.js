@@ -118,4 +118,16 @@ module.exports = [{
     questionIndex: 5,
     logic: 'equals',
     relativeIndex: 2,
+}, { // Survey 9
+    surveyIndex: 9,
+    purpose: 'type',
+    questionIndex: 2,
+    type: 'choices',
+    choiceCount: 0,
+}, {
+    surveyIndex: 9,
+    purpose: 'type',
+    questionIndex: 5,
+    type: 'choice',
+    choiceCount: 0,
 }];
