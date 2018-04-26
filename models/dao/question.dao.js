@@ -11,6 +11,12 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const Op = Sequelize.Op;
 
+const choiceTypes = ['choice', 'open-choice', 'choices'];
+
+const isDirectChoiceType = function (question) {
+    return choiceTypes.indexOf(question.type) >= 0;
+};
+
 const cleanDBQuestion = function (question) {
     const result = _.omitBy(question, _.isNil);
     if (question.common === null) {
@@ -232,7 +238,7 @@ module.exports = class QuestionDAO extends Translatable {
             })
             .then(question => this.updateText(question, language))
             .then((question) => {
-                if (['choice', 'open-choice', 'choices'].indexOf(question.type) < 0) {
+                if (!isDirectChoiceType(question)) {
                     return question;
                 }
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
@@ -452,7 +458,16 @@ module.exports = class QuestionDAO extends Translatable {
                         }
                         return null;
                     })
-                    .then(() => questions);
+                    .then(() => {
+                        if (scope !== 'summary') {
+                            questions.forEach((q) => {
+                                if (isDirectChoiceType(q) && !q.choices) {
+                                    q.choices = [];
+                                }
+                            });
+                        }
+                        return questions;
+                    });
             });
     }
 
@@ -672,14 +687,11 @@ module.exports = class QuestionDAO extends Translatable {
             .then(() => {
                 const chs = question.choices;
                 const chsPatch = patch.choices;
-                if (Boolean(chs) !== Boolean(chsPatch)) {
-                    return RRError.reject('qxPatchNoChoicesChange');
+                if (!isDirectChoiceType(question)) {
+                    return {};
                 }
-                if (chs) {
-                    const opts = { force: patch.force, language };
-                    return this.questionChoice.patchChoicesForQuestion(id, chs, chsPatch, tx, opts);
-                }
-                return {};
+                const opts = { force: patch.force, language };
+                return this.questionChoice.patchChoicesForQuestion(id, chs, chsPatch, tx, opts);
             });
     }
 
