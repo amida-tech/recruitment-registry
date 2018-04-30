@@ -200,11 +200,22 @@ module.exports = [{
     },
 }, { // Survey 19
     surveyIndex: 19,
-    purpose: 'enableWhen',
+    purpose: 'type',
+    questionIndex: 1,
+    type: 'zip',
+}, {
+    surveyIndex: 19,
+    purpose: 'type',
     questionIndex: 4,
+    type: 'zip',
+}, { // Survey 20
+    surveyIndex: 20,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
     logic: 'in-zip-range',
-    relativeIndex: 4,
-    textValue: '20001',
+    answerSurveyIndex: 19,
+    answerQuestionIndex: 1,
+    value: '20001',
     meta: {
         zipRangeValue: '5',
         inRangeValues: [
@@ -214,31 +225,30 @@ module.exports = [{
             '20535',
         ],
     },
-}, {
-    surveyIndex: 19,
-    purpose: 'enableWhen',
-    questionIndex: 5,
+}, { // Survey 21
+    surveyIndex: 21,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
     logic: 'in-zip-range',
-    relativeIndex: 4,
-    textValue: '10001',
+    answerSurveyIndex: 19,
+    answerQuestionIndex: 4,
+    value: '20001',
     meta: {
-        zipRangeValue: '5',
+        zipRangeValue: '2',
         inRangeValues: [
-            '10001', '10199', '10156', '10018', '10117', '10116', '10119', '10123',
-            '10122', '10121', '10087', '10060', '10157', '10138', '10036', '10120',
-            '10109', '10011', '10118', '10113', '10185', '10129', '10124', '10108',
-            '10114', '10110', '10101', '10102', '10175', '10020',
+            '20001', '20060', '20005',
         ],
     },
-}, {
-    surveyIndex: 19,
-    purpose: 'enableWhen',
-    questionIndex: 6,
+}, { // Survey 22
+    surveyIndex: 22,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
     logic: 'in-zip-range',
-    relativeIndex: 4,
-    textValue: '90001',
+    answerSurveyIndex: 19,
+    answerQuestionIndex: 4,
+    value: '90001',
     meta: {
-        zipRangeValue: '5',
+        zipRangeValue: '1',
         inRangeValues: [
             '90001', '90052',
         ],

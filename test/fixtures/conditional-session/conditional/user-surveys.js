@@ -2,10 +2,10 @@
 
 module.exports = [{
     skipAnswering: true,
-    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18],
+    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18, 20, 21, 22],
 }, {
     status: 'in-progress',
-    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18],
+    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 2,
     noAnswers: [0, 6],
     specialAnswers: [{
@@ -20,11 +20,11 @@ module.exports = [{
 }, {
     status: 'completed',
     noAnswers: [2, 3, 4],
-    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18],
+    missingSurveys: [8, 10, 11, 12, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 2,
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 12, 14, 16, 17, 18],
+    missingSurveys: [10, 11, 12, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 2,
     noAnswers: [2, 3],
     specialAnswers: [{
@@ -34,7 +34,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [12, 14, 16, 17, 18],
+    missingSurveys: [12, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 9,
     noAnswers: [4],
     specialAnswers: [{
@@ -44,7 +44,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 16, 17, 18],
+    missingSurveys: [10, 11, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 9,
     specialAnswers: [{
         type: 'samerulesurvey',
@@ -53,12 +53,12 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 16, 17, 18],
+    missingSurveys: [10, 11, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 13,
     noAnswers: [0, 1, 5, 6],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 16, 17, 18],
+    missingSurveys: [10, 11, 16, 17, 18, 20, 21, 22],
     surveyIndex: 13,
     noAnswers: [0, 2, 3, 4, 5, 7],
     specialAnswers: [{
@@ -74,7 +74,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 16, 17, 18],
+    missingSurveys: [10, 11, 16, 17, 18, 20, 21, 22],
     surveyIndex: 13,
     noAnswers: [0, 2, 3, 4, 5, 7],
     specialAnswers: [{
@@ -90,7 +90,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 16, 17, 18],
+    missingSurveys: [10, 11, 14, 16, 17, 18, 20, 21, 22],
     surveyIndex: 13,
     noAnswers: [0, 2, 3, 4, 5, 7],
     specialAnswers: [{
@@ -106,7 +106,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 16, 17],
+    missingSurveys: [10, 11, 14, 16, 17, 20, 21, 22],
     surveyIndex: 15,
     noAnswers: [2, 4, 5, 6],
     specialAnswers: [{
@@ -120,7 +120,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14],
+    missingSurveys: [10, 11, 14, 20, 21, 22],
     surveyIndex: 15,
     noAnswers: [2, 6],
     specialAnswers: [{
@@ -134,7 +134,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 18],
+    missingSurveys: [10, 11, 14, 18, 20, 21, 22],
     surveyIndex: 15,
     noAnswers: [2, 6],
     specialAnswers: [{
@@ -148,7 +148,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 17],
+    missingSurveys: [10, 11, 14, 17, 20, 21, 22],
     surveyIndex: 15,
     noAnswers: [2, 5, 6],
     specialAnswers: [{
@@ -162,7 +162,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 16, 17],
+    missingSurveys: [10, 11, 14, 16, 17, 20, 21, 22],
     surveyIndex: 15,
     noAnswers: [2, 5, 6],
     specialAnswers: [{
@@ -176,7 +176,7 @@ module.exports = [{
     }],
 }, {
     status: 'completed',
-    missingSurveys: [10, 11, 14, 16, 17],
+    missingSurveys: [10, 11, 14, 16, 17, 20, 21, 22],
     surveyIndex: 15,
     noAnswers: [2, 5, 6],
     specialAnswers: [{
