@@ -97,15 +97,6 @@ describe('question patch unit', function questionPatchUnit() {
         it(`error: patch type related fields (${index})`, tests.errorPatchQuestionFn(0, patch, options));
     });
 
-    it('error: no choices for previously choices', function errorNoChoicesToChoices() {
-        return tests.errorPatchQuestionFn(0, { choices: null }, { error: 'qxPatchNoChoicesChange' })();
-    });
-
-    it('error: choices for previously no choices', function errorChoicesToNoChoices() {
-        const choices = hxQuestion.server(0).choices;
-        return tests.errorPatchQuestionFn(5, { choices }, { error: 'qxPatchNoChoicesChange' })();
-    });
-
     [0, 2].forEach((index) => {
         it('error: add choices with id', function errorAddChoicesWithId() {
             const choices = hxQuestion.server(index + 1).choices;

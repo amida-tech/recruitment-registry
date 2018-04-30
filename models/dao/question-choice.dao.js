@@ -278,7 +278,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     patchChoicesForQuestion(questionId, choices, choicesPatch, transaction, options) {
-        const choiceMap = choices.reduce((r, choice, line) => {
+        const choiceMap = (choices || []).reduce((r, choice, line) => {
             const record = Object.assign({ line }, choice);
             r[choice.id] = record;
             return r;
@@ -288,7 +288,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             newChoices,
             changedChoices,
             choicesPatchMap,
-        } = choicesPatch.reduce((r, choicePatch, line) => {
+        } = (choicesPatch || []).reduce((r, choicePatch, line) => {
             const id = choicePatch.id;
             const record = Object.assign({ line }, choicePatch);
             if (id) {
@@ -310,7 +310,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             return r;
         }, { newChoices: [], changedChoices: [], choicesPatchMap: {} });
 
-        const deletedIds = choices.reduce((r, choice) => {
+        const deletedIds = (choices || []).reduce((r, choice) => {
             const id = choice.id;
             if (!choicesPatchMap[id]) {
                 r.push(id);

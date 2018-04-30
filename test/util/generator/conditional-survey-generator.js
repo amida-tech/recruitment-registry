@@ -40,7 +40,7 @@ const specialQuestionGenerator = {
     type(surveyGenerator, questionInfo) {
         const { type, choiceCount, isIdentifying, scaleLimits } = questionInfo;
         const options = { type };
-        if (choiceCount) {
+        if (choiceCount || choiceCount === 0) {
             options.choiceCount = choiceCount;
         }
         if (scaleLimits) {

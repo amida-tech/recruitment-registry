@@ -59,7 +59,7 @@ const comparator = {
     question(client, server, options = {}) {
         const id = server.id;
         const expected = _.cloneDeep(client);
-        if (expected.type === 'choices') {
+        if (expected.type === 'choices' && expected.choices) {
             expected.choices.forEach((choice) => { choice.type = choice.type || 'bool'; });
         }
         if (expected.type === 'choice' && expected.oneOfChoices) {
@@ -94,17 +94,19 @@ const comparator = {
         }
         expect(server.type).to.equal(expected.type);
         if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
-            expected.choices.forEach((choice, index) => {
-                choice.id = server.choices[index].id;
-                if (options.ignoreAnswerIdentifier) {
-                    delete choice.answerIdentifier;
-                } else if (choice.answerIdentifier) {
-                    if (choice.answerIdentifier.type === 'federated') {
-                        choice.identifier = choice.answerIdentifier.value;
+            if (expected.choices) {
+                expected.choices.forEach((choice, index) => {
+                    choice.id = server.choices[index].id;
+                    if (options.ignoreAnswerIdentifier) {
+                        delete choice.answerIdentifier;
+                    } else if (choice.answerIdentifier) {
+                        if (choice.answerIdentifier.type === 'federated') {
+                            choice.identifier = choice.answerIdentifier.value;
+                        }
+                        delete choice.answerIdentifier;
                     }
-                    delete choice.answerIdentifier;
-                }
-            });
+                });
+            }
         }
         if (options.identifiers) {
             const identifiers = options.identifiers[id];
