@@ -167,6 +167,9 @@ const specialAnswerer = {
         const dateValue = numDaysToDate(answerInfo.numDays);
         return { questionId: question.id, answer: { dateValue } };
     },
+    asis(generator, questions, question, answerInfo) {
+        return { questionId: question.id, answer: answerInfo.answer };
+    },
 };
 
 const surveyManipulator = {

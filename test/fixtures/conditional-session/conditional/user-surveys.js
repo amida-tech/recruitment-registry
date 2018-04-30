@@ -188,4 +188,72 @@ module.exports = [{
         questionIndex: 1,
         numDays: 40,
     }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17, 21],
+    surveyIndex: 19,
+    specialAnswers: [{
+        type: 'asis',
+        questionIndex: 4,
+        answer: {
+            textValue: '90001',
+        },
+    }, {
+        type: 'asis',
+        questionIndex: 1,
+        answer: {
+            textValue: '20055',
+        },
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17],
+    surveyIndex: 19,
+    specialAnswers: [{
+        type: 'asis',
+        questionIndex: 4,
+        answer: {
+            textValue: '90052',
+        },
+    }, {
+        type: 'asis',
+        questionIndex: 1,
+        answer: {
+            textValue: '20060',
+        },
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17, 22],
+    surveyIndex: 19,
+    specialAnswers: [{
+        type: 'asis',
+        questionIndex: 4,
+        answer: {
+            textValue: '90053',
+        },
+    }, {
+        type: 'asis',
+        questionIndex: 1,
+        answer: {
+            textValue: '20001',
+        },
+    }],
+}, {
+    status: 'completed',
+    missingSurveys: [10, 11, 14, 16, 17, 20, 21, 22],
+    surveyIndex: 19,
+    specialAnswers: [{
+        type: 'asis',
+        questionIndex: 4,
+        answer: {
+            textValue: '90059',
+        },
+    }, {
+        type: 'asis',
+        questionIndex: 1,
+        answer: {
+            textValue: '21001',
+        },
+    }],
 }];

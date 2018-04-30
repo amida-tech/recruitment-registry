@@ -231,7 +231,7 @@ module.exports = [{
     purpose: 'surveyEnableWhen',
     logic: 'in-zip-range',
     answerSurveyIndex: 19,
-    answerQuestionIndex: 4,
+    answerQuestionIndex: 1,
     value: '20001',
     meta: {
         zipRangeValue: '2',
