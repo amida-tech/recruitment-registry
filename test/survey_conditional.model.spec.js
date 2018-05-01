@@ -27,7 +27,8 @@ describe('conditional survey unit', function surveyConditionalUnit() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
-    const counts = _.range(19).map(() => 8);
+    const numOfCases = Math.max(...conditionalSession.setup.map(r => r.surveyIndex)) + 1;
+    const counts = _.range(numOfCases).map(() => 8);
 
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();
@@ -42,8 +43,6 @@ describe('conditional survey unit', function surveyConditionalUnit() {
 
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const shared = new SharedSpec(generator);
-
-    const numOfCases = counts.length;
 
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
     const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
@@ -60,7 +59,13 @@ describe('conditional survey unit', function surveyConditionalUnit() {
     });
 
     _.range(numOfCases).forEach((index) => {
+        if (surveyGenerator.createStubbingNeeded(index)) {
+            it(`do necessary stubbing for survey ${index}`, surveyGenerator.createStubFn(index));
+        }
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
+        if (surveyGenerator.createStubbingNeeded(index)) {
+            it(`remove stubbing/updates for survey ${index}`, surveyGenerator.createUnstubFn(hxSurvey, index));
+        }
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
     let surveyCount = numOfCases;
