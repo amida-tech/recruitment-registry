@@ -32,7 +32,9 @@ const exampleZipsWithRangeOfOneMile = {
 const getSampleData = function (generator, index, hasRangeOfOneMile) {
     const possibleZips = Object.keys(exampleZips);
     const zip = possibleZips[(index || 0) % possibleZips.length];
-    const vicinity = hasRangeOfOneMile ? exampleZips[zip] : exampleZipsWithRangeOfOneMile[zip];
+    const vicinity = hasRangeOfOneMile
+        ? (exampleZips[zip] ? exampleZips[zip] : -1)
+        : (exampleZipsWithRangeOfOneMile[zip] ? exampleZipsWithRangeOfOneMile[zip] : -1);
     const apiResponse = {
         results: vicinity.map(generator.newZipCodeApiObject.bind(generator)),
     };
@@ -49,5 +51,4 @@ module.exports = {
     exampleZips,
     exampleZipsWithRangeOfOneMile,
     getSampleData,
-    // getSampleDataWithCustomDistance,
 };
