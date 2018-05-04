@@ -46,7 +46,7 @@ module.exports = class AnswerRuleDAO extends Base {
                 });
                 return AnswerRuleValue.findAll({
                     where: { ruleId: { [Op.in]: ruleIds } },
-                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    attributes: ['ruleId', 'questionChoiceId', 'value', 'meta'],
                     raw: true,
                     include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }],
                 })
@@ -57,6 +57,9 @@ module.exports = class AnswerRuleDAO extends Base {
                                     r.choiceType = r['questionChoice.type'];
                                 }
                                 delete r['questionChoice.type'];
+                                if (r.meta === null) {
+                                    delete r.meta;
+                                }
                             });
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
                             ruleIds.forEach((ruleId) => {

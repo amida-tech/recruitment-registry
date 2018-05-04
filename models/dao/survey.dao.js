@@ -10,6 +10,7 @@ const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const dbUtil = require('../../lib/db-util');
 const importUtil = require('../../import/import-util');
+const zipUtil = require('../../lib/zip-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -377,8 +378,10 @@ module.exports = class SurveyDAO extends Translatable {
                     ruleId,
                     questionChoiceId: questionChoiceId || null,
                     value: (value !== undefined ? value : null),
+                    meta: ruleAnswer.meta,
                 };
-                return AnswerRuleValue.create(record, { transaction });
+                return AnswerRuleValue
+                    .create(!ruleAnswer.meta ? _.omit(record, 'meta') : record, { transaction });
             });
             return SPromise.all(pxs);
         }
@@ -459,7 +462,26 @@ module.exports = class SurveyDAO extends Translatable {
 
     createSurveyEnableWhen(surveyId, enableWhen, transaction) {
         const baseObject = { surveyId, sectionId: null, questionId: null };
-        return this.createRulesForEnableWhen(baseObject, enableWhen, transaction);
+        const enableWhenWithZipRangeValue = _.cloneDeep(enableWhen);
+        const promises = enableWhenWithZipRangeValue.reduce((r, condition) => {
+            if (condition.answer && condition.answer.meta && condition.answer.meta.zipRangeValue) {
+                const px = zipUtil.findVicinity(condition.answer.textValue,
+                    condition.answer.meta.zipRangeValue)
+                    .then(zipList => Object.assign(condition, {
+                        answer: {
+                            meta: {
+                                zipRangeValue: condition.answer.meta.zipRangeValue,
+                                inRangeValue: zipList,
+                            },
+                            textValue: condition.answer.textValue,
+                        },
+                    }));
+                r.push(px);
+            }
+            return r;
+        }, []);
+        return SPromise.all(promises).then(() => this.createRulesForEnableWhen(baseObject,
+            enableWhenWithZipRangeValue, transaction));
     }
 
     createRulesForSurvey(id, survey, transaction) {

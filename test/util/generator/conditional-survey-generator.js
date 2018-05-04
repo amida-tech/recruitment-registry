@@ -4,6 +4,11 @@
 
 const _ = require('lodash');
 const moment = require('moment');
+const request = require('request');
+const sinon = require('sinon');
+const chai = require('chai');
+
+const expect = chai.expect;
 
 const models = require('../../../models');
 
@@ -162,12 +167,15 @@ const specialAnswerer = {
         const dateValue = numDaysToDate(answerInfo.numDays);
         return { questionId: question.id, answer: { dateValue } };
     },
+    asis(generator, questions, question, answerInfo) {
+        return { questionId: question.id, answer: answerInfo.answer };
+    },
 };
 
 const surveyManipulator = {
     surveyEnableWhen(survey, conditionalInfo, generator) {
         const { hxSurvey, answerer } = generator;
-        const { answerSurveyIndex, answerQuestionIndex, logic, dateRange } = conditionalInfo;
+        const { answerSurveyIndex, answerQuestionIndex, logic, dateRange, value, meta } = conditionalInfo;
         const { id: surveyId, questions } = hxSurvey.server(answerSurveyIndex);
         const question = questions[answerQuestionIndex];
         let rule;
@@ -177,6 +185,17 @@ const surveyManipulator = {
             rule = {
                 questionId: question.id,
                 answer: { dateRange: getDateRangeEnableWhen(dateRange) },
+            };
+        } else if (logic === 'in-zip-range') {
+            rule = {
+                questionId: question.id,
+                answer: {
+                    textValue: value,
+                    meta: {
+                        zipRangeValue: meta.zipRangeValue,
+                        inRangeValue: meta.inRangeValue,
+                    },
+                },
             };
         } else {
             rule = { questionId: question.id };
@@ -272,6 +291,42 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     versionWithIdsNeeded(surveyIndex) {
         const { surveyLevel, purpose } = this.conditionalMap[surveyIndex];
         return !(surveyLevel && purpose.startsWith('surveyEnableWhen'));
+    }
+
+    createStubbingNeeded(surveyIndex) {
+        const { purpose, logic } = this.conditionalMap[surveyIndex];
+        return purpose === 'surveyEnableWhen' && logic === 'in-zip-range';
+    }
+
+    createStubFn(surveyIndex) {
+        const { purpose, logic, meta, value } = this.conditionalMap[surveyIndex];
+        if (purpose !== 'surveyEnableWhen' || logic !== 'in-zip-range') {
+            throw new Error('Stubbing only supported for survey level in-zip-range enableWhen.');
+        }
+        const { zipRangeValue, inRangeValues } = meta;
+        if (!(value && zipRangeValue && inRangeValues)) {
+            throw new Error('value, zipRangeValue, and/or inRangeValues is needed.');
+        }
+        return function stub() {
+            return sinon.stub(request, 'get', (opts, callback) => {
+                expect(opts.qs.radius).to.equal(zipRangeValue);
+                expect(opts.qs.zip).to.equal(value);
+                const results = inRangeValues.map(zip => ({ zip }));
+                const res = { statusCode: 200, body: { results } };
+                callback(null, res);
+            });
+        };
+    }
+
+    createUnstubFn(hxSurvey, surveyIndex) {
+        const self = this;
+        return function unstub() {
+            request.get.restore();
+            const { meta: { inRangeValues } } = self.conditionalMap[surveyIndex];
+            const { enableWhen } = hxSurvey.client(surveyIndex);
+            const [rule] = enableWhen;
+            rule.answer.meta.inRangeValue = inRangeValues;
+        };
     }
 
     addAnswer(rule, questionInfo, question) {

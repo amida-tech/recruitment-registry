@@ -7,7 +7,18 @@ const RRError = require('../../lib/rr-error');
 const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
-        zip(value) { return { textValue: value }; },
+        zip(value, meta) {
+            if (meta) {
+                return {
+                    textValue: value,
+                    meta,
+                };
+            }
+
+            return {
+                textValue: value,
+            };
+        },
         year(value) {
             if (value.indexOf(':') < 0) {
                 return { yearValue: value };
@@ -128,7 +139,7 @@ const generateAnswer = function (type, entries, multiple) {
                     },
                 });
             } else {
-                Object.assign(answer, fn(entry.value));
+                Object.assign(answer, fn(entry.value, entry.meta));
             }
             return answer;
         });
@@ -148,7 +159,7 @@ const generateAnswer = function (type, entries, multiple) {
         return fnChoices(entries);
     }
     const fn = getValueAnswerGenerator(type);
-    return fn(entries[0].value);
+    return fn(entries[0].value, entries[0].meta);
 };
 
 const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
@@ -295,7 +306,7 @@ const prepareAnswerForDB = function (answer) {
             return dbObject;
         });
     }
-    const keys = Object.keys(answer);
+    const keys = Object.keys(_.omit(answer, 'meta'));
     const numKeys = keys.length;
     if (numKeys > 1) {
         keys.sort();

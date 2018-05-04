@@ -52,6 +52,21 @@ const comparators = {
         }
         return false;
     },
+    'in-zip-range': function (answers, ruleAnswers) {
+        const answersValues = answers.map(answer => answer.value);
+        // Loop through the list of user's applicable anwsers
+        return answersValues.some(answersValue =>
+            // Loop through the list of ruleAnswers
+             ruleAnswers.some((ruleAnswer) => {
+                 let thing = false;
+                // Loop through the list of inRangeValues
+                 if (ruleAnswer.meta.inRangeValue) {
+                     thing = ruleAnswer.meta.inRangeValue
+                        .some(inRangeValue => answersValue === inRangeValue);
+                 }
+                 return thing;
+             }));
+    },
 };
 
 const compareAnswersToRuleAnswers = function (logic, answers, ruleAnswers) {
@@ -174,12 +189,18 @@ module.exports = class UserSurveyDAO extends Base {
                 const ruleIds = answerRules.map(r => r.id);
                 return this.db.AnswerRuleValue.findAll({
                     where: { ruleId: { [Op.in]: ruleIds } },
-                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    attributes: ['ruleId', 'questionChoiceId', 'value', 'meta'],
                     raw: true,
                 })
                     .then((answerRuleValues) => {
-                        if (answerRuleValues.length) {
-                            const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
+                        const updatedAnswerRuleValues = answerRuleValues.map((answerRuleValue) => {
+                            if (answerRuleValue.meta === null) {
+                                return _.omit(answerRuleValue, 'meta');
+                            }
+                            return answerRuleValue;
+                        });
+                        if (updatedAnswerRuleValues.length) {
+                            const groupedResult = _.groupBy(updatedAnswerRuleValues, 'ruleId');
                             answerRules.forEach((r) => {
                                 const values = groupedResult[r.id];
                                 if (values) {

@@ -198,4 +198,59 @@ module.exports = [{
     dateRange: {
         minNumberDays: -30,
     },
+}, { // Survey 19
+    surveyIndex: 19,
+    purpose: 'type',
+    questionIndex: 1,
+    type: 'zip',
+}, {
+    surveyIndex: 19,
+    purpose: 'type',
+    questionIndex: 4,
+    type: 'zip',
+}, { // Survey 20
+    surveyIndex: 20,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'in-zip-range',
+    answerSurveyIndex: 19,
+    answerQuestionIndex: 1,
+    value: '20001',
+    meta: {
+        zipRangeValue: '5',
+        inRangeValues: [
+            '20001', '20060', '20005', '20059', '20055', '20538', '20056', '20417',
+            '20223', '20572', '20507', '20268', '20239', '20548', '20527', '20529',
+            '20081', '20424', '20422', '20401', '20071', '20573', '20211', '20426',
+            '20535',
+        ],
+    },
+}, { // Survey 21
+    surveyIndex: 21,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'in-zip-range',
+    answerSurveyIndex: 19,
+    answerQuestionIndex: 1,
+    value: '20001',
+    meta: {
+        zipRangeValue: '2',
+        inRangeValues: [
+            '20001', '20060', '20005',
+        ],
+    },
+}, { // Survey 22
+    surveyIndex: 22,
+    surveyLevel: true,
+    purpose: 'surveyEnableWhen',
+    logic: 'in-zip-range',
+    answerSurveyIndex: 19,
+    answerQuestionIndex: 4,
+    value: '90001',
+    meta: {
+        zipRangeValue: '1',
+        inRangeValues: [
+            '90001', '90052',
+        ],
+    },
 }];

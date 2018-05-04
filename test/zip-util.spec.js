@@ -30,6 +30,15 @@ describe('zip-util unit', () => {
         });
     };
 
+    const sampleDataWithCustomDistance = zipUtilCommon.getSampleData(generator, null, true);
+    const stubRequestWithCustomDistanceGetSuccessful = function stubRequestWithCustomDistanceGetSuccessful() {
+        return shared.stubRequestGet(null, {
+            statusCode: 200,
+            body: sampleDataWithCustomDistance.apiResponse,
+        });
+    };
+
+
     ['', null, undefined].forEach((zip) => {
         it(`error: no zip code (${zip})`, () => zipUtil.findVicinity(zip)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('zipInvalidValue', zip)));
@@ -41,11 +50,25 @@ describe('zip-util unit', () => {
             .then(() => expect(requestStub.callCount).to.equal(1));
     });
 
+    it('calls zip code api with range of 1 mile (custom distance)', () => {
+        const requestStub = stubRequestWithCustomDistanceGetSuccessful();
+        return zipUtil.findVicinity(sampleDataWithCustomDistance.zip, 1)
+            .then(() => expect(requestStub.callCount).to.equal(1));
+    });
+
     it('parses zip code api response', () => {
         stubRequestGetSuccessful();
         return zipUtil.findVicinity(sampleData.zip).then((zipCodes) => {
             expect(zipCodes).to.be.an('array');
             expect(zipCodes).to.deep.equal(sampleData.vicinity);
+        });
+    });
+
+    it('parses zip code api within 1 mile response (custom distance)', () => {
+        stubRequestWithCustomDistanceGetSuccessful();
+        return zipUtil.findVicinity(sampleDataWithCustomDistance.zip, 1).then((zipCodes) => {
+            expect(zipCodes).to.be.an('array');
+            expect(zipCodes).to.deep.equal(sampleDataWithCustomDistance.vicinity);
         });
     });
 
